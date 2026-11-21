@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DzGraph — playground</title>
+<link rel="stylesheet" href="/packages/theme/dzgraph.css" />
+<script type="importmap">
+{ "imports": {
+  "@dzgraph/core": "/packages/core/src/index.ts",
+  "@dzgraph/core/internal": "/packages/core/src/internal.ts",
+  "@dzgraph/dom": "/packages/dom/src/index.ts"
+} }
+</script>
+<style>
+  html { color-scheme: var(--tz-color-scheme, light dark); }
+  body { margin: 0; padding: 16px; font: 14px system-ui, sans-serif; background: var(--tz-bg-raised); color: var(--tz-fg); }
+  nav { display: flex; gap: 12px; margin-block-end: 16px; }
+  #cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(640px, 100%), 1fr)); gap: 16px; }
+  .case { margin: 0; background: var(--tz-bg); border: 1px solid var(--tz-border); border-radius: 8px; padding: 12px; }
+  .case figcaption { color: var(--tz-fg-muted); margin-block-end: 8px; }
+  .chart { block-size: 400px; }
+  body[data-single] { padding: 0; background: var(--tz-bg); }
+  body[data-single] nav, body[data-single] figcaption { display: none; }
+  body[data-single] .case { border: 0; border-radius: 0; padding: 0; inline-size: 640px; }
+</style>
+</head>
+<body>
+<nav>
+  <a href="?">Clair</a><a href="?theme=dark">Sombre</a><a href="?dir=rtl">Droite à gauche</a><a href="?theme=dark&amp;dir=rtl">Sombre, droite à gauche</a>
+</nav>
+<div id="cases"></div>
+<script>if (new URLSearchParams(location.search).has('case')) document.body.dataset.single = '';</script>
+<script type="module" src="/playground/main.ts"></script>
+</body>
+</html>

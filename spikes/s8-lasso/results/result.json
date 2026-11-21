@@ -1,0 +1,142 @@
+{
+  "at": "2026-11-21T07:04:07.090Z",
+  "node": "v24.22.1",
+  "chrome": {
+    "100000": {
+      "n": 100000,
+      "gridBuildMs": 2,
+      "finalSelected": {
+        "naive": 66480,
+        "grid": 66480
+      },
+      "perMoveMs": {
+        "naive": {
+          "median": 8.3,
+          "p95": 21.8
+        },
+        "grid": {
+          "median": 2,
+          "p95": 2.9
+        },
+        "rect": {
+          "median": 0.4,
+          "p95": 0.7
+        }
+      }
+    },
+    "1000000": {
+      "n": 1000000,
+      "gridBuildMs": 3.2,
+      "finalSelected": {
+        "naive": 665721,
+        "grid": 665721
+      },
+      "perMoveMs": {
+        "naive": {
+          "median": 82.4,
+          "p95": 218.9
+        },
+        "grid": {
+          "median": 17.4,
+          "p95": 21.7
+        },
+        "rect": {
+          "median": 3.7,
+          "p95": 6.8
+        }
+      }
+    }
+  },
+  "firefox": {
+    "100000": {
+      "n": 100000,
+      "gridBuildMs": 2,
+      "finalSelected": {
+        "naive": 66480,
+        "grid": 66480
+      },
+      "perMoveMs": {
+        "naive": {
+          "median": 8,
+          "p95": 20
+        },
+        "grid": {
+          "median": 2,
+          "p95": 3
+        },
+        "rect": {
+          "median": 1,
+          "p95": 1
+        }
+      }
+    },
+    "1000000": {
+      "n": 1000000,
+      "gridBuildMs": 4,
+      "finalSelected": {
+        "naive": 665721,
+        "grid": 665721
+      },
+      "perMoveMs": {
+        "naive": {
+          "median": 75,
+          "p95": 193
+        },
+        "grid": {
+          "median": 15,
+          "p95": 20
+        },
+        "rect": {
+          "median": 4,
+          "p95": 7
+        }
+      }
+    }
+  },
+  "webkit": {
+    "100000": {
+      "n": 100000,
+      "gridBuildMs": 4,
+      "finalSelected": {
+        "naive": 66480,
+        "grid": 66480
+      },
+      "perMoveMs": {
+        "naive": {
+          "median": 5,
+          "p95": 11
+        },
+        "grid": {
+          "median": 1,
+          "p95": 2
+        },
+        "rect": {
+          "median": 0,
+          "p95": 1
+        }
+      }
+    },
+    "1000000": {
+      "n": 1000000,
+      "gridBuildMs": 4,
+      "finalSelected": {
+        "naive": 665721,
+        "grid": 665721
+      },
+      "perMoveMs": {
+        "naive": {
+          "median": 45,
+          "p95": 113
+        },
+        "grid": {
+          "median": 9,
+          "p95": 11
+        },
+        "rect": {
+          "median": 5,
+          "p95": 7
+        }
+      }
+    }
+  }
+}

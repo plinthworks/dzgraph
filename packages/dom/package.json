@@ -1,0 +1,15 @@
+{
+  "name": "@dzgraph/dom",
+  "version": "0.0.0",
+  "description": "Charts for showing and exploring data: chart(el, options), SVG, Canvas and WebGL2 painters, interactions. No dependency besides @dzgraph/core.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@dzgraph/core": "0.0.0"
+  }
+}

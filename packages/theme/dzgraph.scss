@@ -1,0 +1,122 @@
+@use 'sass:list';
+@use 'sass:meta';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @dzgraph/theme — the charts' colours and fonts. dzgraph.css (layer dzgraph.theme) and dzgraph.unlayered.css are
+// compiled from this file (`npm run build:theme`); a test fails when they drift.
+//
+// The palette is the family's (tzslot, DzCalendar, DzGrid, DzTooltip): the `--tz-*` colours, each a (light, dark)
+// pair that becomes light-dark(). A host that themes DzGrid themes its charts. The series' colours are DzGraph's own
+// (`$dzgraph-palette`): eight, in a fixed order, chosen and validated for colour-blind separation (adjacent ΔE ≥ 8,
+// OKLab ×100), normal vision (ΔE ≥ 15) and contrast on the chart's surface (≥ 3:1), in both modes — the light steps
+// are the darker ones so all eight clear 3:1 on white (README.md). Everything the chart draws reads a --dzgraph-*
+// variable (scene tokens, core/src/scene.ts).
+//
+// No colour outside the palettes, no physical side anywhere (guards).
+// ─────────────────────────────────────────────────────────────────────────────
+
+$tz-palette: (
+  bg: (#ffffff, #18181b),
+  bg-raised: (#f4f4f5, #27272a),
+  fg: (#18181b, #f4f4f5),
+  fg-muted: (#52525b, #a1a1aa),
+  border: (#d4d4d8, #3f3f46),
+  accent: (#2563eb, #60a5fa),
+) !default;
+
+$dzgraph-palette: (
+  series-1: (#2a78d6, #3987e5),
+  series-2: (#eb6834, #d95926),
+  series-3: (#199e70, #199e70),
+  series-4: (#c98500, #c98500),
+  series-5: (#d55181, #d55181),
+  series-6: (#008300, #0ca30c),
+  series-7: (#6250d6, #9085e9),
+  series-8: (#e34948, #e66767),
+) !default;
+
+$layered: true !default;
+
+@mixin layer {
+  @if $layered {
+    @layer dzgraph.theme {
+      @content;
+    }
+  } @else {
+    @content;
+  }
+}
+
+@function value($colour) {
+  @if meta.type-of($colour) == 'list' and list.length($colour) == 2 {
+    @return light-dark(list.nth($colour, 1), list.nth($colour, 2));
+  }
+  @return $colour;
+}
+
+@mixin palette($prefix, $colours) {
+  @each $name, $colour in $colours {
+    --#{$prefix}-#{$name}: #{value($colour)};
+  }
+}
+
+$font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
+
+@if $layered {
+  @layer dzgraph.theme;
+}
+
+// The family's palette stays layered in both builds, so a showcase theme or a bridge (layered) still replaces it.
+@layer dzgraph.theme {
+  :root {
+    @include palette(tz, $tz-palette);
+  }
+}
+
+@include layer {
+  [data-theme='light'] { --tz-color-scheme: light; }
+  [data-theme='dark'] { --tz-color-scheme: dark; }
+
+  .dzgraph {
+    color-scheme: var(--tz-color-scheme, light dark);
+    @include palette(dzgraph, $dzgraph-palette);
+
+    // The chart's furniture: recessive grid and axes, text in text colours (never the series').
+    --dzgraph-background: var(--tz-bg);
+    --dzgraph-plot-background: var(--tz-bg);
+    --dzgraph-text: var(--tz-fg);
+    --dzgraph-text-muted: var(--tz-fg-muted);
+    --dzgraph-axis-line: var(--tz-border);
+    --dzgraph-tick: var(--tz-border);
+    --dzgraph-grid-line: color-mix(in oklab, var(--tz-border) 55%, var(--tz-bg));
+    --dzgraph-focus: var(--tz-accent);
+
+    // Fonts, by role (the DOM layer measures with these, then draws with them).
+    --dzgraph-font-title: 600 16px #{$font};
+    --dzgraph-font-subtitle: 400 13px #{$font};
+    --dzgraph-font-axis-title: 500 12px #{$font};
+    --dzgraph-font-tick-label: 400 12px #{$font};
+    --dzgraph-font-legend: 400 12px #{$font};
+    --dzgraph-font-data-label: 400 11px #{$font};
+
+    color: var(--tz-fg);
+    background: var(--dzgraph-background);
+  }
+
+  // Forced colours (Windows high contrast): the system's colours; series told apart by their symbols and dashes.
+  @media (forced-colors: active) {
+    .dzgraph {
+      --dzgraph-background: Canvas;
+      --dzgraph-plot-background: Canvas;
+      --dzgraph-text: CanvasText;
+      --dzgraph-text-muted: CanvasText;
+      --dzgraph-axis-line: CanvasText;
+      --dzgraph-tick: CanvasText;
+      --dzgraph-grid-line: GrayText;
+      --dzgraph-focus: Highlight;
+      @for $i from 1 through 8 {
+        --dzgraph-series-#{$i}: CanvasText;
+      }
+    }
+  }
+}

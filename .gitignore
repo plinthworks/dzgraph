@@ -1,0 +1,15 @@
+node_modules/
+dist/
+packed/
+coverage/
+*.tsbuildinfo
+.DS_Store
+spikes/out/
+spikes/*/fonts/
+spikes/*/log.txt
+spikes/*/results/*.png
+dist/
+test-references/*.actual.png
+packages/*/src/**/*.js
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.js.map

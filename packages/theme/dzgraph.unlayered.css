@@ -1,0 +1,66 @@
+@layer dzgraph.theme {
+  :root {
+    --tz-bg: light-dark(#ffffff, #18181b);
+    --tz-bg-raised: light-dark(#f4f4f5, #27272a);
+    --tz-fg: light-dark(#18181b, #f4f4f5);
+    --tz-fg-muted: light-dark(#52525b, #a1a1aa);
+    --tz-border: light-dark(#d4d4d8, #3f3f46);
+    --tz-accent: light-dark(#2563eb, #60a5fa);
+  }
+}
+[data-theme=light] {
+  --tz-color-scheme: light;
+}
+
+[data-theme=dark] {
+  --tz-color-scheme: dark;
+}
+
+.dzgraph {
+  color-scheme: var(--tz-color-scheme, light dark);
+  --dzgraph-series-1: light-dark(#2a78d6, #3987e5);
+  --dzgraph-series-2: light-dark(#eb6834, #d95926);
+  --dzgraph-series-3: light-dark(#199e70, #199e70);
+  --dzgraph-series-4: light-dark(#c98500, #c98500);
+  --dzgraph-series-5: light-dark(#d55181, #d55181);
+  --dzgraph-series-6: light-dark(#008300, #0ca30c);
+  --dzgraph-series-7: light-dark(#6250d6, #9085e9);
+  --dzgraph-series-8: light-dark(#e34948, #e66767);
+  --dzgraph-background: var(--tz-bg);
+  --dzgraph-plot-background: var(--tz-bg);
+  --dzgraph-text: var(--tz-fg);
+  --dzgraph-text-muted: var(--tz-fg-muted);
+  --dzgraph-axis-line: var(--tz-border);
+  --dzgraph-tick: var(--tz-border);
+  --dzgraph-grid-line: color-mix(in oklab, var(--tz-border) 55%, var(--tz-bg));
+  --dzgraph-focus: var(--tz-accent);
+  --dzgraph-font-title: 600 16px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --dzgraph-font-subtitle: 400 13px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --dzgraph-font-axis-title: 500 12px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --dzgraph-font-tick-label: 400 12px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --dzgraph-font-legend: 400 12px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --dzgraph-font-data-label: 400 11px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
+  color: var(--tz-fg);
+  background: var(--dzgraph-background);
+}
+
+@media (forced-colors: active) {
+  .dzgraph {
+    --dzgraph-background: Canvas;
+    --dzgraph-plot-background: Canvas;
+    --dzgraph-text: CanvasText;
+    --dzgraph-text-muted: CanvasText;
+    --dzgraph-axis-line: CanvasText;
+    --dzgraph-tick: CanvasText;
+    --dzgraph-grid-line: GrayText;
+    --dzgraph-focus: Highlight;
+    --dzgraph-series-1: CanvasText;
+    --dzgraph-series-2: CanvasText;
+    --dzgraph-series-3: CanvasText;
+    --dzgraph-series-4: CanvasText;
+    --dzgraph-series-5: CanvasText;
+    --dzgraph-series-6: CanvasText;
+    --dzgraph-series-7: CanvasText;
+    --dzgraph-series-8: CanvasText;
+  }
+}

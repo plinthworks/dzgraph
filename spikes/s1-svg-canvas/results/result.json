@@ -1,0 +1,6113 @@
+{
+  "at": "2026-11-21T07:02:04.728Z",
+  "node": "v24.22.1",
+  "frames": 60,
+  "s1": {
+    "chrome": {
+      "svg/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.1,
+          "workP95": 0.3,
+          "slow": 0,
+          "firstPaint": 19.7,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.2,
+          "workP95": 0.3,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.4,
+          "workP95": 0.6,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 30.6,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.1,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 30.8,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 4.4,
+          "workP95": 6.1,
+          "slow": 0,
+          "firstPaint": 28.9,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 8.9,
+          "workP95": 11.4,
+          "slow": 0,
+          "firstPaint": 29.8,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 17.1,
+          "workP95": 23.8,
+          "slow": 0.18,
+          "firstPaint": 27.1,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 50,
+          "frameP95": 66.8,
+          "workMedian": 44.3,
+          "workP95": 59.7,
+          "slow": 0.98,
+          "firstPaint": 61.2,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 100,
+          "frameP95": 150,
+          "workMedian": 94.2,
+          "workP95": 125.7,
+          "slow": 1,
+          "firstPaint": 129.4,
+          "drawn": 582718
+        }
+      ],
+      "canvas/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 17.6,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 33.3,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.2,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.4,
+          "workP95": 1.7,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.6,
+          "workP95": 0.9,
+          "slow": 0,
+          "firstPaint": 29.5,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.5,
+          "workP95": 1.9,
+          "slow": 0,
+          "firstPaint": 28.5,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2.4,
+          "workP95": 2.9,
+          "slow": 0,
+          "firstPaint": 25,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 4.1,
+          "workP95": 5.4,
+          "slow": 0,
+          "firstPaint": 19.3,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 8.1,
+          "workP95": 11.2,
+          "slow": 0,
+          "firstPaint": 18.7,
+          "drawn": 582718
+        }
+      ],
+      "svg/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.6,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1,
+          "workP95": 1.3,
+          "slow": 0,
+          "firstPaint": 30.1,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.8,
+          "workP95": 2.1,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 3.4,
+          "workP95": 3.9,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 7.1,
+          "workP95": 8.5,
+          "slow": 0.33,
+          "firstPaint": 29.1,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 50,
+          "frameP95": 66.7,
+          "workMedian": 16.7,
+          "workP95": 18.9,
+          "slow": 1,
+          "firstPaint": 66.5,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 116.6,
+          "frameP95": 133.4,
+          "workMedian": 33.1,
+          "workP95": 35.2,
+          "slow": 1,
+          "firstPaint": 167.5,
+          "drawn": 100000
+        }
+      ],
+      "svg-dots/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.2,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 27.1,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.5,
+          "workP95": 0.8,
+          "slow": 0,
+          "firstPaint": 31.4,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.1,
+          "workP95": 1.8,
+          "slow": 0,
+          "firstPaint": 32.1,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.3,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 29.5,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2.9,
+          "workP95": 3.5,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 5.7,
+          "workP95": 7.3,
+          "slow": 0,
+          "firstPaint": 29.3,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 13.8,
+          "workP95": 15.8,
+          "slow": 0.02,
+          "firstPaint": 28.6,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 50.1,
+          "workMedian": 30.4,
+          "workP95": 36.9,
+          "slow": 0.92,
+          "firstPaint": 34.1,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83.3,
+          "frameP95": 166.7,
+          "workMedian": 77,
+          "workP95": 86.6,
+          "slow": 1,
+          "firstPaint": 169.3,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 183.3,
+          "frameP95": 350,
+          "workMedian": 155.3,
+          "workP95": 175,
+          "slow": 1,
+          "firstPaint": 185.1,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.1,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 31.6,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.3,
+          "workP95": 0.5,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.4,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 30.7,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.6,
+          "workP95": 0.8,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.1,
+          "workP95": 1.3,
+          "slow": 0,
+          "firstPaint": 31.3,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.4,
+          "workP95": 2.8,
+          "slow": 0,
+          "firstPaint": 29.7,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 6.7,
+          "workP95": 17.2,
+          "slow": 0.03,
+          "firstPaint": 28.5,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 50,
+          "workMedian": 34.3,
+          "workP95": 49.7,
+          "slow": 0.9,
+          "firstPaint": 49.3,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 99.9,
+          "frameP95": 116.7,
+          "workMedian": 88.8,
+          "workP95": 107.8,
+          "slow": 1,
+          "firstPaint": 107.5,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 200,
+          "frameP95": 250,
+          "workMedian": 199,
+          "workP95": 240,
+          "slow": 1,
+          "firstPaint": 216.4,
+          "drawn": 1000000
+        }
+      ],
+      "svg/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 22.3,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.8,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.6,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 29.1,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.8,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.5,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 64.2,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.02,
+          "firstPaint": 127.7,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.2,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.4,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.6,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.1,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 29.2,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.3,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 28.9,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 11.8,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 17.9,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.9,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 27.3,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.3,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32.9,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 89.6,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 152.9,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.03,
+          "firstPaint": 357.5,
+          "drawn": 200000
+        }
+      ],
+      "svg-dots/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 29.2,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.8,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 52.7,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 27,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 26.9,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 38.1,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.02,
+          "firstPaint": 93.3,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.02,
+          "firstPaint": 182.7,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.8,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.7,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 28.3,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 26.5,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 19.8,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 24.3,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 120.5,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 216.1,
+          "drawn": 1000000
+        }
+      ],
+      "svg/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.2,
+          "workP95": 0.5,
+          "slow": 0,
+          "firstPaint": 32.6,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.6,
+          "workP95": 1.1,
+          "slow": 0,
+          "firstPaint": 33.4,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.3,
+          "workP95": 2.1,
+          "slow": 0,
+          "firstPaint": 31.6,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.4,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 29.3,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 3.1,
+          "workP95": 3.7,
+          "slow": 0,
+          "firstPaint": 30.5,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 6.2,
+          "workP95": 6.7,
+          "slow": 0,
+          "firstPaint": 32.4,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 10.9,
+          "workP95": 11.7,
+          "slow": 0,
+          "firstPaint": 29.8,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.8,
+          "frameP95": 33.4,
+          "workMedian": 23.6,
+          "workP95": 25.6,
+          "slow": 0.47,
+          "firstPaint": 29.2,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 66.7,
+          "frameP95": 83.3,
+          "workMedian": 60.6,
+          "workP95": 64.3,
+          "slow": 1,
+          "firstPaint": 64.1,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 133.3,
+          "frameP95": 183.3,
+          "workMedian": 122.6,
+          "workP95": 129.9,
+          "slow": 1,
+          "firstPaint": 178,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.2,
+          "workP95": 0.3,
+          "slow": 0,
+          "firstPaint": 30.7,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.3,
+          "slow": 0,
+          "firstPaint": 30.6,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.2,
+          "workP95": 0.5,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.6,
+          "workP95": 1.1,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.3,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 29.6,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.6,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.2,
+          "workP95": 3.9,
+          "slow": 0,
+          "firstPaint": 30.6,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.4,
+          "workP95": 2.6,
+          "slow": 0,
+          "firstPaint": 27.9,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 5.9,
+          "workP95": 8.3,
+          "slow": 0,
+          "firstPaint": 24,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 66.7,
+          "workMedian": 11.8,
+          "workP95": 62.7,
+          "slow": 0.07,
+          "firstPaint": 30.9,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.5,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 34,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.9,
+          "workP95": 1.2,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.1,
+          "workP95": 2.5,
+          "slow": 0,
+          "firstPaint": 31.6,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 3.8,
+          "workP95": 4.7,
+          "slow": 0,
+          "firstPaint": 31.2,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 7.5,
+          "workP95": 8.7,
+          "slow": 0.35,
+          "firstPaint": 33.4,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 50,
+          "frameP95": 66.7,
+          "workMedian": 17.3,
+          "workP95": 21,
+          "slow": 1,
+          "firstPaint": 88.1,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 116.6,
+          "frameP95": 116.8,
+          "workMedian": 34.6,
+          "workP95": 41.6,
+          "slow": 1,
+          "firstPaint": 164.7,
+          "drawn": 100000
+        }
+      ],
+      "svg-dots/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 9.4,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.3,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.6,
+          "workP95": 0.8,
+          "slow": 0.02,
+          "firstPaint": 32.1,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.2,
+          "workP95": 1.6,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 5.8,
+          "workP95": 7.5,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 14.6,
+          "workP95": 16.4,
+          "slow": 0.02,
+          "firstPaint": 28.2,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 50.1,
+          "workMedian": 31.5,
+          "workP95": 35.5,
+          "slow": 0.98,
+          "firstPaint": 36.8,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83.4,
+          "frameP95": 166.7,
+          "workMedian": 79.8,
+          "workP95": 88.1,
+          "slow": 1,
+          "firstPaint": 89.1,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 183.3,
+          "frameP95": 349.9,
+          "workMedian": 155.2,
+          "workP95": 178,
+          "slow": 1,
+          "firstPaint": 336.5,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.1,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 32.1,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.3,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.3,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 31.8,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.6,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 31.9,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.3,
+          "workP95": 1.4,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 3.3,
+          "workP95": 3.4,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 33.3,
+          "workMedian": 17.3,
+          "workP95": 20.3,
+          "slow": 0.1,
+          "firstPaint": 28.4,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 50.1,
+          "workMedian": 35.7,
+          "workP95": 43.5,
+          "slow": 0.98,
+          "firstPaint": 25.8,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83.4,
+          "frameP95": 116.7,
+          "workMedian": 88.4,
+          "workP95": 109.1,
+          "slow": 1,
+          "firstPaint": 129,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 200.1,
+          "frameP95": 250,
+          "workMedian": 203.9,
+          "workP95": 242.2,
+          "slow": 1,
+          "firstPaint": 214.3,
+          "drawn": 1000000
+        }
+      ]
+    },
+    "chrome-4x": {
+      "svg/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.1,
+          "workP95": 0.6,
+          "slow": 0,
+          "firstPaint": 18.5,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.3,
+          "workP95": 0.9,
+          "slow": 0,
+          "firstPaint": 29.3,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.3,
+          "workP95": 2.4,
+          "slow": 0,
+          "firstPaint": 30.5,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.8,
+          "workP95": 4.6,
+          "slow": 0,
+          "firstPaint": 31.2,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 5.7,
+          "workP95": 8.9,
+          "slow": 0,
+          "firstPaint": 29.8,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 15,
+          "workP95": 22.9,
+          "slow": 0.12,
+          "firstPaint": 29.9,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 33.3,
+          "frameP95": 50.1,
+          "workMedian": 29.8,
+          "workP95": 45.9,
+          "slow": 0.75,
+          "firstPaint": 49.9,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 83.3,
+          "frameP95": 100.1,
+          "workMedian": 70.1,
+          "workP95": 92.5,
+          "slow": 1,
+          "firstPaint": 101.9,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 200,
+          "frameP95": 349.9,
+          "workMedian": 179.4,
+          "workP95": 239.6,
+          "slow": 1,
+          "firstPaint": 247.2,
+          "drawn": 291360
+        }
+      ],
+      "canvas/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 27.5,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 32.1,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.3,
+          "slow": 0,
+          "firstPaint": 32.1,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.1,
+          "workP95": 0.9,
+          "slow": 0,
+          "firstPaint": 31.1,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.5,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30.8,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.4,
+          "workP95": 2.3,
+          "slow": 0,
+          "firstPaint": 28.1,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 3,
+          "workP95": 4.2,
+          "slow": 0,
+          "firstPaint": 24.5,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 6.7,
+          "workP95": 8.9,
+          "slow": 0,
+          "firstPaint": 20.9,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 17.4,
+          "workP95": 23.2,
+          "slow": 0.15,
+          "firstPaint": 32.7,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 33.3,
+          "frameP95": 50.1,
+          "workMedian": 34.6,
+          "workP95": 46.4,
+          "slow": 0.83,
+          "firstPaint": 62.2,
+          "drawn": 582718
+        }
+      ],
+      "svg/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.4,
+          "workP95": 1.9,
+          "slow": 0,
+          "firstPaint": 24.4,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2.8,
+          "workP95": 3.6,
+          "slow": 0,
+          "firstPaint": 28.5,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 8,
+          "workP95": 9.8,
+          "slow": 0.42,
+          "firstPaint": 34,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 50,
+          "frameP95": 66.7,
+          "workMedian": 15.3,
+          "workP95": 18.2,
+          "slow": 1,
+          "firstPaint": 60.9,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 83.4,
+          "frameP95": 100.1,
+          "workMedian": 29.3,
+          "workP95": 31.7,
+          "slow": 1,
+          "firstPaint": 108.2,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 216.7,
+          "frameP95": 250.1,
+          "workMedian": 68.7,
+          "workP95": 76.9,
+          "slow": 1,
+          "firstPaint": 301.2,
+          "drawn": 50000
+        }
+      ],
+      "svg-dots/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.2,
+          "workP95": 0.8,
+          "slow": 0,
+          "firstPaint": 21.4,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.8,
+          "workP95": 1.3,
+          "slow": 0,
+          "firstPaint": 30.1,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2,
+          "workP95": 2.9,
+          "slow": 0,
+          "firstPaint": 30.1,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 4.3,
+          "workP95": 5.8,
+          "slow": 0,
+          "firstPaint": 27.4,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 8.4,
+          "workP95": 11.3,
+          "slow": 0,
+          "firstPaint": 26.5,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 33.3,
+          "frameP95": 33.4,
+          "workMedian": 26.7,
+          "workP95": 29.7,
+          "slow": 0.67,
+          "firstPaint": 31.3,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 66.6,
+          "frameP95": 116.6,
+          "workMedian": 55.9,
+          "workP95": 65.5,
+          "slow": 1,
+          "firstPaint": 67.7,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 133.3,
+          "frameP95": 250,
+          "workMedian": 116.9,
+          "workP95": 128.9,
+          "slow": 1,
+          "firstPaint": 127.8,
+          "drawn": 200000
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 23.8,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.2,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 30.3,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1,
+          "workP95": 1.3,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.7,
+          "workP95": 2.2,
+          "slow": 0,
+          "firstPaint": 28.8,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 3.5,
+          "workP95": 4.1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 9.7,
+          "workP95": 10.3,
+          "slow": 0,
+          "firstPaint": 25.8,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 33.3,
+          "frameP95": 33.4,
+          "workMedian": 27.2,
+          "workP95": 27.8,
+          "slow": 0.87,
+          "firstPaint": 36.8,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 66.7,
+          "frameP95": 100,
+          "workMedian": 62.7,
+          "workP95": 66.1,
+          "slow": 1,
+          "firstPaint": 67.5,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 216.7,
+          "frameP95": 233.4,
+          "workMedian": 184.1,
+          "workP95": 219.7,
+          "slow": 1,
+          "firstPaint": 234.7,
+          "drawn": 500000
+        }
+      ],
+      "svg/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 45.6,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.3,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 33.8,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 28.7,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 54.2,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 105.8,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.2,
+          "slow": 0.02,
+          "firstPaint": 254,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 700,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.1,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31.8,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.2,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.9,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 29.9,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 24.5,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 17.1,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 33.9,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 66.8,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.6,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.3,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.7,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 59.6,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 123.1,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 326.1,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.2,
+          "firstPaint": 679.5,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.4,
+          "frameP95": 50,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 1,
+          "firstPaint": 1338.5,
+          "drawn": 200000
+        }
+      ],
+      "svg-dots/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 28.5,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 34.3,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.6,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 27.8,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 28.2,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 34.8,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.02,
+          "firstPaint": 64.7,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.02,
+          "firstPaint": 127.9,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 339.8,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0.02,
+          "firstPaint": 1201.4,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.2,
+          "slow": 0,
+          "firstPaint": 29.9,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 31.5,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 28.4,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 30.7,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 25.1,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 36.7,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 70.8,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 246.3,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0,
+          "workP95": 0.1,
+          "slow": 0,
+          "firstPaint": 471.6,
+          "drawn": 1000000
+        }
+      ],
+      "svg/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.2,
+          "workP95": 0.9,
+          "slow": 0,
+          "firstPaint": 33.9,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.6,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31.9,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.8,
+          "workP95": 2.3,
+          "slow": 0,
+          "firstPaint": 31.7,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 3.9,
+          "workP95": 4.8,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 7.6,
+          "workP95": 9.2,
+          "slow": 0,
+          "firstPaint": 30.4,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 22.3,
+          "workP95": 25.1,
+          "slow": 0.42,
+          "firstPaint": 37.8,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 50,
+          "frameP95": 66.7,
+          "workMedian": 43.2,
+          "workP95": 48.1,
+          "slow": 1,
+          "firstPaint": 52.7,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 100,
+          "frameP95": 133.4,
+          "workMedian": 92,
+          "workP95": 99.1,
+          "slow": 1,
+          "firstPaint": 103.7,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 250,
+          "frameP95": 366.7,
+          "workMedian": 235.7,
+          "workP95": 246.6,
+          "slow": 1,
+          "firstPaint": 248.9,
+          "drawn": 500000
+        }
+      ],
+      "canvas/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 34.4,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 29.9,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.2,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 31.9,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.2,
+          "workP95": 0.8,
+          "slow": 0,
+          "firstPaint": 31.3,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.9,
+          "workP95": 1.3,
+          "slow": 0,
+          "firstPaint": 30.6,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.3,
+          "workP95": 2.8,
+          "slow": 0,
+          "firstPaint": 28.8,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 4.2,
+          "workP95": 4.9,
+          "slow": 0,
+          "firstPaint": 25.9,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 9.3,
+          "workP95": 9.9,
+          "slow": 0,
+          "firstPaint": 19.5,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.8,
+          "frameP95": 33.4,
+          "workMedian": 23.4,
+          "workP95": 24.5,
+          "slow": 0.47,
+          "firstPaint": 33.3,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 50,
+          "frameP95": 50.1,
+          "workMedian": 46.3,
+          "workP95": 47.6,
+          "slow": 1,
+          "firstPaint": 63.5,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.4,
+          "workP95": 1.8,
+          "slow": 0,
+          "firstPaint": 31.2,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2.7,
+          "workP95": 3.5,
+          "slow": 0,
+          "firstPaint": 30.4,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 7.2,
+          "workP95": 8.8,
+          "slow": 0.28,
+          "firstPaint": 30.8,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 49.9,
+          "frameP95": 50.1,
+          "workMedian": 14.2,
+          "workP95": 15.9,
+          "slow": 1,
+          "firstPaint": 63.5,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 83.3,
+          "frameP95": 83.4,
+          "workMedian": 26.7,
+          "workP95": 29.9,
+          "slow": 1,
+          "firstPaint": 110.9,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 200,
+          "frameP95": 216.8,
+          "workMedian": 64.7,
+          "workP95": 71.2,
+          "slow": 1,
+          "firstPaint": 297.5,
+          "drawn": 50000
+        }
+      ],
+      "svg-dots/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 0.3,
+          "workP95": 0.7,
+          "slow": 0,
+          "firstPaint": 24,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.8,
+          "workP95": 1.2,
+          "slow": 0,
+          "firstPaint": 32.2,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2,
+          "workP95": 2.9,
+          "slow": 0,
+          "firstPaint": 31.6,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 4.1,
+          "workP95": 5.6,
+          "slow": 0,
+          "firstPaint": 29.9,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 8.2,
+          "workP95": 10.9,
+          "slow": 0,
+          "firstPaint": 28.2,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 33.3,
+          "frameP95": 33.4,
+          "workMedian": 26.8,
+          "workP95": 30,
+          "slow": 0.73,
+          "firstPaint": 31.5,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 66.6,
+          "frameP95": 116.6,
+          "workMedian": 54.7,
+          "workP95": 62.1,
+          "slow": 1,
+          "firstPaint": 62.4,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 133.3,
+          "frameP95": 249.9,
+          "workMedian": 114.1,
+          "workP95": 123.6,
+          "slow": 1,
+          "firstPaint": 128.3,
+          "drawn": 200000
+        }
+      ],
+      "canvas/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.1,
+          "workP95": 0.8,
+          "slow": 0,
+          "firstPaint": 32.5,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.2,
+          "workP95": 0.8,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1,
+          "workP95": 1.4,
+          "slow": 0,
+          "firstPaint": 31.8,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2.3,
+          "workP95": 2.8,
+          "slow": 0,
+          "firstPaint": 30.9,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 4.8,
+          "workP95": 5.4,
+          "slow": 0,
+          "firstPaint": 29.6,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 15.5,
+          "workP95": 16.2,
+          "slow": 0.28,
+          "firstPaint": 24.3,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 33.3,
+          "frameP95": 50,
+          "workMedian": 31.1,
+          "workP95": 32.6,
+          "slow": 0.98,
+          "firstPaint": 36.2,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 66.7,
+          "frameP95": 100,
+          "workMedian": 65.3,
+          "workP95": 95.5,
+          "slow": 1,
+          "firstPaint": 67.5,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 216.7,
+          "frameP95": 233.4,
+          "workMedian": 210.6,
+          "workP95": 225.4,
+          "slow": 1,
+          "firstPaint": 237.6,
+          "drawn": 500000
+        }
+      ]
+    },
+    "firefox": {
+      "svg/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 16,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 29,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 5,
+          "workP95": 7,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 9,
+          "workP95": 15,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 31.4,
+          "frameP95": 34.9,
+          "workMedian": 21,
+          "workP95": 34,
+          "slow": 0.5,
+          "firstPaint": 28,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 66.7,
+          "frameP95": 99.1,
+          "workMedian": 57,
+          "workP95": 78,
+          "slow": 1,
+          "firstPaint": 94,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 133.3,
+          "frameP95": 181.6,
+          "workMedian": 114,
+          "workP95": 149,
+          "slow": 1,
+          "firstPaint": 168,
+          "drawn": 582718
+        }
+      ],
+      "canvas/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 42,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 2,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 4,
+          "workP95": 5,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 8,
+          "workP95": 10,
+          "slow": 0,
+          "firstPaint": 28,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 33.6,
+          "workMedian": 19,
+          "workP95": 25,
+          "slow": 0.18,
+          "firstPaint": 41,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 34,
+          "frameP95": 51.6,
+          "workMedian": 38,
+          "workP95": 50,
+          "slow": 0.87,
+          "firstPaint": 60,
+          "drawn": 582718
+        }
+      ],
+      "svg/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 19,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 3,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17.9,
+          "frameP95": 33.9,
+          "workMedian": 5,
+          "workP95": 6,
+          "slow": 0.3,
+          "firstPaint": 30,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 50,
+          "frameP95": 51.8,
+          "workMedian": 10,
+          "workP95": 11,
+          "slow": 1,
+          "firstPaint": 52,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 116.7,
+          "frameP95": 133.4,
+          "workMedian": 24,
+          "workP95": 26,
+          "slow": 1,
+          "firstPaint": 134,
+          "drawn": 50000
+        }
+      ],
+      "svg-dots/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 10,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 33.3,
+          "workMedian": 3,
+          "workP95": 4,
+          "slow": 0.1,
+          "firstPaint": 30,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 50,
+          "frameP95": 52,
+          "workMedian": 7,
+          "workP95": 10,
+          "slow": 1,
+          "firstPaint": 28,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 100,
+          "frameP95": 117.5,
+          "workMedian": 17,
+          "workP95": 23,
+          "slow": 1,
+          "firstPaint": 57,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 200,
+          "frameP95": 250,
+          "workMedian": 38,
+          "workP95": 42,
+          "slow": 1,
+          "firstPaint": 120,
+          "drawn": 200000
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 213,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.7,
+          "workMedian": 3,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 8,
+          "workP95": 9,
+          "slow": 0,
+          "firstPaint": 28,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 16,
+          "workP95": 17,
+          "slow": 0,
+          "firstPaint": 26,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 35.1,
+          "workMedian": 33,
+          "workP95": 34,
+          "slow": 0.97,
+          "firstPaint": 36,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83.3,
+          "frameP95": 84.9,
+          "workMedian": 82,
+          "workP95": 85,
+          "slow": 1,
+          "firstPaint": 94,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 166.7,
+          "frameP95": 168.4,
+          "workMedian": 160,
+          "workP95": 168,
+          "slow": 1,
+          "firstPaint": 173,
+          "drawn": 1000000
+        }
+      ],
+      "svg/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 17.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 46,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 84,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 171,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 29,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 43,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 63,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 54,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 140,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 31.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0.07,
+          "firstPaint": 298,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 50,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 1,
+          "firstPaint": 567,
+          "drawn": 200000
+        }
+      ],
+      "svg-dots/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.6,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 9,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 34,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.6,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 26,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 54,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 120,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 266,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 17.7,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 29,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 27,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 18.6,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 37,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 85,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 174,
+          "drawn": 1000000
+        }
+      ],
+      "svg/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 34,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 35,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 6,
+          "workP95": 9,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 11,
+          "workP95": 18,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 50,
+          "workMedian": 32,
+          "workP95": 36,
+          "slow": 0.98,
+          "firstPaint": 32,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83.6,
+          "frameP95": 100.6,
+          "workMedian": 77,
+          "workP95": 81,
+          "slow": 1,
+          "firstPaint": 91,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 166.7,
+          "frameP95": 184.4,
+          "workMedian": 147,
+          "workP95": 153,
+          "slow": 1,
+          "firstPaint": 174,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 71,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 17.8,
+          "workMedian": 3,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 5,
+          "workP95": 6,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 10,
+          "workP95": 11,
+          "slow": 0,
+          "firstPaint": 26,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 33.2,
+          "frameP95": 33.7,
+          "workMedian": 26,
+          "workP95": 27,
+          "slow": 0.57,
+          "firstPaint": 40,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 50,
+          "frameP95": 66.8,
+          "workMedian": 52,
+          "workP95": 54,
+          "slow": 1,
+          "firstPaint": 57,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 24,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 3,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 33.7,
+          "workMedian": 5,
+          "workP95": 6,
+          "slow": 0.32,
+          "firstPaint": 30,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 50,
+          "frameP95": 50.4,
+          "workMedian": 9,
+          "workP95": 10,
+          "slow": 1,
+          "firstPaint": 50,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 116.7,
+          "frameP95": 118.4,
+          "workMedian": 23,
+          "workP95": 24,
+          "slow": 1,
+          "firstPaint": 131,
+          "drawn": 50000
+        }
+      ],
+      "svg-dots/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 6,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.5,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 18.6,
+          "workMedian": 3,
+          "workP95": 4,
+          "slow": 0.03,
+          "firstPaint": 30,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 49.3,
+          "frameP95": 51.3,
+          "workMedian": 7,
+          "workP95": 11,
+          "slow": 1,
+          "firstPaint": 44,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 100,
+          "frameP95": 116.7,
+          "workMedian": 17,
+          "workP95": 22,
+          "slow": 1,
+          "firstPaint": 41,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 216.7,
+          "frameP95": 265.2,
+          "workMedian": 38,
+          "workP95": 41,
+          "slow": 1,
+          "firstPaint": 97,
+          "drawn": 200000
+        }
+      ],
+      "canvas/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 205,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 16.7,
+          "frameP95": 18.1,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 16.7,
+          "frameP95": 17.6,
+          "workMedian": 4,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 16.7,
+          "frameP95": 18,
+          "workMedian": 9,
+          "workP95": 9,
+          "slow": 0,
+          "firstPaint": 28,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 16,
+          "workP95": 18,
+          "slow": 0,
+          "firstPaint": 26,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 33.3,
+          "frameP95": 35.1,
+          "workMedian": 32,
+          "workP95": 33,
+          "slow": 0.97,
+          "firstPaint": 34,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83.3,
+          "frameP95": 85,
+          "workMedian": 80,
+          "workP95": 83,
+          "slow": 1,
+          "firstPaint": 84,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 166.7,
+          "frameP95": 167.1,
+          "workMedian": 160,
+          "workP95": 162,
+          "slow": 1,
+          "firstPaint": 170,
+          "drawn": 1000000
+        }
+      ]
+    },
+    "webkit": {
+      "svg/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 55,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 4,
+          "workP95": 6,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 8,
+          "workP95": 12,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 25,
+          "frameP95": 37,
+          "workMedian": 18,
+          "workP95": 25,
+          "slow": 0.72,
+          "firstPaint": 42,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 65,
+          "frameP95": 87,
+          "workMedian": 43,
+          "workP95": 59,
+          "slow": 1,
+          "firstPaint": 79,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 129,
+          "frameP95": 175,
+          "workMedian": 90,
+          "workP95": 121,
+          "slow": 1,
+          "firstPaint": 168,
+          "drawn": 582718
+        }
+      ],
+      "canvas/line/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 34,
+          "drawn": 584
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1166
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 17,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2916
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5828
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 11656
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 29138
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 17,
+          "workMedian": 3,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 58274
+        },
+        {
+          "n": 200000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 6,
+          "workP95": 9,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 116544
+        },
+        {
+          "n": 500000,
+          "frameMedian": 19,
+          "frameP95": 31,
+          "workMedian": 15,
+          "workP95": 20,
+          "slow": 0.32,
+          "firstPaint": 44,
+          "drawn": 291360
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 33,
+          "frameP95": 48,
+          "workMedian": 30,
+          "workP95": 40,
+          "slow": 0.93,
+          "firstPaint": 51,
+          "drawn": 582718
+        }
+      ],
+      "svg/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 3,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 25,
+          "frameP95": 26,
+          "workMedian": 6,
+          "workP95": 7,
+          "slow": 1,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 42,
+          "frameP95": 48,
+          "workMedian": 11,
+          "workP95": 12,
+          "slow": 1,
+          "firstPaint": 59,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 109,
+          "frameP95": 123,
+          "workMedian": 26,
+          "workP95": 27,
+          "slow": 1,
+          "firstPaint": 136,
+          "drawn": 50000
+        }
+      ],
+      "svg-dots/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 25,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 28,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 3,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 19,
+          "frameP95": 20,
+          "workMedian": 7,
+          "workP95": 8,
+          "slow": 0.02,
+          "firstPaint": 32,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 38,
+          "frameP95": 39,
+          "workMedian": 16,
+          "workP95": 17,
+          "slow": 1,
+          "firstPaint": 25,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 84,
+          "frameP95": 96,
+          "workMedian": 32,
+          "workP95": 35,
+          "slow": 1,
+          "firstPaint": 82,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 265,
+          "frameP95": 281,
+          "workMedian": 76,
+          "workP95": 80,
+          "slow": 1,
+          "firstPaint": 262,
+          "drawn": 500000
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 26,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 28,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 5,
+          "workP95": 5,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 25,
+          "frameP95": 26,
+          "workMedian": 22,
+          "workP95": 23,
+          "slow": 1,
+          "firstPaint": 29,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 51,
+          "frameP95": 53,
+          "workMedian": 51,
+          "workP95": 53,
+          "slow": 1,
+          "firstPaint": 39,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 129,
+          "frameP95": 132,
+          "workMedian": 128,
+          "workP95": 131,
+          "slow": 1,
+          "firstPaint": 139,
+          "drawn": 500000
+        }
+      ],
+      "svg/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 28,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 16,
+          "frameP95": 28,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0.17,
+          "firstPaint": 57,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 36,
+          "frameP95": 40,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0.97,
+          "firstPaint": 86,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 70,
+          "frameP95": 75,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 1,
+          "firstPaint": 174,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 77,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 46,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 101,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 17,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 29,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 57,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 151,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 313,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 658,
+          "drawn": 200000
+        }
+      ],
+      "svg-dots/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 25,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 17,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 27,
+          "frameP95": 28,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0.93,
+          "firstPaint": 34,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 55,
+          "frameP95": 56,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 1,
+          "firstPaint": 24,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 105,
+          "frameP95": 116,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 1,
+          "firstPaint": 88,
+          "drawn": 200000
+        }
+      ],
+      "canvas/scatter/hover": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 17,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 51,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 0,
+          "slow": 0,
+          "firstPaint": 128,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 260,
+          "drawn": 1000000
+        }
+      ],
+      "svg/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 5,
+          "workP95": 6,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 18,
+          "frameP95": 20,
+          "workMedian": 12,
+          "workP95": 13,
+          "slow": 0.02,
+          "firstPaint": 29,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 34,
+          "frameP95": 44,
+          "workMedian": 24,
+          "workP95": 25,
+          "slow": 1,
+          "firstPaint": 33,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 83,
+          "frameP95": 95,
+          "workMedian": 60,
+          "workP95": 62,
+          "slow": 1,
+          "firstPaint": 84,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 173,
+          "frameP95": 179,
+          "workMedian": 119,
+          "workP95": 125,
+          "slow": 1,
+          "firstPaint": 172,
+          "drawn": 1000000
+        }
+      ],
+      "canvas/line/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 34,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 34,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 33,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 4,
+          "workP95": 4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 8,
+          "workP95": 8,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 27,
+          "frameP95": 32,
+          "workMedian": 19,
+          "workP95": 20,
+          "slow": 0.5,
+          "firstPaint": 46,
+          "drawn": 500000
+        },
+        {
+          "n": 1000000,
+          "frameMedian": 43,
+          "frameP95": 51,
+          "workMedian": 39,
+          "workP95": 41,
+          "slow": 1,
+          "firstPaint": 93,
+          "drawn": 1000000
+        }
+      ],
+      "svg/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 29,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 3,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 29,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 23,
+          "frameP95": 24,
+          "workMedian": 6,
+          "workP95": 6,
+          "slow": 1,
+          "firstPaint": 33,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 44,
+          "frameP95": 47,
+          "workMedian": 11,
+          "workP95": 11,
+          "slow": 1,
+          "firstPaint": 60,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 112,
+          "frameP95": 118,
+          "workMedian": 27,
+          "workP95": 29,
+          "slow": 1,
+          "firstPaint": 144,
+          "drawn": 50000
+        }
+      ],
+      "svg-dots/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 27,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 17,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 3,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 19,
+          "frameP95": 21,
+          "workMedian": 7,
+          "workP95": 8,
+          "slow": 0.08,
+          "firstPaint": 33,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 39,
+          "frameP95": 41,
+          "workMedian": 15,
+          "workP95": 17,
+          "slow": 1,
+          "firstPaint": 24,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 84,
+          "frameP95": 96,
+          "workMedian": 31,
+          "workP95": 33,
+          "slow": 1,
+          "firstPaint": 84,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 267,
+          "frameP95": 282,
+          "workMedian": 75,
+          "workP95": 80,
+          "slow": 1,
+          "firstPaint": 268,
+          "drawn": 500000
+        }
+      ],
+      "canvas/scatter/resize": [
+        {
+          "n": 1000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 36,
+          "drawn": 1000
+        },
+        {
+          "n": 2000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 2000
+        },
+        {
+          "n": 5000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 5000
+        },
+        {
+          "n": 10000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 10000
+        },
+        {
+          "n": 20000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 2,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 32,
+          "drawn": 20000
+        },
+        {
+          "n": 50000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 4,
+          "workP95": 5,
+          "slow": 0,
+          "firstPaint": 30,
+          "drawn": 50000
+        },
+        {
+          "n": 100000,
+          "frameMedian": 25,
+          "frameP95": 26,
+          "workMedian": 22,
+          "workP95": 22,
+          "slow": 1,
+          "firstPaint": 28,
+          "drawn": 100000
+        },
+        {
+          "n": 200000,
+          "frameMedian": 50,
+          "frameP95": 52,
+          "workMedian": 50,
+          "workP95": 51,
+          "slow": 1,
+          "firstPaint": 35,
+          "drawn": 200000
+        },
+        {
+          "n": 500000,
+          "frameMedian": 126,
+          "frameP95": 130,
+          "workMedian": 125,
+          "workP95": 129,
+          "slow": 1,
+          "firstPaint": 129,
+          "drawn": 500000
+        }
+      ]
+    }
+  },
+  "s7": {
+    "chrome": {
+      "canvas/line/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 8.5,
+          "workP95": 11.6,
+          "slow": 0,
+          "firstPaint": 17.7,
+          "drawn": 582718
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 83.4,
+          "frameP95": 116.7,
+          "workMedian": 87,
+          "workP95": 112.3,
+          "slow": 1,
+          "firstPaint": 153.1,
+          "drawn": 5827174
+        }
+      ],
+      "canvas/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 2.1,
+          "workP95": 2.7,
+          "slow": 0,
+          "firstPaint": 27,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 33.3,
+          "workMedian": 16.3,
+          "workP95": 21.1,
+          "slow": 0.08,
+          "firstPaint": 34.2,
+          "drawn": 4762
+        }
+      ],
+      "canvas/line/zoom/m4-pyramid": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.3,
+          "workP95": 0.4,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 4290
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 0.4,
+          "workP95": 0.5,
+          "slow": 0,
+          "firstPaint": 101.6,
+          "drawn": 4126
+        }
+      ],
+      "svg/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 2.5,
+          "workP95": 3.3,
+          "slow": 0,
+          "firstPaint": 16.7,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 33.4,
+          "workMedian": 17.1,
+          "workP95": 21.9,
+          "slow": 0.1,
+          "firstPaint": 34.4,
+          "drawn": 4762
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 200,
+          "frameP95": 250,
+          "workMedian": 201.8,
+          "workP95": 245.4,
+          "slow": 1,
+          "firstPaint": 182.6,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 2266.6,
+          "frameP95": 2366.6,
+          "workMedian": 2268.2,
+          "workP95": 2359.8,
+          "slow": 1,
+          "firstPaint": 2364.8,
+          "drawn": 10000000
+        }
+      ],
+      "canvas-pixels/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.7,
+          "workMedian": 1.9,
+          "workP95": 2.4,
+          "slow": 0,
+          "firstPaint": 32.1,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 15.6,
+          "workP95": 18.2,
+          "slow": 0.02,
+          "firstPaint": 43.5,
+          "drawn": 10000000
+        }
+      ]
+    },
+    "chrome-4x": {
+      "canvas/line/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 33.4,
+          "frameP95": 50,
+          "workMedian": 35,
+          "workP95": 45.9,
+          "slow": 0.83,
+          "firstPaint": 65.7,
+          "drawn": 582718
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 333.4,
+          "frameP95": 450.1,
+          "workMedian": 340.1,
+          "workP95": 454.2,
+          "slow": 1,
+          "firstPaint": 630.6,
+          "drawn": 5827174
+        }
+      ],
+      "canvas/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 8.4,
+          "workP95": 10.8,
+          "slow": 0,
+          "firstPaint": 34.1,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 66.7,
+          "frameP95": 83.4,
+          "workMedian": 65.5,
+          "workP95": 86.1,
+          "slow": 1,
+          "firstPaint": 153.4,
+          "drawn": 4762
+        }
+      ],
+      "canvas/line/zoom/m4-pyramid": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.1,
+          "workP95": 1.5,
+          "slow": 0,
+          "firstPaint": 50.2,
+          "drawn": 4290
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 1.2,
+          "workP95": 1.8,
+          "slow": 0,
+          "firstPaint": 390.6,
+          "drawn": 4126
+        }
+      ],
+      "svg/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 11.5,
+          "workP95": 14.7,
+          "slow": 0,
+          "firstPaint": 19.8,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 66.7,
+          "frameP95": 99.9,
+          "workMedian": 68.7,
+          "workP95": 88.6,
+          "slow": 1,
+          "firstPaint": 135.3,
+          "drawn": 4762
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 449.9,
+          "frameP95": 466.7,
+          "workMedian": 439.5,
+          "workP95": 452.2,
+          "slow": 1,
+          "firstPaint": 432.3,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 4399.9,
+          "frameP95": 4466.4,
+          "workMedian": 4399.5,
+          "workP95": 4451.7,
+          "slow": 1,
+          "firstPaint": 4527.1,
+          "drawn": 10000000
+        }
+      ],
+      "canvas-pixels/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 16.8,
+          "workMedian": 7.2,
+          "workP95": 9.3,
+          "slow": 0,
+          "firstPaint": 19.1,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 66.7,
+          "frameP95": 83.3,
+          "workMedian": 65.1,
+          "workP95": 74.4,
+          "slow": 1,
+          "firstPaint": 167.3,
+          "drawn": 10000000
+        }
+      ]
+    },
+    "firefox": {
+      "canvas/line/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 33.5,
+          "frameP95": 50,
+          "workMedian": 37,
+          "workP95": 49,
+          "slow": 0.87,
+          "firstPaint": 57,
+          "drawn": 582718
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 365.4,
+          "frameP95": 483.3,
+          "workMedian": 361,
+          "workP95": 479,
+          "slow": 1,
+          "firstPaint": 518,
+          "drawn": 5827174
+        }
+      ],
+      "canvas/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.2,
+          "workMedian": 4,
+          "workP95": 5,
+          "slow": 0,
+          "firstPaint": 20,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 33.3,
+          "frameP95": 49.8,
+          "workMedian": 29,
+          "workP95": 39,
+          "slow": 0.67,
+          "firstPaint": 62,
+          "drawn": 4762
+        }
+      ],
+      "canvas/line/zoom/m4-pyramid": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.4,
+          "workMedian": 1,
+          "workP95": 2,
+          "slow": 0,
+          "firstPaint": 20,
+          "drawn": 4290
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 1,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 130,
+          "drawn": 4126
+        }
+      ],
+      "svg/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 18.3,
+          "workMedian": 4,
+          "workP95": 5,
+          "slow": 0,
+          "firstPaint": 16,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 33.3,
+          "frameP95": 50,
+          "workMedian": 30,
+          "workP95": 39,
+          "slow": 0.72,
+          "firstPaint": 76,
+          "drawn": 4762
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 166.7,
+          "frameP95": 183.3,
+          "workMedian": 170,
+          "workP95": 175,
+          "slow": 1,
+          "firstPaint": 169,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 1683.3,
+          "frameP95": 1900.1,
+          "workMedian": 1684,
+          "workP95": 1902,
+          "slow": 1,
+          "firstPaint": 1724,
+          "drawn": 10000000
+        }
+      ],
+      "canvas-pixels/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 16.7,
+          "frameP95": 17.9,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 15,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 16.7,
+          "frameP95": 33,
+          "workMedian": 18,
+          "workP95": 20,
+          "slow": 0.07,
+          "firstPaint": 46,
+          "drawn": 10000000
+        }
+      ]
+    },
+    "webkit": {
+      "canvas/line/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 33,
+          "frameP95": 47,
+          "workMedian": 29,
+          "workP95": 39,
+          "slow": 0.93,
+          "firstPaint": 55,
+          "drawn": 582718
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 935,
+          "frameP95": 1236,
+          "workMedian": 348,
+          "workP95": 444,
+          "slow": 1,
+          "firstPaint": 663,
+          "drawn": 5827174
+        }
+      ],
+      "canvas/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 604,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 14,
+          "workP95": 18,
+          "slow": 0,
+          "firstPaint": 31,
+          "drawn": 4762
+        }
+      ],
+      "canvas/line/zoom/m4-pyramid": [
+        {
+          "n": 1000000,
+          "frameMedian": 17,
+          "frameP95": 19,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 19,
+          "drawn": 4290
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 0,
+          "workP95": 1,
+          "slow": 0,
+          "firstPaint": 113,
+          "drawn": 4126
+        }
+      ],
+      "svg/line/zoom/m4": [
+        {
+          "n": 1000000,
+          "frameMedian": 17,
+          "frameP95": 18,
+          "workMedian": 2,
+          "workP95": 3,
+          "slow": 0,
+          "firstPaint": 18,
+          "drawn": 4666
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 17,
+          "frameP95": 20,
+          "workMedian": 15,
+          "workP95": 19,
+          "slow": 0.02,
+          "firstPaint": 36,
+          "drawn": 4762
+        }
+      ],
+      "canvas/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 249,
+          "frameP95": 254,
+          "workMedian": 249,
+          "workP95": 254,
+          "slow": 1,
+          "firstPaint": 257,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 2515,
+          "frameP95": 2542,
+          "workMedian": 2515,
+          "workP95": 2540,
+          "slow": 1,
+          "firstPaint": 2555,
+          "drawn": 10000000
+        }
+      ],
+      "canvas-pixels/scatter/zoom": [
+        {
+          "n": 1000000,
+          "frameMedian": 17,
+          "frameP95": 37,
+          "workMedian": 3,
+          "workP95": 37,
+          "slow": 0.17,
+          "firstPaint": 16,
+          "drawn": 1000000
+        },
+        {
+          "n": 10000000,
+          "frameMedian": 27,
+          "frameP95": 29,
+          "workMedian": 26,
+          "workP95": 29,
+          "slow": 1,
+          "firstPaint": 43,
+          "drawn": 10000000
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@dzgraph/core",
+  "version": "0.0.0",
+  "description": "Charts for showing and exploring data: the pure core (options and data in, a scene out). No DOM, no dependency.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./internal": {
+      "types": "./src/internal.ts",
+      "default": "./src/internal.ts"
+    },
+    "./package.json": "./package.json"
+  }
+}

@@ -1,0 +1,38 @@
+// The package graph (ARCHITECTURE §2): core ← dom ← (angular, dztooltip, dzgrid). The core imports no package of
+// ours; the DOM layer imports the core only; no package reaches another's sources by a relative path.
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { ROOT, rel, walk } from './files.js';
+
+const ALLOWED: Record<string, readonly string[]> = {
+  core: [],
+  dom: ['@dzgraph/core'],
+  theme: [],
+};
+
+export function specifiers(source: string): string[] {
+  return [...source.matchAll(/\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]!);
+}
+
+describe('the package graph', () => {
+  it('reads specifiers, static and dynamic', () => {
+    expect(specifiers("import { a } from '@dzgraph/core';\nimport type { B } from './b.js';\nconst c = await import('../c.js');\nimport './d.css';")).toEqual(['@dzgraph/core', './b.js', '../c.js', './d.css']);
+  });
+
+  it('every package is listed', () => {
+    const pkgs = readdirSync(join(ROOT, 'packages')).filter((p) => existsSync(join(ROOT, 'packages', p, 'package.json')));
+    expect(pkgs.filter((p) => !(p in ALLOWED))).toEqual([]);
+  });
+
+  for (const [pkg, allowed] of Object.entries(ALLOWED)) {
+    it(`@dzgraph/${pkg} imports only ${allowed.join(', ') || 'itself'}`, () => {
+      const bad = [...walk(join(ROOT, 'packages', pkg, 'src'), /\.ts$/)].flatMap((f) =>
+        specifiers(readFileSync(f, 'utf8'))
+          .filter((s) => (s.startsWith('.') ? /\.\.\/\.\.\//.test(s) && /packages|\/src\//.test(s) : !allowed.some((a) => s === a || s.startsWith(a + '/'))))
+          .map((s) => `${rel(f)}: ${s}`),
+      );
+      expect(bad).toEqual([]);
+    });
+  }
+});

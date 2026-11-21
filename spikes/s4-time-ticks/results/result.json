@@ -1,0 +1,364 @@
+{
+  "at": "2026-11-21T07:02:26.661Z",
+  "node": "v24.22.1",
+  "chrome": {
+    "cases": [
+      {
+        "zone": "Europe/Paris",
+        "day": "2026-3-29",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-28T23:00:00.000Z",
+          "hours": 23
+        }
+      },
+      {
+        "zone": "Europe/Paris",
+        "day": "2026-10-25",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-10-24T22:00:00.000Z",
+          "hours": 25
+        }
+      },
+      {
+        "zone": "America/Los_Angeles",
+        "day": "2026-3-8",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-08T08:00:00.000Z",
+          "hours": 23
+        }
+      },
+      {
+        "zone": "Pacific/Auckland",
+        "day": "2026-4-5",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-04-04T11:00:00.000Z",
+          "hours": 25
+        }
+      },
+      {
+        "zone": "Australia/Lord_Howe",
+        "day": "2026-4-5",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-04-04T13:00:00.000Z",
+          "hours": 24
+        }
+      },
+      {
+        "zone": "America/Havana",
+        "day": "2026-3-8",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-08T05:00:00.000Z",
+          "hours": 23
+        }
+      }
+    ],
+    "bench": {
+      "Europe/Paris": {
+        "median": 0,
+        "p95": 0.4,
+        "max": 0.7,
+        "maxIntlCallsPerLayout": 475
+      },
+      "Pacific/Auckland": {
+        "median": 0,
+        "p95": 0.4,
+        "max": 0.7,
+        "maxIntlCallsPerLayout": 475
+      },
+      "Australia/Lord_Howe": {
+        "median": 0,
+        "p95": 0.4,
+        "max": 0.7,
+        "maxIntlCallsPerLayout": 475
+      },
+      "UTC": {
+        "median": 0,
+        "p95": 0.4,
+        "max": 0.7,
+        "maxIntlCallsPerLayout": 475
+      }
+    }
+  },
+  "firefox": {
+    "cases": [
+      {
+        "zone": "Europe/Paris",
+        "day": "2026-3-29",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-28T23:00:00.000Z",
+          "hours": 23
+        }
+      },
+      {
+        "zone": "Europe/Paris",
+        "day": "2026-10-25",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-10-24T22:00:00.000Z",
+          "hours": 25
+        }
+      },
+      {
+        "zone": "America/Los_Angeles",
+        "day": "2026-3-8",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-08T08:00:00.000Z",
+          "hours": 23
+        }
+      },
+      {
+        "zone": "Pacific/Auckland",
+        "day": "2026-4-5",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-04-04T11:00:00.000Z",
+          "hours": 25
+        }
+      },
+      {
+        "zone": "Australia/Lord_Howe",
+        "day": "2026-4-5",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-04-04T13:00:00.000Z",
+          "hours": 24
+        }
+      },
+      {
+        "zone": "America/Havana",
+        "day": "2026-3-8",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-08T05:00:00.000Z",
+          "hours": 23
+        }
+      }
+    ],
+    "bench": {
+      "Europe/Paris": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      },
+      "Pacific/Auckland": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      },
+      "Australia/Lord_Howe": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      },
+      "UTC": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      }
+    }
+  },
+  "webkit": {
+    "cases": [
+      {
+        "zone": "Europe/Paris",
+        "day": "2026-3-29",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-28T23:00:00.000Z",
+          "hours": 23
+        }
+      },
+      {
+        "zone": "Europe/Paris",
+        "day": "2026-10-25",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-10-24T22:00:00.000Z",
+          "hours": 25
+        }
+      },
+      {
+        "zone": "America/Los_Angeles",
+        "day": "2026-3-8",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-08T08:00:00.000Z",
+          "hours": 23
+        }
+      },
+      {
+        "zone": "Pacific/Auckland",
+        "day": "2026-4-5",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-04-04T11:00:00.000Z",
+          "hours": 25
+        }
+      },
+      {
+        "zone": "Australia/Lord_Howe",
+        "day": "2026-4-5",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-04-04T13:00:00.000Z",
+          "hours": 24
+        }
+      },
+      {
+        "zone": "America/Havana",
+        "day": "2026-3-8",
+        "ok": true,
+        "detail": {
+          "dayTick": true,
+          "count": true,
+          "missing": true,
+          "twice": true
+        },
+        "got": {
+          "dayTick": "2026-03-08T05:00:00.000Z",
+          "hours": 23
+        }
+      }
+    ],
+    "bench": {
+      "Europe/Paris": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      },
+      "Pacific/Auckland": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      },
+      "Australia/Lord_Howe": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      },
+      "UTC": {
+        "median": 0,
+        "p95": 1,
+        "max": 1,
+        "maxIntlCallsPerLayout": 475
+      }
+    }
+  }
+}

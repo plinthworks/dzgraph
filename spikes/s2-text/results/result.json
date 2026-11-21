@@ -1,0 +1,187 @@
+{
+  "at": "2026-11-21T07:02:29.022Z",
+  "node": "v24.22.1",
+  "chrome": {
+    "systemUi": {
+      "family": "system-ui",
+      "ms": {
+        "canvas": 7.2,
+        "svgComputedLength": 6.4,
+        "svgBBox": 5.6,
+        "span": 4.6
+      },
+      "maxDiffPx": {
+        "svg": 0.014,
+        "span": 0.014
+      },
+      "metrics": {
+        "fontAscent": 12,
+        "fontDescent": 3,
+        "actualAscent": 8.46
+      },
+      "sample": 13.18
+    },
+    "lateBefore": {
+      "family": "Late (not loaded)",
+      "ms": {
+        "canvas": 7.3,
+        "svgComputedLength": 6.1,
+        "svgBBox": 5.3,
+        "span": 4.3
+      },
+      "maxDiffPx": {
+        "svg": 0.014,
+        "span": 0.014
+      },
+      "metrics": {
+        "fontAscent": 11,
+        "fontDescent": 3,
+        "actualAscent": 7.94
+      },
+      "sample": 10
+    },
+    "lateAfter": {
+      "family": "Late (loaded)",
+      "ms": {
+        "canvas": 3.1,
+        "svgComputedLength": 6.2,
+        "svgBBox": 5.8,
+        "span": 4.8
+      },
+      "maxDiffPx": {
+        "svg": 0.014,
+        "span": 0.014
+      },
+      "metrics": {
+        "fontAscent": 12,
+        "fontDescent": 3,
+        "actualAscent": 8.72
+      },
+      "sample": 13.08
+    },
+    "labelsChangedByLateFont": 959,
+    "loadingDoneEvent": false
+  },
+  "firefox": {
+    "systemUi": {
+      "family": "system-ui",
+      "ms": {
+        "canvas": 9,
+        "svgComputedLength": 7,
+        "svgBBox": 8,
+        "span": 7
+      },
+      "maxDiffPx": {
+        "svg": 0,
+        "span": 0
+      },
+      "metrics": {
+        "fontAscent": 12,
+        "fontDescent": 3,
+        "actualAscent": 8.46
+      },
+      "sample": 13.18
+    },
+    "lateBefore": {
+      "family": "Late (not loaded)",
+      "ms": {
+        "canvas": 2,
+        "svgComputedLength": 8,
+        "svgBBox": 8,
+        "span": 8
+      },
+      "maxDiffPx": {
+        "svg": 0,
+        "span": 0
+      },
+      "metrics": {
+        "fontAscent": 9,
+        "fontDescent": 3,
+        "actualAscent": 7.94
+      },
+      "sample": 10
+    },
+    "lateAfter": {
+      "family": "Late (loaded)",
+      "ms": {
+        "canvas": 1,
+        "svgComputedLength": 7,
+        "svgBBox": 8,
+        "span": 8
+      },
+      "maxDiffPx": {
+        "svg": 0,
+        "span": 0
+      },
+      "metrics": {
+        "fontAscent": 13,
+        "fontDescent": 3,
+        "actualAscent": 8.72
+      },
+      "sample": 13.08
+    },
+    "labelsChangedByLateFont": 959,
+    "loadingDoneEvent": false
+  },
+  "webkit": {
+    "systemUi": {
+      "family": "system-ui",
+      "ms": {
+        "canvas": 5,
+        "svgComputedLength": 16,
+        "svgBBox": 16,
+        "span": 16
+      },
+      "maxDiffPx": {
+        "svg": 1.523,
+        "span": 0.014
+      },
+      "metrics": {
+        "fontAscent": 12,
+        "fontDescent": 3,
+        "actualAscent": 8.45
+      },
+      "sample": 13.18
+    },
+    "lateBefore": {
+      "family": "Late (not loaded)",
+      "ms": {
+        "canvas": 10,
+        "svgComputedLength": 16,
+        "svgBBox": 16,
+        "span": 17
+      },
+      "maxDiffPx": {
+        "svg": 1.219,
+        "span": 0.014
+      },
+      "metrics": {
+        "fontAscent": 11,
+        "fontDescent": 3,
+        "actualAscent": 7.94
+      },
+      "sample": 10
+    },
+    "lateAfter": {
+      "family": "Late (loaded)",
+      "ms": {
+        "canvas": 2,
+        "svgComputedLength": 16,
+        "svgBBox": 15,
+        "span": 15
+      },
+      "maxDiffPx": {
+        "svg": 1.793,
+        "span": 0.014
+      },
+      "metrics": {
+        "fontAscent": 12,
+        "fontDescent": 3,
+        "actualAscent": 8.72
+      },
+      "sample": 13.08
+    },
+    "labelsChangedByLateFont": 959,
+    "loadingDoneEvent": false
+  }
+}

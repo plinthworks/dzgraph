@@ -1,0 +1,34 @@
+{
+  "name": "dzgraph-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:ci": "vitest run --maxWorkers=1",
+    "test:tz": "TZ=Pacific/Auckland vitest run --maxWorkers=2 && TZ=America/Los_Angeles vitest run --maxWorkers=2",
+    "test:browsers": "BROWSERS=all vitest run --project browser",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p packages/core/tsconfig.json --noEmit && tsc -p packages/dom/tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
+    "build": "node scripts/build.mjs",
+    "check:size": "node scripts/size.mjs",
+    "gate:step": "npm run test:ci && npm run test:tz && npm run typecheck && npm run build && npm run check:size",
+    "spike": "node spikes/all.mjs",
+    "build:theme": "node scripts/build-theme.mjs",
+    "playground": "node scripts/playground.mjs",
+    "test:reference": "node scripts/browser-reference.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@vitest/browser-playwright": "^4.1.12",
+    "esbuild": "^0.25.12",
+    "fast-check": "^4.10.3",
+    "playwright": "^1.65.1",
+    "playwright-core": "^1.65.1",
+    "sass": "^1.105.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  }
+}

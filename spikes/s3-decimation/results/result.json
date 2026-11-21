@@ -1,0 +1,514 @@
+{
+  "at": "2026-11-21T07:06:19.133Z",
+  "node": "v24.22.1",
+  "chrome": {
+    "1000000": {
+      "n": 1000000,
+      "pyramidMs": 10.4,
+      "all": {
+        "visible": 1000000,
+        "m4": {
+          "k": 4699,
+          "ms": 3.22,
+          "differ": 12174,
+          "inked": 25149,
+          "missing": 3265,
+          "extra": 40,
+          "lost": 1006,
+          "envelope": 34
+        },
+        "debug": {
+          "x": 96,
+          "ta": 196,
+          "ba": 301,
+          "tb": 196,
+          "bb": 267,
+          "dataRows": [
+            196.2,
+            302.9
+          ],
+          "cnt": 1666,
+          "kept": [
+            235.1,
+            235.2,
+            235,
+            239.1,
+            199.1,
+            199.8,
+            199.7,
+            196.2
+          ]
+        },
+        "m4x2": {
+          "k": 9337,
+          "ms": 2.68,
+          "differ": 9707,
+          "inked": 25149,
+          "missing": 2938,
+          "extra": 35,
+          "lost": 211,
+          "envelope": 30
+        },
+        "m4x4": {
+          "k": 18462,
+          "ms": 2.96,
+          "differ": 6791,
+          "inked": 25149,
+          "missing": 2186,
+          "extra": 14,
+          "lost": 129,
+          "envelope": 39
+        },
+        "m4Pyramid": {
+          "k": 4247,
+          "ms": 0.7,
+          "differ": 11002,
+          "inked": 25149,
+          "missing": 3120,
+          "extra": 114,
+          "lost": 869,
+          "envelope": 34
+        },
+        "lttb2": {
+          "k": 2400,
+          "ms": 2.18,
+          "differ": 12554,
+          "inked": 25149,
+          "missing": 4679,
+          "extra": 328,
+          "lost": 1077,
+          "envelope": 41
+        },
+        "lttb4": {
+          "k": 4800,
+          "ms": 2.04,
+          "differ": 9151,
+          "inked": 25149,
+          "missing": 3605,
+          "extra": 117,
+          "lost": 469,
+          "envelope": 39
+        }
+      },
+      "10%": {
+        "visible": 100002,
+        "m4": {
+          "k": 4504,
+          "ms": 0.44,
+          "differ": 3081,
+          "inked": 6600,
+          "missing": 692,
+          "extra": 9,
+          "lost": 74,
+          "envelope": 26
+        },
+        "debug": {
+          "x": 198,
+          "ta": 222,
+          "ba": 251,
+          "tb": 222,
+          "bb": 225,
+          "dataRows": [
+            222.1,
+            252
+          ],
+          "cnt": 167,
+          "kept": [
+            252,
+            222.1,
+            223.5,
+            223.7,
+            225.1,
+            222.7,
+            223,
+            223.3,
+            224.5
+          ]
+        },
+        "m4x2": {
+          "k": 8756,
+          "ms": 0.46,
+          "differ": 2256,
+          "inked": 6600,
+          "missing": 531,
+          "extra": 6,
+          "lost": 11,
+          "envelope": 26
+        },
+        "m4x4": {
+          "k": 16725,
+          "ms": 0.48,
+          "differ": 1382,
+          "inked": 6600,
+          "missing": 356,
+          "extra": 6,
+          "lost": 0,
+          "envelope": 26
+        },
+        "m4Pyramid": {
+          "k": 4160,
+          "ms": 0.12,
+          "differ": 2711,
+          "inked": 6600,
+          "missing": 656,
+          "extra": 21,
+          "lost": 33,
+          "envelope": 26
+        },
+        "lttb2": {
+          "k": 2400,
+          "ms": 0.22,
+          "differ": 3375,
+          "inked": 6600,
+          "missing": 1010,
+          "extra": 67,
+          "lost": 83,
+          "envelope": 27
+        },
+        "lttb4": {
+          "k": 4800,
+          "ms": 0.26,
+          "differ": 2411,
+          "inked": 6600,
+          "missing": 716,
+          "extra": 50,
+          "lost": 7,
+          "envelope": 27
+        }
+      },
+      "0.1%": {
+        "visible": 1002,
+        "m4": {
+          "k": 1001,
+          "ms": 0,
+          "differ": 1,
+          "inked": 2333,
+          "missing": 1,
+          "extra": 0,
+          "lost": 0,
+          "envelope": 0
+        },
+        "debug": {
+          "x": 198,
+          "ta": 222,
+          "ba": 251,
+          "tb": 222,
+          "bb": 224,
+          "dataRows": [
+            250.1,
+            250.1
+          ],
+          "cnt": 1,
+          "kept": [
+            250.1
+          ]
+        },
+        "m4x2": {
+          "k": 1002,
+          "ms": 0.02,
+          "differ": 0,
+          "inked": 2333,
+          "missing": 0,
+          "extra": 0,
+          "lost": 0,
+          "envelope": 0
+        },
+        "m4x4": {
+          "k": 1002,
+          "ms": 0,
+          "differ": 0,
+          "inked": 2333,
+          "missing": 0,
+          "extra": 0,
+          "lost": 0,
+          "envelope": 0
+        },
+        "m4Pyramid": {
+          "k": 1001,
+          "ms": 0.02,
+          "differ": 1,
+          "inked": 2333,
+          "missing": 1,
+          "extra": 0,
+          "lost": 0,
+          "envelope": 0
+        },
+        "lttb2": {
+          "k": 1002,
+          "ms": 0.02,
+          "differ": 0,
+          "inked": 2333,
+          "missing": 0,
+          "extra": 0,
+          "lost": 0,
+          "envelope": 0
+        },
+        "lttb4": {
+          "k": 1002,
+          "ms": 0,
+          "differ": 0,
+          "inked": 2333,
+          "missing": 0,
+          "extra": 0,
+          "lost": 0,
+          "envelope": 0
+        }
+      }
+    },
+    "10000000": {
+      "n": 10000000,
+      "pyramidMs": 89.2,
+      "all": {
+        "visible": 10000000,
+        "m4": {
+          "k": 4766,
+          "ms": 24.26,
+          "differ": 8730,
+          "inked": 16967,
+          "missing": 3086,
+          "extra": 8,
+          "lost": 839,
+          "envelope": 12
+        },
+        "debug": {
+          "x": 832,
+          "ta": 256,
+          "ba": 282,
+          "tb": 268,
+          "bb": 282,
+          "dataRows": [
+            255.8,
+            284.3
+          ],
+          "cnt": 16667,
+          "kept": [
+            284.3,
+            279.6,
+            279.7,
+            268.9,
+            270.8,
+            270.7,
+            273
+          ]
+        },
+        "m4x2": {
+          "k": 9508,
+          "ms": 22.14,
+          "differ": 7643,
+          "inked": 16967,
+          "missing": 2844,
+          "extra": 10,
+          "lost": 192,
+          "envelope": 12
+        },
+        "m4x4": {
+          "k": 18948,
+          "ms": 23.46,
+          "differ": 6333,
+          "inked": 16967,
+          "missing": 2348,
+          "extra": 7,
+          "lost": 135,
+          "envelope": 12
+        },
+        "m4Pyramid": {
+          "k": 4054,
+          "ms": 0.1,
+          "differ": 7856,
+          "inked": 16967,
+          "missing": 2909,
+          "extra": 32,
+          "lost": 632,
+          "envelope": 12
+        },
+        "lttb2": {
+          "k": 2400,
+          "ms": 19.78,
+          "differ": 9774,
+          "inked": 16967,
+          "missing": 3788,
+          "extra": 106,
+          "lost": 747,
+          "envelope": 12
+        },
+        "lttb4": {
+          "k": 4800,
+          "ms": 16.24,
+          "differ": 8025,
+          "inked": 16967,
+          "missing": 3153,
+          "extra": 50,
+          "lost": 483,
+          "envelope": 12
+        }
+      },
+      "10%": {
+        "visible": 1000002,
+        "m4": {
+          "k": 4709,
+          "ms": 2.56,
+          "differ": 3368,
+          "inked": 5111,
+          "missing": 1035,
+          "extra": 3,
+          "lost": 164,
+          "envelope": 6
+        },
+        "debug": {
+          "x": 811,
+          "ta": 85,
+          "ba": 96,
+          "tb": 86,
+          "bb": 90,
+          "dataRows": [
+            85.7,
+            96.7
+          ],
+          "cnt": 1666,
+          "kept": [
+            89.3,
+            89.5,
+            89.4,
+            89.8,
+            86.1,
+            86.2,
+            86.2
+          ]
+        },
+        "m4x2": {
+          "k": 9329,
+          "ms": 2.82,
+          "differ": 2735,
+          "inked": 5111,
+          "missing": 885,
+          "extra": 5,
+          "lost": 60,
+          "envelope": 5
+        },
+        "m4x4": {
+          "k": 18457,
+          "ms": 3.22,
+          "differ": 2153,
+          "inked": 5111,
+          "missing": 727,
+          "extra": 1,
+          "lost": 4,
+          "envelope": 6
+        },
+        "m4Pyramid": {
+          "k": 4244,
+          "ms": 0.14,
+          "differ": 3138,
+          "inked": 5111,
+          "missing": 976,
+          "extra": 16,
+          "lost": 132,
+          "envelope": 5
+        },
+        "lttb2": {
+          "k": 2400,
+          "ms": 1.84,
+          "differ": 3382,
+          "inked": 5111,
+          "missing": 1289,
+          "extra": 45,
+          "lost": 179,
+          "envelope": 5
+        },
+        "lttb4": {
+          "k": 4800,
+          "ms": 2.02,
+          "differ": 2814,
+          "inked": 5111,
+          "missing": 1074,
+          "extra": 27,
+          "lost": 64,
+          "envelope": 6
+        }
+      },
+      "0.1%": {
+        "visible": 10002,
+        "m4": {
+          "k": 3806,
+          "ms": 0.04,
+          "differ": 164,
+          "inked": 2388,
+          "missing": 1,
+          "extra": 177,
+          "lost": 0,
+          "envelope": 1
+        },
+        "debug": {
+          "x": 5,
+          "ta": 75,
+          "ba": 75,
+          "tb": 74,
+          "bb": 75,
+          "dataRows": [
+            75.2,
+            75.4
+          ],
+          "cnt": 16,
+          "kept": [
+            75.2,
+            75.2,
+            75.2,
+            75.4,
+            75.4,
+            75.4
+          ]
+        },
+        "m4x2": {
+          "k": 6621,
+          "ms": 0.1,
+          "differ": 1,
+          "inked": 2388,
+          "missing": 0,
+          "extra": 58,
+          "lost": 0,
+          "envelope": 1
+        },
+        "m4x4": {
+          "k": 9793,
+          "ms": 0.08,
+          "differ": 0,
+          "inked": 2388,
+          "missing": 0,
+          "extra": 2,
+          "lost": 0,
+          "envelope": 1
+        },
+        "m4Pyramid": {
+          "k": 3807,
+          "ms": 0.06,
+          "differ": 164,
+          "inked": 2388,
+          "missing": 1,
+          "extra": 177,
+          "lost": 0,
+          "envelope": 1
+        },
+        "lttb2": {
+          "k": 2400,
+          "ms": 0.02,
+          "differ": 51,
+          "inked": 2388,
+          "missing": 1,
+          "extra": 149,
+          "lost": 0,
+          "envelope": 1
+        },
+        "lttb4": {
+          "k": 4800,
+          "ms": 0.04,
+          "differ": 0,
+          "inked": 2388,
+          "missing": 0,
+          "extra": 72,
+          "lost": 0,
+          "envelope": 1
+        }
+      }
+    }
+  }
+}
