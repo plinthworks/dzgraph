@@ -74,10 +74,10 @@ describe('chart(): updates', () => {
     const { c, svg } = mount({ series: [{ type: 'column', id: 'a', data: [['x', 1]] }] });
     c.setData('a', [['x', 1], ['y', 2]]);
     await frame();
-    expect(svg.querySelectorAll('[data-layer="series"] rect').length).toBe(2);
+    expect(svg.querySelectorAll('[data-layer="series"] :is(rect, path)').length).toBe(2);
     c.update({ series: [{ type: 'column', id: 'a', data: [['z', 5]] }] });
     await frame();
-    expect(svg.querySelectorAll('[data-layer="series"] rect').length).toBe(1);
+    expect(svg.querySelectorAll('[data-layer="series"] :is(rect, path)').length).toBe(1);
   });
 
   it('problems: read at once, announced when they change', async () => {

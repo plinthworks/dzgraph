@@ -9,9 +9,11 @@ backwards along x.
 2. A gap (`null`, or a non-finite value) breaks the line; a point alone between two gaps is shown as a marker, else it
    would be invisible.
 3. Markers show on every point when points are far enough apart to read them (fewer points than the plot's width ÷ 12
-   px); otherwise only the line. `marker: true` or `false` forces either way.
+   px). A denser line keeps a marker about every 80 px, each series starting at its own offset, so it is told apart
+   without colour (owner 2026-11-21). `marker: true` puts one on every point, `false` none.
 4. Each series has its own marker symbol (circle, square, diamond, triangle, triangle pointing down, then again), so
-   series are told apart without colour; under `forced-colors` and in print, lines get dash patterns too.
+   series are told apart without colour. Markers are 8 px, ringed by 2 px of the chart's background so they stand
+   out on their own line and where lines cross.
 5. The line is 2 px wide, drawn inside the plot area (clipped); markers on its edge show whole.
 6. An area is a line with its surface filled down to zero (rule 1 of axes.md puts zero on the axis), translucent,
    with the line drawn on top; below zero, it fills up to zero.

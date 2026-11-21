@@ -50,11 +50,23 @@ describe('line (line-area.md)', () => {
   it('markers when points are far apart (fewer than width ÷ 12), the series\' symbol, on the points', () => {
     const ms = markers(marks(line, model([0, 10, 5], { rank: 1 })));
     expect(ms.map((m) => [m.x, m.y, m.symbol, m.point?.index])).toEqual([[0, 100, 'square', 0], [100, 0, 'square', 1], [200, 50, 'square', 2]]);
+    // 8 px, ringed by 2 px of the background (line-area.md 4).
+    expect([ms[0]!.size, ms[0]!.paint]).toEqual([8, { fill: 'series-1', stroke: 'background', strokeWidth: 2 }]);
   });
 
-  it('no markers when dense; `marker` forces either way', () => {
+  it('dense: a sparse marker about every 80 px, so the series is told apart without colour (owner 2026-11-21)', () => {
     const dense = Array.from({ length: 40 }, (_, i) => i % 10);
-    expect(markers(marks(line, model(dense)))).toEqual([]);
+    // 200 px: the first marker 40 px in (rank 0), then every 80 px or more: at most 3.
+    const ms = markers(marks(line, model(dense)));
+    expect(ms.length).toBeGreaterThanOrEqual(2);
+    expect(ms.length).toBeLessThanOrEqual(3);
+    for (let i = 1; i < ms.length; i++) expect(ms[i]!.x - ms[i - 1]!.x).toBeGreaterThanOrEqual(80);
+    // Another series starts elsewhere, so their markers do not sit on each other.
+    expect(markers(marks(line, model(dense, { rank: 1 })))[0]!.x).not.toBe(ms[0]!.x);
+  });
+
+  it('`marker` forces markers on every point, or none', () => {
+    const dense = Array.from({ length: 40 }, (_, i) => i % 10);
     expect(markers(marks(line, model(dense, { options: { type: 'line', data: [], marker: true } as never }))).length).toBe(40); // a forced option, typed loosely on purpose
     expect(markers(marks(line, model([1, 2], { options: { type: 'line', data: [], marker: false } as never })))).toEqual([]); // idem
   });
@@ -66,7 +78,7 @@ describe('line (line-area.md)', () => {
     const sets = marks(line, model(ys));
     const segs = segments(paths(sets)[0]!);
     expect(segs.filter((s) => s[0] === 'M').length).toBe(3);
-    expect(markers(sets).map((m) => m.point?.index)).toEqual([11]);
+    expect(markers(sets).map((m) => m.point?.index)).toContain(11);
   });
 
   it('a long series is decimated: at most a handful of points per pixel column, extremes kept', () => {
@@ -96,6 +108,8 @@ describe('columns (columns-bars.md)', () => {
     const rs = rects(marks(column, model([5, 10]), { frame: { x: cats(2), y: Y, orientation: 'vertical' } }));
     expect(rs.map((r) => [r.x, r.y, r.width, r.height, r.point?.index])).toEqual([[10, 50, 80, 50, 0], [110, 0, 80, 100, 1]]);
     expect(rs[0]!.paint).toEqual({ fill: 'series-1' });
+    // The free end rounded by 4 px, the base straight (owner 2026-11-21).
+    expect(rs.map((r) => [r.radius, r.roundEnd])).toEqual([[4, 'y-min'], [4, 'y-min']]);
   });
 
   it('two series side by side, a tenth of a column between them, in reading order', () => {
@@ -109,6 +123,8 @@ describe('columns (columns-bars.md)', () => {
     const Ysigned = linearScale([-10, 10], [100, 0]);
     const rs = rects(marks(column, model([-5, 0.001, 0]), { frame: { x: cats(3), y: Ysigned, orientation: 'vertical' } }));
     expect(rs.map((r) => [r.y, r.height])).toEqual([[50, 25], [49, 1]]);
+    // A negative column's free end is its bottom; a 1 px column cannot be rounded more than 1 px.
+    expect(rs.map((r) => [r.roundEnd, r.radius])).toEqual([['y-max', 4], ['y-min', 1]]);
   });
 });
 
@@ -116,7 +132,7 @@ describe('bars (columns-bars.md 4)', () => {
   it('categories down, values from the start side along x', () => {
     const frame = { x: categoryScale(2, [0, 100]), y: linearScale([0, 10], [0, 200]), orientation: 'horizontal' as const };
     const rs = rects(marks(bar, model([5, 10]), { frame }));
-    expect(rs.map((r) => [r.x, r.y, r.width, r.height])).toEqual([[0, 5, 100, 40], [0, 55, 200, 40]]);
+    expect(rs.map((r) => [r.x, r.y, r.width, r.height, r.roundEnd])).toEqual([[0, 5, 100, 40, 'x-max'], [0, 55, 200, 40, 'x-max']]);
   });
 });
 

@@ -62,6 +62,25 @@ function markerPath(symbol: string, x: number, y: number, size: number): string 
   return `M${pts.map(([a, b]) => `${num(a!)} ${num(b!)}`).join('L')}Z`;
 }
 
+/** A rectangle with the corners of one edge rounded, drawn clockwise from a corner of the straight edge opposite. */
+function roundedEnd(x: number, y: number, w: number, h: number, radius: number, end: 'x-min' | 'x-max' | 'y-min' | 'y-max'): string {
+  const r = Math.min(radius, w / 2, h / 2, end === 'y-min' || end === 'y-max' ? h : w);
+  const a = (tx: number, ty: number) => `A${num(r)} ${num(r)} 0 0 1 ${num(tx)} ${num(ty)}`;
+  const p = (px: number, py: number, cmd = 'L') => `${cmd}${num(px)} ${num(py)}`;
+  const x2 = x + w;
+  const y2 = y + h;
+  switch (end) {
+    case 'y-min':
+      return `${p(x, y2, 'M')}${p(x, y + r)}${a(x + r, y)}${p(x2 - r, y)}${a(x2, y + r)}${p(x2, y2)}Z`;
+    case 'y-max':
+      return `${p(x2, y, 'M')}${p(x2, y2 - r)}${a(x2 - r, y2)}${p(x + r, y2)}${a(x, y2 - r)}${p(x, y)}Z`;
+    case 'x-max':
+      return `${p(x, y, 'M')}${p(x2 - r, y)}${a(x2, y + r)}${p(x2, y2 - r)}${a(x2 - r, y2)}${p(x, y2)}Z`;
+    case 'x-min':
+      return `${p(x2, y2, 'M')}${p(x + r, y2)}${a(x, y2 - r)}${p(x, y + r)}${a(x + r, y)}${p(x2, y)}Z`;
+  }
+}
+
 /** An annular sector: radians clockwise from twelve o'clock. */
 function arcPath(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
   const at = (r: number, a: number) => `${num(cx + r * Math.sin(a))} ${num(cy - r * Math.cos(a))}`;
@@ -78,6 +97,7 @@ export function svgOf(p: Primitive, opts: SvgOptions = {}): SvgElementSpec {
     case 'path':
       return { tag: 'path', attrs: { d: pathString(p.path), ...paint } };
     case 'rect':
+      if (p.roundEnd && p.radius) return { tag: 'path', attrs: { d: roundedEnd(p.x, p.y, p.width, p.height, p.radius, p.roundEnd), ...paint } };
       return { tag: 'rect', attrs: { x: num(p.x), y: num(p.y), width: num(p.width), height: num(p.height), ...(p.radius ? { rx: num(p.radius) } : {}), ...paint } };
     case 'line':
       return { tag: 'line', attrs: { x1: num(p.x1), y1: num(p.y1), x2: num(p.x2), y2: num(p.y2), ...paint } };

@@ -78,7 +78,10 @@ export interface RectPrimitive extends PrimitiveBase {
   readonly y: number;
   readonly width: number;
   readonly height: number;
+  /** Corner radius: every corner, or only those of `roundEnd`. */
   readonly radius?: number;
+  /** The one edge whose corners are rounded (a column's free end; its base stays straight). */
+  readonly roundEnd?: 'x-min' | 'x-max' | 'y-min' | 'y-max';
 }
 
 export interface LinePrimitive extends PrimitiveBase {

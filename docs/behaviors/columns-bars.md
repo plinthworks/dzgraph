@@ -15,7 +15,8 @@ very small values; many categories.
 5. Hidden series give their room back: the remaining columns share the band (Phase 2 animates it).
 6. So many categories that a column would be thinner than 1 px: columns stay 1 px wide and may touch; past 2 000 drawn
    columns they are painted on a Canvas (ADR 0002), with the same look.
-7. Square corners in Phase 1 (rounded ends are a theme setting to come).
+7. The free end of a column is rounded by 4 px (less when the column is thinner or shorter), its base stays straight
+   on the zero line (owner 2026-11-21). A column the plot cuts is not rounded where it is cut.
 
 ## Where DzGraph differs on purpose
 - Rule 4: in right to left, bars grow from the right (the start side), as text does.

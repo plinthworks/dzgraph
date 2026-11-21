@@ -52,7 +52,8 @@ try {
             continue;
           }
           const d = difference(decodePng(readFileSync(file)), decodePng(shot));
-          const ok = d <= 0.002;
+          // Two runs in the same browser draw the same pixels: a tight threshold, so a real change never passes.
+          const ok = d <= 0.0002;
           if (!ok) {
             failed++;
             writeFileSync(file.replace(/\.png$/, '.actual.png'), shot);

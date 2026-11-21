@@ -19,8 +19,8 @@ values that cross zero.
    only, the other end is still rounded to a tick (`min: 0` over data 13–87: 0 to 100). A bound on the wrong side
    of the data (`min` above every value) is reported (`invalid-option`) and left out.
 5. One value only, or all values equal: the axis is centred on the value with a round step around it (5 → 4–6).
-   With rule 1, a column of 5 gets 0–5 (*changed 2026-11-21, review: the column's top on the last gridline; to
-   confirm with the owner*). Value 0 alone: 0–1.
+   With rule 1, a column of 5 gets 0–5 (owner 2026-11-21: the column's top on the last gridline). Value 0 alone:
+   0–1.
 6. No data at all: the axes are drawn without labels, and the plot area says so (« Aucune donnée », translated).
 
 ### Ticks

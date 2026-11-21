@@ -98,6 +98,11 @@ describe('sceneToSvg', () => {
     );
   });
 
+  it('a rectangle with one rounded end is a path: base straight, the free end\'s corners turned', () => {
+    const one: Scene = { ...tiny, layers: [{ id: 'series', groups: [{ sceneId: 'g', painter: 'svg', items: [{ kind: 'rect', sceneId: 'r', paint: { fill: 'series-1' }, x: 10, y: 20, width: 30, height: 40, radius: 4, roundEnd: 'y-min' }] }] }] };
+    expect(sceneToSvg(one)).toContain('<path d="M10 60L10 24A4 4 0 0 1 14 20L36 20A4 4 0 0 1 40 24L40 60Z" fill="var(--dzgraph-series-1)"/>');
+  });
+
   it('colours and fonts resolved for an export', () => {
     const svg = sceneToSvg(tiny, { resolve: (t) => `[${t}]`, font: (r) => `{${r}}` });
     expect(svg).toContain('fill="[background]"');

@@ -33,12 +33,16 @@ CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du c
 des choses, on a le temps », « tu continues, ne t'arrête pas » (work through the steps, report at each). Nothing is
 committed yet: commit only when the owner asks.
 
+## Owner decisions after the close (2026-11-21)
+
+- Budgets: measure + 5 % (`size-budget.json`); « tu peux augmenter la taille, pas besoin de ma validation » — raise when
+  needed, say so. Core raised 4 500 → 4 900 the same day (rounded ends, sparse markers, `allTypes`).
+- Dense lines: sparse markers about every 80 px (line-area.md 3); markers 8 px with a 2 px background ring.
+- A single column of 5: axis 0–5. Columns' free end rounded 4 px. Dual value axes kept.
+- Reference images: threshold tightened to 0.02 % of pixels (0.2 % let real changes pass).
+- Not reproduced: one failure of the decimation property in a browser run (log not kept); 27 000 browser cases and
+  80 000 node cases passed since. If it returns, fast-check prints the seed: replay it.
+
 ## Waiting for the owner
 
-- S6 listening (screen reader patterns A and B).
-- Size budgets (after Phase 1): measured one line chart 17.0 KB gz in an app, every Phase 1 type 17.7 KB, theme 0.7 KB.
-- axes.md 5: a single column of 5 now gives an axis 0–5 (the sheet said 0–6).
-- The identity of dense lines without colour (Phase 2 question in the plan).
-- The dataviz method flags two things we chose otherwise, to confirm: dual value axes (D.2 keeps them; the method
-  calls them the first chart mistake) and square column ends (columns-bars.md 7; the method rounds the free end by
-  4 px).
+- S6 listening (screen reader patterns A and B): `node spikes/s6-screen-reader/serve.mjs`.

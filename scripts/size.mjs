@@ -13,8 +13,10 @@ const budget = JSON.parse(readFileSync(`${root}size-budget.json`, 'utf8'));
 
 let over = 0;
 for (const [name, { file, maxGzip, external = [] }] of Object.entries(budget.entries)) {
-  const out = await build({ entryPoints: [root + file], bundle: true, minify: true, format: 'esm', target: 'es2022', write: false, treeShaking: true, external });
-  const code = out.outputFiles[0].contents;
+  // A stylesheet is measured as it ships; a script bundled and minified as an app would.
+  const code = file.endsWith('.css')
+    ? readFileSync(root + file)
+    : (await build({ entryPoints: [root + file], bundle: true, minify: true, format: 'esm', target: 'es2022', write: false, treeShaking: true, external })).outputFiles[0].contents;
   const gz = gzipSync(code, { level: 9 }).length;
   const ok = maxGzip === null || gz <= maxGzip;
   if (!ok) over++;

@@ -20,6 +20,8 @@ declare module '../options.js' {
 /** A fifth of the band is left around each group; a tenth of a column between columns (columns-bars.md 1). */
 const GROUP_SHARE = 0.8;
 const COLUMN_GAP = 0.1;
+/** The free end's corners (owner 2026-11-21: rounded by 4 px, the base straight). */
+const END_RADIUS = 4;
 
 /** The smallest step between two x values: a band's width when the x axis is not one of categories. */
 function smallestStep(x: Float64Array): number {
@@ -62,16 +64,21 @@ function columnMarks<O extends SeriesBase<string, unknown>>(ctx: MarkContext<O, 
     // A value that is not zero is at least 1 px (columns-bars.md 3), grown away from zero.
     if (Math.abs(b - a) < 1) b = a + (b < a ? -1 : 1);
     a = clamp(a);
+    const cut = clamp(b) !== b;
     b = clamp(b);
     if (a === b) continue;
     const lo = Math.min(a, b);
     const size = Math.abs(b - a);
     const point = { seriesId: s.id, index: i };
     const id = sceneId('s', s.id, 'c', i);
+    // The free end is rounded, unless the plot cut it (that is not the column's end).
+    const radius = cut ? 0 : Math.min(END_RADIUS, width / 2, size);
+    const end: NonNullable<RectPrimitive['roundEnd']> = across ? (b < a ? 'y-min' : 'y-max') : b > a ? 'x-max' : 'x-min';
+    const round = radius > 0 ? { radius, roundEnd: end } : {};
     rects.push(
       across
-        ? { kind: 'rect', sceneId: id, paint: { fill: s.color }, x: start, y: lo, width, height: size, point }
-        : { kind: 'rect', sceneId: id, paint: { fill: s.color }, x: lo, y: start, width: size, height: width, point },
+        ? { kind: 'rect', sceneId: id, paint: { fill: s.color }, x: start, y: lo, width, height: size, point, ...round }
+        : { kind: 'rect', sceneId: id, paint: { fill: s.color }, x: lo, y: start, width: size, height: width, point, ...round },
     );
   }
   return rects.length ? [{ layer: 'series', role: 'marks', items: rects }] : [];

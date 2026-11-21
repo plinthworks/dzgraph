@@ -12,7 +12,7 @@ Elles priment sur le reste du document quand il dit autre chose.
 | Sujet | Décision |
 |---|---|
 | D.1 Rendu | SVG par défaut ; Canvas automatiquement pour les grosses séries (seuil mesuré en Phase 0, S1). |
-| D.2 Périmètre v1 | Cartésiens (ligne, aire, colonnes/barres groupées et empilées, nuage, combinés, double axe), secteurs/anneau/jauge, séries temporelles (fuseaux, zoom, navigateur, gros volumes), sparklines. |
+| D.2 Périmètre v1 | Cartésiens (ligne, aire, colonnes/barres groupées et empilées, nuage, combinés, double axe — gardé en connaissance de cause, 2026-11-21, bien que la méthode dataviz le déconseille), secteurs/anneau/jauge, séries temporelles (fuseaux, zoom, navigateur, gros volumes), sparklines. |
 | D.3 Interactions v1 | Légende cliquable, infobulle partagée, zoom/déplacement, export PNG/SVG/CSV/impression fait maison (aucun service distant), accessibilité avancée (clavier point à point, lecteur d'écran, tableau de données équivalent). |
 | D.4 Paquets | `core`, `dom`, `theme`, `angular`, pont `dztooltip`, pont `dzgrid`. |
 | D.5 API | Objet d'options typé : `chart(el, options)` puis `update(partiel)`. |
