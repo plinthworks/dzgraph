@@ -30,8 +30,8 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure
-des choses, on a le temps », « tu continues, ne t'arrête pas » (work through the steps, report at each). Nothing is
-committed yet: commit only when the owner asks.
+des choses, on a le temps », « tu continues, ne t'arrête pas » (work through the steps, report at each). Commit only when
+the owner asks (first commits 2026-11-21: `2d6a647`, `685e04f`).
 
 ## Owner decisions after the close (2026-11-21)
 
