@@ -46,7 +46,8 @@ describe('review 13: drawn once at creation', () => {
       const el = mount(style);
       let paints = 0;
       const watch = new MutationObserver((records) => (paints += records.filter((r) => r.attributeName === 'viewBox').length));
-      const c = chart(el, { series: [{ type: 'line', data: [1, 2] }] }, { types: [line] });
+      // Without animation: what is counted here is drawings, not animation frames.
+      const c = chart(el, { series: [{ type: 'line', data: [1, 2] }], animation: false }, { types: [line] });
       made.push({ el, c });
       watch.observe(el.querySelector('svg')!, { attributes: true });
       for (let i = 0; i < 4; i++) await frame();

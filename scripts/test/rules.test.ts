@@ -54,7 +54,7 @@ describe('the rules catch what is planted', () => {
 });
 
 describe('the rules hold', () => {
-  for (const [pkg, text] of [['core', false], ['dom', true]] as const) {
+  for (const [pkg, text] of [['core', false], ['dom', true], ['angular', true]] as const) {
     it(`in every source of @dzgraph/${pkg}`, () => {
       const src = join(ROOT, `packages/${pkg}/src`);
       const found = [...walk(src, /\.ts$/)].flatMap((f) =>

@@ -141,7 +141,8 @@ export function sceneToSvg(scene: Scene, opts: SvgOptions & { readonly prefix?: 
     if (!layer.groups.length) continue;
     out += `<g data-layer="${layer.id}">`;
     for (const g of layer.groups) {
-      out += g.clip ? `<g clip-path="url(#${clipId(prefix, clipIndex(clips, g.clip))})">` : '<g>';
+      const opacity = g.opacity !== undefined && g.opacity !== 1 ? ` opacity="${num(g.opacity)}"` : '';
+      out += g.clip ? `<g clip-path="url(#${clipId(prefix, clipIndex(clips, g.clip))})"${opacity}>` : `<g${opacity}>`;
       for (const p of g.items) {
         const e = svgOf(p, opts);
         const attrs = Object.entries(e.attrs).map(([k, v]) => ` ${k}="${escape(v)}"`).join('');

@@ -8,6 +8,7 @@ import { ROOT, rel, walk } from './files.js';
 const ALLOWED: Record<string, readonly string[]> = {
   core: [],
   dom: ['@dzgraph/core'],
+  angular: ['@dzgraph/core', '@dzgraph/dom', '@angular/core'],
   theme: [],
 };
 

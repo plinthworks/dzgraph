@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.spec.json",
+  "compilerOptions": {
+    "useDefineForClassFields": false
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["dist/**", "node_modules/**"],
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInjectionParameters": true
+  }
+}

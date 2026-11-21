@@ -14,3 +14,10 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [scatter.md](scatter.md) — scatter plots | 1 |
 | [legend.md](legend.md) — the legend, drawn (Phase 1); clicked (Phase 2) | 1 |
 | [direction.md](direction.md) — right to left | 1 |
+| [hover-tooltip.md](hover-tooltip.md) — hover, crosshair, tooltip, highlight, touch | 2 |
+| [legend-interaction.md](legend-interaction.md) — the legend clicked and focused | 2 |
+| [keyboard.md](keyboard.md) — the keyboard, point by point | 2 |
+| [screen-reader.md](screen-reader.md) — summary, points, live region | 2 |
+| [data-table.md](data-table.md) — the table equivalent | 2 |
+| [animation.md](animation.md) — appearing and updating | 2 |
+| [angular.md](angular.md) — `<dz-chart>` | 2 |

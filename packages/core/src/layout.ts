@@ -74,6 +74,8 @@ export interface AxisLayout {
 
 export interface LegendItemLayout {
   readonly seriesId: string;
+  /** The whole item (sign and name): the target of a click or a focus ring. */
+  readonly box: Rect;
   readonly sign: Rect;
   readonly label: PlacedText;
   readonly hidden: boolean;
@@ -336,6 +338,7 @@ function arrangeLegend(rows: LegendEntry[][], area: Rect, align: 'start' | 'cent
       const labelX = dir === 'ltr' ? signX + SIGN_WIDTH + SIGN_GAP : signX - SIGN_GAP;
       items.push({
         seriesId: e.seriesId,
+        box: { x: ix, y, width: e.width, height: rowH },
         sign: { x: signX, y: y + (rowH - SIGN_HEIGHT) / 2, width: SIGN_WIDTH, height: SIGN_HEIGHT },
         label: { text: e.text, x: labelX, y: y + rowH / 2, font: 'legend', anchor: 'start', baseline: 'middle', dir },
         hidden: e.hidden,

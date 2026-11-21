@@ -71,19 +71,35 @@ function theme() {
   extras('theme');
 }
 
-// Order matters: the DOM layer compiles against the core's declarations.
+function angular() {
+  const dir = pkg('angular');
+  rmSync(join(dir, 'dist'), { recursive: true, force: true });
+  run('npx', ['ng-packagr', '-p', 'ng-package.json', '-c', 'tsconfig.lib.json'], dir);
+  const file = join(dir, 'dist', 'package.json');
+  const manifest = read(file);
+  delete manifest.main;
+  delete manifest.types;
+  Object.assign(manifest, shared());
+  manifest.dependencies = internal(manifest.dependencies);
+  writeFileSync(file, JSON.stringify(manifest, null, 2) + '\n');
+  extras('angular');
+}
+
+// Order matters: the DOM layer compiles against the core's declarations, Angular against both.
 typescript('core');
 typescript('dom');
+angular();
 theme();
 
 let bad = 0;
-for (const name of ['core', 'dom', 'theme']) {
+for (const name of ['core', 'dom', 'angular', 'theme']) {
   const m = read(join(pkg(name), 'dist', 'package.json'));
   if (JSON.stringify(m).includes('src/')) {
     console.error(`packages/${name}/dist/package.json still points at src/`);
     bad++;
   }
-  const foreign = Object.keys(m.dependencies ?? {}).filter((d) => !d.startsWith('@dzgraph/'));
+  // tslib is the one dependency Angular's compiled output needs (DzTooltip's angular package has it too).
+  const foreign = Object.keys(m.dependencies ?? {}).filter((d) => !d.startsWith('@dzgraph/') && !(name === 'angular' && d === 'tslib'));
   if (foreign.length) {
     console.error(`@dzgraph/${name} has a runtime dependency (${foreign.join(', ')}): it must have none`);
     bad++;
@@ -94,4 +110,4 @@ if (Object.keys(read(join(pkg('core'), 'dist', 'package.json')).dependencies ?? 
   bad++;
 }
 if (bad) process.exit(1);
-console.log('\nBuilt: packages/{core,dom,theme}/dist');
+console.log('\nBuilt: packages/{core,dom,angular,theme}/dist');

@@ -103,6 +103,74 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     background: var(--dzgraph-background);
   }
 
+  // The tooltip (hover-tooltip.md 6–7): a raised card, text in text colours, values aligned.
+  .dzgraph-tooltip {
+    z-index: 1;
+    padding: 6px 10px;
+    color: var(--tz-fg);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px color-mix(in oklab, var(--tz-fg) 14%, transparent);
+    white-space: nowrap;
+  }
+
+  .dzgraph-tooltip-heading {
+    margin-block-end: 4px;
+    color: var(--tz-fg-muted);
+  }
+
+  .dzgraph-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.6;
+  }
+
+  .dzgraph-tooltip-value {
+    margin-inline-start: auto;
+    padding-inline-start: 16px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Focus: the legend's buttons and the points (legend-interaction.md 2, keyboard.md 4) show a ring in the focus colour.
+  .dzgraph-legend-button,
+  .dzgraph-point {
+    outline: none;
+  }
+
+  .dzgraph-legend-button:focus-visible {
+    stroke: var(--dzgraph-focus);
+    stroke-width: 2;
+  }
+
+  // Shown under the chart when `dataTable: true` (data-table.md 2).
+  .dzgraph-table {
+    border-collapse: collapse;
+    margin-block-start: 8px;
+    font: var(--dzgraph-font-tick-label);
+    color: var(--tz-fg);
+
+    caption {
+      text-align: start;
+      color: var(--tz-fg-muted);
+    }
+
+    th,
+    td {
+      padding: 2px 8px;
+      border-block-end: 1px solid var(--tz-border);
+      text-align: end;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th[scope='row'],
+    thead th:first-child {
+      text-align: start;
+    }
+  }
+
   // Forced colours (Windows high contrast): the system's colours; series told apart by their symbols and dashes.
   @media (forced-colors: active) {
     .dzgraph {
@@ -114,6 +182,11 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
       --dzgraph-tick: CanvasText;
       --dzgraph-grid-line: GrayText;
       --dzgraph-focus: Highlight;
+
+      .dzgraph-tooltip {
+        border-color: CanvasText;
+      }
+
       @for $i from 1 through 8 {
         --dzgraph-series-#{$i}: CanvasText;
       }

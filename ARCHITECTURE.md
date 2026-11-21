@@ -18,7 +18,7 @@ Elles priment sur le reste du document quand il dit autre chose.
 | D.5 API | Objet d'options typé : `chart(el, options)` puis `update(partiel)`. |
 | D.6 Animation | Faite maison, coupée par `prefers-reduced-motion`, avec un hook `animate` comme DzTooltip. |
 | D.7 Variables CSS | `--dzgraph-*` (propres) et `--tz-*` (palette partagée de la famille). |
-| D.8 Dépôt | git local seulement jusqu'à la première version. |
+| D.8 Dépôt | git local au départ ; sur GitHub depuis le 2026-11-21 (`git@github.com:plinthworks/dzgraph.git`, branche `main`), à la demande du propriétaire. |
 | D.9 Pas de Three.js | Ni Three.js ni autre moteur. Si le Canvas ne suffit pas (S7), on écrit notre propre peintre WebGL2, réservé au calque des séries (`@dzgraph/dom/webgl`, sans dépendance). |
 | D.10 Droite à gauche | La légende et les titres suivent le sens d'écriture ; l'axe x n'est pas inversé par défaut (option `mirror`). |
 | D.11 Hauteur | Elle vient du conteneur ; repli `aspectRatio` quand le conteneur n'a pas de hauteur. |
@@ -32,6 +32,7 @@ Elles priment sur le reste du document quand il dit autre chose.
 | D.20 Nuages denses (S7) | Le peintre WebGL2 pour les nuages et bulles denses (≥ ~1 M points) entre **dans la 1.0** ; ses fondations (tampons, shaders, choix des contextes) servent ensuite la 3D (D.18). |
 | D.21 Lasso exact (S8) | Objectif : sélection **exacte en direct** même à 1 M points, en ne retestant que les cases touchées par le nouveau segment du lasso ; l'aperçu par cases ne sert que si la mesure de la Phase 5 montre qu'on n'y arrive pas. |
 | D.22 Exigence de qualité | « Du code craft » : voir §15. |
+| D.23 Tableau et zoom (2026-11-21) | Zoomer sert à montrer une partie : par défaut le tableau de données (et l'export CSV, Phase 6) suit la **plage visible** ; un bouton bascule sur **toutes les données**, pour voir les deux. Choix de l'app par option. |
 | D.16 Liberté de l'utilisateur | « Un peu » : depuis un petit menu, il change le type (ligne, aire, colonnes), l'agrégation et l'échelle. Pas d'éditeur de graphiques complet. |
 
 ## 1. Technologies
@@ -68,7 +69,8 @@ point d'entrée « tout inclus » pour qui ne compte pas les octets. Une app ne 
 connaît aucun type en dur. C'est fixé dès la Phase 1 pour que les vagues 1.x n'aient rien à casser.
 
 Le cœur a deux points d'entrée : `@dzgraph/core` (public, semver) et `@dzgraph/core/internal` (pour nos propres paquets
-seulement, sans promesse avant 1.0 : `normalize`, `layout`, `composeScene`, `svgOf`, le contrat des types). Graphe d'imports : `core` ← `dom` ← (`angular`, `dztooltip`, `dzgrid`). Un test le vérifie. Les ponts déclarent des
+seulement, sans promesse avant 1.0 : `normalize`, `layout`, `composeScene`, `svgOf`, le contrat des types). `@dzgraph/angular`
+importe `core` (types, `allTypes`) et `dom`. Graphe d'imports : `core` ← `dom` ← (`angular`, `dztooltip`, `dzgrid`). Un test le vérifie. Les ponts déclarent des
 types structurels (pas d'import de DzGrid à l'exécution), comme `@dztooltip/dzgrid`.
 
 ## 3. Le principe : une scène, plusieurs sorties
@@ -117,7 +119,13 @@ options + données ──normalize──▶ Model ──layout(size, measure)─
 | `svg.ts` | `svgOf` (une primitive → un élément, partagé avec le peintre du DOM) et `sceneToSvg(scene, { resolve, font, prefix })`. |
 | `paint.ts` | le seul module qui écrit une couleur en CSS (`var()`, `color-mix()` de variables). |
 | `dir.ts` | le seul module qui sait quel côté physique est le début. |
-| `hit.ts`, `stack.ts`, `a11y.ts`, `csv.ts`, `aggregate.ts`, `view.ts` (suite) | Phases 2 à 6, comme prévu. |
+| `hit.ts` | le point visé : partagé par x (recherche dichotomique), par marque (colonne, bande, point à 24 px) — Phase 2. |
+| `points.ts` | `pointAt` (la position d'un point, une seule réponse pour le survol, le clavier, les tests de visée) et `withKey`. |
+| `navigate.ts` | la navigation au clavier (flèches selon l'écran, Début/Fin, pages) et l'ordre des points valués. |
+| `tooltip.ts` | le contenu de l'infobulle, en données. |
+| `a11y.ts` | le résumé, les libellés des points, `dataRows` (valeurs brutes, pour le CSV de la Phase 6) et `dataTable` (texte). |
+| `interpolate.ts` | les scènes entre deux états, et l'état de départ de l'apparition (`appearFrom`). |
+| `stack.ts`, `csv.ts`, `aggregate.ts` | Phases 4 à 6, comme prévu. |
 
 La pureté est imposée par un test (`purity.test.ts`, repris de DzGrid) qui se teste lui-même sur des violations plantées.
 
@@ -145,6 +153,12 @@ La pureté est imposée par un test (`purity.test.ts`, repris de DzGrid) qui se 
   `pointFocus`, `legendToggle`, `rangeChange`, `problem`.
 - **Sparkline** (`@dzgraph/dom/sparkline`) : ligne, aire, colonnes, gagnant/perdant ; SVG seul, sans axes ni
   interactions, pour des milliers de cellules ; budget de taille propre.
+
+*Fichiers réels après la Phase 2 (2026-11-21) :* `chart.ts` (les étapes : lecture, mise en page, scène, aides),
+`svg-painter.ts` derrière l'interface `painter.ts` (Canvas et WebGL2 en Phase 3), `hover.ts` (survol, viseur,
+infobulle, affichage du focus), `keyboard.ts` (`PointItems` : les éléments des points pour le clavier et les lecteurs
+d'écran), `legend.ts` (les boutons de légende), `table.ts` (le tableau de données), `animator.ts`, `measure.ts`,
+`messages.ts` et `locales/`. `Chart` a `setSeriesVisible(id, visible)` ; les événements portent la clé du point.
 
 ## 6. Thème (`@dzgraph/theme`)
 

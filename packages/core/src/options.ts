@@ -202,8 +202,14 @@ export interface ChartOptions {
   readonly mirror?: boolean | undefined;
   /** Width ÷ height, used only when the container has no height of its own (D.11). */
   readonly aspectRatio?: number | undefined;
-  /** A sentence describing the chart for screen readers (Phase 2 adds the generated summary). */
+  /** A sentence describing the chart for screen readers, after the generated summary (screen-reader.md 1). */
   readonly description?: string | undefined;
+  /** Fade the other series while one is pointed at (GLOSSARY: Highlight; hover-tooltip.md 5). Default `true`. */
+  readonly highlight?: boolean | undefined;
+  /** Animate appearing and updates (animation.md). Default `true`; never under `prefers-reduced-motion`. */
+  readonly animation?: boolean | undefined;
+  /** Show the data table under the chart (data-table.md 2). Default `false`: it is there for screen readers only. */
+  readonly dataTable?: boolean | undefined;
 }
 
 /**

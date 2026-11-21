@@ -80,8 +80,9 @@ describe('numericTicks, for any data range', () => {
     fc.assert(
       fc.property(range, fc.integer({ min: 2, max: 12 }), ([a, b], m) => {
         const t = numericTicks(a, b, m, 'loose');
-        // Covering, to a billionth of the range and of the step: a division's noise (0.1 + 0.2) is not data.
-        const eps = 1e-9 * (b - a + t.step);
+        // Covering, to a billionth of the range and of the step (a division's noise, 0.1 + 0.2, is not data), and to a
+        // few units in the last place of the values themselves (999999999.9999999 is 10⁹ to a double, one ulp away).
+        const eps = 1e-9 * (b - a + t.step) + 4 * Number.EPSILON * Math.max(Math.abs(a), Math.abs(b));
         expect(t.min).toBeLessThanOrEqual(a + eps);
         expect(t.max).toBeGreaterThanOrEqual(b - eps);
         expect(isRound(t.step)).toBe(true);

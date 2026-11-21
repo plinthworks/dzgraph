@@ -19,6 +19,7 @@ describe('normalize: defaults', () => {
     expect(model.yAxes.map((a) => [a.id, a.scale])).toEqual([['y', 'linear']]);
     expect(model.legend).toBeNull();
     expect([model.title, model.locale, model.dir, model.mirror, model.aspectRatio, model.orientation]).toEqual([null, null, null, false, 16 / 9, 'vertical']);
+    expect([model.highlight, model.animation, model.dataTable]).toEqual([true, true, false]);
   });
 
   it('two series: a legend under the plot, centred; the second colour', () => {

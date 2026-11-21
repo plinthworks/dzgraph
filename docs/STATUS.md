@@ -24,14 +24,26 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   only when they change and keeping the last scene, the `Painter` interface, `allTypes`; documents brought in line;
   what belongs to later phases listed at the end of `docs/phase-1-steps/plan.md`). Gate green (345 tests), three
   browsers green (462), 80 reference images match.
-- **Next: Phase 2** (interactions: hover, shared tooltip, legend clicks, keyboard, screen reader, data table,
-  animation, a minimal Angular `<dz-chart>`): its plan to write and have validated before code.
+- **Phase 2** (plan `docs/phase-2-steps/plan.md`, owner's decisions at its end), steps 2.1–2.8 built 2026-11-21:
+  seven behaviour sheets; core `hit.ts`, `tooltip.ts`, `a11y.ts`, `interpolate.ts` (+ `appearFrom`), view emphasis;
+  DOM hover and tooltip, legend buttons and live region, keyboard (pattern B, one tab stop, long series as one
+  replaced item), figure and summary, data table, animator (appear 400 ms, updates 250 ms, reduced motion, `animate`
+  hook); `@dzgraph/angular` `<dz-chart>` (Angular tests compiled and run in the real browsers). Gate green (410),
+  three browsers green (600), reference images with hover, focus and hidden states. Budgets raised (dom 9 300,
+  line chart app 26 400, theme 1 150).
+- **Phase 2 closed 2026-11-21**: code review (12 findings fixed, `packages/dom/test/review-phase2.test.ts`; the worst:
+  every redraw dropped the keyboard focus) and architecture check (fixed now: `pointAt`, `navigate.ts` in the core,
+  `highlight` out of the view and renamed from `emphasis`, keys on events, `pointHover` for the pointer only,
+  `setSeriesVisible`, aids rebuilt only with the layout, `table.ts`, raw `dataRows`; later phases' items at the end of
+  `docs/phase-2-steps/plan.md`). Gate green (432), three browsers green (654), references match. Not committed.
+- **Next: Phase 3** (time axes with zones, big volumes, Canvas painter, zoom and pan, navigator, range buttons): plan
+  to write and validate first. Open question for the owner: the data table shows the visible range, or all data?
 
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure
-des choses, on a le temps », « tu continues, ne t'arrête pas » (work through the steps, report at each). Commit only when
-the owner asks (first commits 2026-11-21: `2d6a647`, `685e04f`).
+des choses, on a le temps », « tu continues, ne t'arrête pas » (work through the steps, report at each). Commit and push only when
+the owner asks. On GitHub since 2026-11-21 (`git@github.com:plinthworks/dzgraph.git`, `main`; first push: Phase 1).
 
 ## Owner decisions after the close (2026-11-21)
 

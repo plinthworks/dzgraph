@@ -18,7 +18,7 @@ import { isSorted, readXYData, type RawXY } from './data.js';
 const PALETTE_SIZE = 8;
 const DEFAULT_ASPECT = 16 / 9;
 
-const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description']);
+const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable']);
 const SERIES_KEYS = new Set(['type', 'id', 'name', 'data', 'xAxis', 'yAxis', 'color', 'initiallyHidden']);
 const AXIS_BASE_KEYS = ['id', 'title', 'opposite', 'reversed', 'scale'];
 const AXIS_KEYS: Record<ScaleKind, ReadonlySet<string>> = {
@@ -51,6 +51,9 @@ const EMPTY_MODEL: ChartModel = {
   aspectRatio: DEFAULT_ASPECT,
   description: null,
   orientation: 'vertical',
+  highlight: true,
+  animation: true,
+  dataTable: false,
 };
 
 function defaultAxis(id: string, scale: ScaleKind = 'linear'): AxisModel {
@@ -159,6 +162,7 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
       keys: e.raw.keys,
       names: e.raw.names,
       sorted,
+      tooltip: e.type.sortedX ? 'shared' : 'mark',
       // Checked against SeriesBase above and by the type's own check: the record is the series' options.
       options: e.s as unknown as SeriesModel['options'],
     };
@@ -177,6 +181,9 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
     aspectRatio: readAspect(options['aspectRatio'], report),
     description: readString(options['description'], 'description', report),
     orientation: orientation ?? 'vertical',
+    highlight: readBool(options['highlight'], 'highlight', report) ?? true,
+    animation: readBool(options['animation'], 'animation', report) ?? true,
+    dataTable: readBool(options['dataTable'], 'dataTable', report) ?? false,
   };
   return { model, problems };
 }

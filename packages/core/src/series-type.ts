@@ -30,6 +30,8 @@ export interface SeriesModel<O extends SeriesBase<string, unknown> = SeriesBase<
   readonly names: readonly (string | null)[] | null;
   /** Whether x never goes backwards (lines may then be decimated and searched by x). */
   readonly sorted: boolean;
+  /** Its tooltip: shared on the hovered x (lines, areas: types drawn in x order), or per mark (hover-tooltip.md 1–2). */
+  readonly tooltip: 'shared' | 'mark';
   /** The app's options for this series, after the type's check. */
   readonly options: O;
 }

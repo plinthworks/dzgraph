@@ -41,6 +41,9 @@ export class SvgPainter implements Painter {
       if (!lg) {
         lg = document.createElementNS(NS, 'g');
         lg.setAttribute('data-layer', layer.id);
+        // The drawing is for the eyes: its content reaches screen readers through the summary, the points and the
+        // data table (screen-reader.md 4).
+        lg.setAttribute('aria-hidden', 'true');
         this.layers.set(layer.id, lg);
       }
       if (lg !== layerCursor) svg.insertBefore(lg, layerCursor);
@@ -58,6 +61,8 @@ export class SvgPainter implements Painter {
         }
         if (group.clip) g.setAttribute('clip-path', `url(#${clipId(this.prefix, clipIndex(clips, group.clip))})`);
         else g.removeAttribute('clip-path');
+        if (group.opacity !== undefined && group.opacity !== 1) g.setAttribute('opacity', String(group.opacity));
+        else g.removeAttribute('opacity');
         if (g !== groupCursor) lg.insertBefore(g, groupCursor);
         groupCursor = g.nextSibling;
 

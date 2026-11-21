@@ -12,9 +12,10 @@
     "paths": {
       "@dzgraph/core": ["./packages/core/src/index.ts"],
       "@dzgraph/core/internal": ["./packages/core/src/internal.ts"],
-      "@dzgraph/dom": ["./packages/dom/src/index.ts"]
+      "@dzgraph/dom": ["./packages/dom/src/index.ts"],
+      "@dzgraph/angular": ["./packages/angular/src/index.ts"]
     }
   },
-  "include": ["packages/*/test/**/*.ts", "scripts/**/*.ts"],
+  "include": ["packages/core/test/**/*.ts", "packages/dom/test/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["**/dist/**", "**/node_modules/**"]
 }

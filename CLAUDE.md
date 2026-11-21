@@ -60,4 +60,5 @@ npm run spike        # Phase 0 spikes in real browsers, one after another
   (reference images) through `playwright-core`. One browser at a time.
 - Spend little: small fixes directly, not by an agent; reviews only for new code; during work run only the tests
   concerned; one full gate per batch. Every phase ends with an architecture check and a code review.
-- Commit or publish only when the owner asks; the owner publishes. The repository is local only for now.
+- Commit, push or publish only when the owner asks; the owner publishes. Remote: `git@github.com:plinthworks/dzgraph.git`
+  (SSH, like the sister projects), branch `main`.

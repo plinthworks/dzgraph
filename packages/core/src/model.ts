@@ -38,4 +38,7 @@ export interface ChartModel {
   readonly aspectRatio: number;
   readonly description: string | null;
   readonly orientation: 'vertical' | 'horizontal';
+  readonly highlight: boolean;
+  readonly animation: boolean;
+  readonly dataTable: boolean;
 }

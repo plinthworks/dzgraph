@@ -21,6 +21,11 @@ export interface ComposeInput {
   readonly measureText: TextMeasurer;
   /** The same view the layout was given. */
   readonly view?: View;
+  /**
+   * The series pointed at (GLOSSARY: Highlight — passing, not part of the view): the others fade to 35 %
+   * (hover-tooltip.md 5).
+   */
+  readonly highlight?: string;
 }
 
 /** The painter for a set of marks: paths stay in SVG; marks move to a Canvas past the threshold. */
@@ -29,7 +34,7 @@ export function painterFor(set: Pick<MarkSet, 'role' | 'items'>): PainterKind {
 }
 
 /** A one-pixel line's coordinate on a pixel's centre. */
-const crisp = (v: number) => Math.round(v - 0.5) + 0.5;
+export const crisp = (v: number) => Math.round(v - 0.5) + 0.5;
 
 export function composeScene(input: ComposeInput): Scene {
   const { model, layout, measureText } = input;
@@ -95,7 +100,8 @@ export function composeScene(input: ComposeInput): Scene {
       // Lines are clipped to the plot; marks to the plot grown by a marker's half, so one on the edge shows whole
       // and none strays over the axes when the axis's bounds leave it out (review 5).
       const clip = set.role === 'path' ? plot : set.role === 'marks' ? grow(plot, MARK_BLEED) : undefined;
-      add(set.layer, { sceneId: sceneId('s', s.id, k), painter: painterFor(set), ...(clip ? { clip } : {}), items });
+      const faded = input.highlight !== undefined && input.highlight !== s.id;
+      add(set.layer, { sceneId: sceneId('s', s.id, k), painter: painterFor(set), ...(clip ? { clip } : {}), ...(faded ? { opacity: FADED } : {}), items });
     });
   }
 
@@ -154,6 +160,9 @@ export function composeScene(input: ComposeInput): Scene {
   const out: Layer[] = order.map((id) => ({ id, groups: layers.get(id) ?? [] }));
   return { width: layout.width, height: layout.height, dir, areas: { plot }, layers: out };
 }
+
+/** A series not highlighted while another is (hover-tooltip.md 5). */
+const FADED = 0.35;
 
 /** How far past the plot a mark may show: half the largest marker (8 px, a diamond 1.2 times its half). */
 const MARK_BLEED = 6;

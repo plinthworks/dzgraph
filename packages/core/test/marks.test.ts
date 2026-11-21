@@ -13,7 +13,7 @@ const Y = linearScale([0, 10], [100, 0]);
 function model(ys: readonly (number | null)[], over: Partial<SeriesModel> = {}, xs?: readonly number[]): SeriesModel {
   const y = Float64Array.from(ys, (v) => (v === null ? Number.NaN : v));
   const x = Float64Array.from(xs ?? ys.map((_, i) => i));
-  return { id: 's', type: 'line', name: null, rank: 0, color: 'series-1', xAxis: 'x', yAxis: 'y', initiallyHidden: false, columns: { x, y }, keys: null, names: null, sorted: true, options: { type: 'line', data: [] }, ...over };
+  return { id: 's', type: 'line', name: null, rank: 0, color: 'series-1', xAxis: 'x', yAxis: 'y', initiallyHidden: false, columns: { x, y }, keys: null, names: null, sorted: true, tooltip: 'shared', options: { type: 'line', data: [] }, ...over };
 }
 
 function marks<O extends SeriesBase<string, unknown>>(type: SeriesType<O, 'cartesian'>, s: SeriesModel, extra: Partial<MarkContext<O, 'cartesian'>> = {}): readonly MarkSet[] {

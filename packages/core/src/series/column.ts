@@ -73,8 +73,9 @@ function columnMarks<O extends SeriesBase<string, unknown>>(ctx: MarkContext<O, 
     const id = sceneId('s', s.id, 'c', i);
     // The free end is rounded, unless the plot cut it (that is not the column's end).
     const radius = cut ? 0 : Math.min(END_RADIUS, width / 2, size);
+    // The free end is always named (animation grows the column from the edge opposite it, review 11); rounded unless cut.
     const end: NonNullable<RectPrimitive['roundEnd']> = across ? (b < a ? 'y-min' : 'y-max') : b > a ? 'x-max' : 'x-min';
-    const round = radius > 0 ? { radius, roundEnd: end } : {};
+    const round = radius > 0 ? { radius, roundEnd: end } : { roundEnd: end };
     rects.push(
       across
         ? { kind: 'rect', sceneId: id, paint: { fill: s.color }, x: start, y: lo, width, height: size, point, ...round }

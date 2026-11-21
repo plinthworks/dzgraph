@@ -1,0 +1,81 @@
+/**
+ * `<dz-chart>` (angular.md, D.13): a DzGraph chart in an Angular template. Its options are a signal input: a new
+ * value updates the chart, never re-creates it. One output per event. Drawn in the browser only (nothing on the
+ * server); destroyed with the component.
+ */
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, output, untracked } from '@angular/core';
+import type { ChartOptions, PointRef, Problem } from '@dzgraph/core';
+import { allTypes } from '@dzgraph/core';
+import type { SeriesType } from '@dzgraph/core/internal';
+import { chart, type Chart, type ChartSetup } from '@dzgraph/dom';
+
+@Component({
+  selector: 'dz-chart',
+  template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // A block that fills its parent's width; its height comes from the app's CSS or the `aspectRatio` option (D.11).
+  host: { style: 'display: block' },
+})
+export class DzChart {
+  /** The chart's options (ChartOptions). */
+  readonly options = input.required<ChartOptions>();
+  /** The series types it may draw: every type by default; pass only those you use to ship less (ADR 0005). */
+  readonly types = input<readonly SeriesType[]>(allTypes);
+  /** Words to use instead of the built-in ones. */
+  readonly messages = input<ChartSetup['messages']>();
+  /** Drive the animations yourself (animation.md 6). */
+  readonly animate = input<ChartSetup['animate']>();
+
+  readonly problems = output<readonly Problem[]>();
+  readonly pointHover = output<PointRef | null>();
+  readonly pointClick = output<PointRef>();
+  readonly pointFocus = output<PointRef>();
+  readonly legendToggle = output<{ readonly seriesId: string; readonly shown: boolean }>();
+
+  private instance: Chart | null = null;
+  /** The options last given, to tell the chart which top-level fields went away (review 7). */
+  private given: ChartOptions | null = null;
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const create = () => {
+      this.instance?.destroy();
+      const messages = untracked(this.messages);
+      const animate = untracked(this.animate);
+      const options = untracked(this.options);
+      const c = chart(host, options, { types: untracked(this.types), ...(messages ? { messages } : {}), ...(animate ? { animate } : {}) });
+      this.instance = c;
+      this.given = options;
+      c.on('problems', (d) => this.problems.emit(d.problems));
+      c.on('pointHover', (d) => this.pointHover.emit(d.point));
+      c.on('pointClick', (d) => this.pointClick.emit(d.point));
+      c.on('pointFocus', (d) => this.pointFocus.emit(d.point));
+      c.on('legendToggle', (d) => this.legendToggle.emit(d));
+      if (c.problems.length) this.problems.emit(c.problems);
+    };
+    // In the browser only, once the host is in the page.
+    afterNextRender(create);
+    // A new value of the options updates the chart; a field it no longer has goes back to its default.
+    effect(() => {
+      const options = this.options();
+      untracked(() => {
+        if (!this.instance || options === this.given) return;
+        const changes: Record<string, unknown> = { ...options };
+        for (const k of Object.keys(this.given ?? {})) if (!(k in options)) changes[k] = undefined;
+        this.given = options;
+        this.instance.update(changes);
+      });
+    });
+    // The types and the words are the chart's setup: a new value draws a new chart.
+    effect(() => {
+      this.types();
+      this.messages();
+      this.animate();
+      untracked(() => this.instance && create());
+    });
+    inject(DestroyRef).onDestroy(() => {
+      this.instance?.destroy();
+      this.instance = null;
+    });
+  }
+}

@@ -53,6 +53,8 @@ export type PathCommand = (typeof PathCommand)[keyof typeof PathCommand];
 export interface PointRef {
   readonly seriesId: string;
   readonly index: number;
+  /** The point's key, when the app gave one (GLOSSARY: Key): what selection and links use (Phase 5). */
+  readonly key?: string;
 }
 
 interface PrimitiveBase {
@@ -145,6 +147,8 @@ export interface Rect {
 export interface Group {
   readonly sceneId: string;
   readonly painter: PainterKind;
+  /** The whole group's opacity (a series faded while another is emphasised, or animated in or out). */
+  readonly opacity?: number;
   readonly clip?: Rect;
   readonly items: readonly Primitive[];
 }

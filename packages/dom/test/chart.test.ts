@@ -13,7 +13,8 @@ function mount(options: Parameters<typeof chart>[1], style = 'inline-size:600px;
   el.setAttribute('style', style);
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
   document.body.appendChild(el);
-  const c = chart(el, options, { types });
+  // These tests read the end state of each change: without animation (animation.test.ts has its own).
+  const c = chart(el, { animation: false, ...options }, { types });
   made.push({ el, c });
   return { el, c, svg: el.querySelector('svg')! };
 }
@@ -33,7 +34,8 @@ describe('chart(): mounting', () => {
     expect([svg.getAttribute('width'), svg.getAttribute('height')]).toEqual(['600', '400']);
     expect(texts(svg)).toEqual(expect.arrayContaining(['0', '100', '4']));
     expect(svg.querySelectorAll('[data-layer="series"] path').length).toBe(1);
-    expect(svg.getAttribute('role')).toBe('img');
+    // The figure is the chart's root, not the SVG: an image role would hide its points from screen readers.
+    expect(svg.closest('[role="figure"]')).not.toBeNull();
   });
 
   it('a container without a height takes the aspect ratio (D.11)', () => {

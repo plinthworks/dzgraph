@@ -41,6 +41,14 @@ function decimalsNeeded(values: readonly number[], locale: string | undefined, n
   return d;
 }
 
+/**
+ * One value as the tooltip and the data table write it (hover-tooltip.md 6): six significant digits, or two decimals
+ * when that keeps more (a large amount keeps its cents), whichever is more precise; the locale's form.
+ */
+export function formatValue(v: number, locale: string | undefined): string {
+  return cached(locale, 'value', { maximumSignificantDigits: 6, maximumFractionDigits: 2, roundingPriority: 'morePrecision' }).format(v === 0 ? 0 : v);
+}
+
 /** Labels for an axis's tick values (`step` apart: kept for formatters that want it). */
 export function formatTicks(values: readonly number[], step: number, locale: string | undefined): string[] {
   const maxAbs = values.reduce((m, v) => Math.max(m, Math.abs(v)), 0);

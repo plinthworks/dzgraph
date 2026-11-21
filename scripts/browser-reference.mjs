@@ -11,7 +11,9 @@ import { decodePng } from '../spikes/lib/png.mjs';
 const update = process.argv.includes('--update');
 const out = fileURLToPath(new URL('../test-references/', import.meta.url));
 mkdirSync(out, { recursive: true });
-const all = ['line', 'area', 'columns', 'bars', 'scatter', 'negative', 'dual', 'many', 'dense', 'empty'];
+const all = ['line', 'area', 'columns', 'bars', 'scatter', 'negative', 'dual', 'many', 'dense', 'empty', 'line~hover', 'columns~hover', 'line~focus', 'columns~hidden'];
+/** Where a `~hover` case puts the pointer, as a share of the chart's box. */
+const HOVER = { x: 0.62, y: 0.45 };
 const cases = process.env.CASES ? process.env.CASES.split(',') : all;
 
 /** Share of pixels whose colour moved by more than `tol` on any channel. */
@@ -29,14 +31,31 @@ const b = await browser('chrome');
 let failed = 0;
 try {
   for (const dpr of [1, 2]) {
-    const ctx = await b.newContext({ deviceScaleFactor: dpr, viewport: { width: 700, height: 460 } });
+    // Reduced motion: the end state at once (animation.md 5), so each image is the drawing, not a frame of it.
+    const ctx = await b.newContext({ deviceScaleFactor: dpr, viewport: { width: 700, height: 460 }, reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     for (const name of cases)
       for (const theme of ['light', 'dark'])
         for (const dir of ['ltr', 'rtl']) {
-          await page.goto(site.root(`playground/index.html?case=${name}&theme=${theme}&dir=${dir}`));
+          const [base, state] = name.split('~');
+          await page.goto(site.root(`playground/index.html?case=${base}&theme=${theme}&dir=${dir}`));
           await page.waitForSelector('body[data-ready] svg');
           await page.evaluate(() => document.fonts.ready.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))));
+          if (state === 'hover') {
+            const box = await page.locator('.case svg').boundingBox();
+            await page.mouse.move(box.x + box.width * HOVER.x, box.y + box.height * HOVER.y);
+            await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+          } else await page.mouse.move(0, 0);
+          if (state === 'focus') {
+            // Tab into the chart, then two points along (keyboard.md 1–2, 4).
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('ArrowRight');
+            await page.keyboard.press('ArrowRight');
+          }
+          if (state === 'hidden') await page.locator('.dzgraph-legend-button').nth(1).click({ position: { x: 4, y: 4 } });
+          if (state === 'focus' || state === 'hidden') {
+            await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+          }
           const shot = await page.locator('.case').screenshot();
           const file = `${out}${name}-${theme}-${dir}@${dpr}x.png`;
           if (update) {

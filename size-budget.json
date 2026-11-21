@@ -1,10 +1,29 @@
 {
-  "note": "Bundled, minified, gzipped (a stylesheet as it ships). Budgets: the measure after Phase 1 + 5 % (owner 2026-11-21); raised when a feature needs it, without asking (owner), said in the step's report.",
+  "note": "Bundled, minified, gzipped (a stylesheet as it ships). Budgets: the measure after Phase 1 + 5 % (owner 2026-11-21); raised when a feature needs it, without asking (owner), said in the step's report. Phase 2 (hover, legend, keyboard, accessibility, animation) raised dom, apps and theme 2026-11-21.",
   "entries": {
-    "core": { "file": "packages/core/src/index.ts", "maxGzip": 4900 },
-    "dom": { "file": "packages/dom/src/index.ts", "maxGzip": 3100, "external": ["@dzgraph/core", "@dzgraph/core/internal"] },
-    "line chart (app)": { "file": "scripts/size/line-chart.ts", "maxGzip": 17900 },
-    "every Phase 1 type (app)": { "file": "scripts/size/all-types.ts", "maxGzip": 18600 },
-    "theme": { "file": "packages/theme/dzgraph.css", "maxGzip": 750 }
+    "core": {
+      "file": "packages/core/src/index.ts",
+      "maxGzip": 4900
+    },
+    "dom": {
+      "file": "packages/dom/src/index.ts",
+      "maxGzip": 9300,
+      "external": [
+        "@dzgraph/core",
+        "@dzgraph/core/internal"
+      ]
+    },
+    "line chart (app)": {
+      "file": "scripts/size/line-chart.ts",
+      "maxGzip": 26400
+    },
+    "every Phase 1 type (app)": {
+      "file": "scripts/size/all-types.ts",
+      "maxGzip": 27200
+    },
+    "theme": {
+      "file": "packages/theme/dzgraph.css",
+      "maxGzip": 1150
+    }
   }
 }
