@@ -8,15 +8,14 @@
  * 3. the scene — every drawing (a highlight changes only opacities), painted at once or animated;
  * 4. the aids (summary, keyboard items, legend buttons, data table) — when the layout changes.
  */
-import type { ChartOptions, ChartUpdate, PointRef, Problem, Scene, SeriesOptions } from '@dzgraph/core';
+import type { ChartOptions, ChartUpdate, Group, PointRef, Problem, Scene, SeriesOptions } from '@dzgraph/core';
 import type { ChartLayout, ChartModel, Extent, Range, SeriesType, View } from '@dzgraph/core/internal';
-import { appearFrom, clampRange, parseInstant, rangeButtonSpan, composeScene, extentOf, layout, normalize, seriesName, summary, validOrder, withKey, xValueLabel } from '@dzgraph/core/internal';
+import { appearFrom, clampRange, composeScene, extentOf, layout, normalize, seriesName, summary, validOrder, withKey, xValueLabel } from '@dzgraph/core/internal';
 import { createMeasurer } from './measure.js';
 import { messagesFor, type Messages } from './messages.js';
 import { SvgPainter } from './svg-painter.js';
-import { CanvasPainter } from './canvas-painter.js';
-import { Gestures, type GestureFrame } from './gestures.js';
-import { NavigatorControls } from './navigator.js';
+import type { GestureFrame } from './gestures.js';
+import { resolveFeatures, type Feature } from './features.js';
 import type { Painter } from './painter.js';
 import { Hover } from './hover.js';
 import { LegendButtons } from './legend.js';
@@ -30,6 +29,11 @@ export interface ChartSetup {
    * imports; a series of another type is reported as `unknown-series-type`.
    */
   readonly types: readonly SeriesType[];
+  /**
+   * The features this chart may use (ADR 0006): `{ features: [timeAxis, zoom] }`, or `allFeatures`. An option whose
+   * module is missing is reported as `missing-module`; without `canvas` every series is drawn in SVG.
+   */
+  readonly features?: readonly Feature[];
   /** Words to use instead of the built-in ones (any language; English and French ship). */
   readonly messages?: Partial<Messages>;
   /** Drive the animations yourself (animation.md 6), GSAP for instance: called instead of DzGraph's own timing. */
@@ -47,7 +51,8 @@ export interface ChartEvents {
   /** The keyboard focus moved to a point (keyboard.md 6). */
   readonly pointFocus: { readonly point: PointRef };
   /** A series was hidden or shown, from the legend or `setSeriesVisible` (legend-interaction.md 5). */
-  readonly legendToggle: { readonly seriesId: string; readonly shown: boolean };
+  /** A series, or a slice (its `index`, ADR 0007), hidden or shown from the legend. */
+  readonly legendToggle: { readonly seriesId: string; readonly index?: number; readonly shown: boolean };
   /** The x axis's visible range changed (zoom-pan.md 9): its bounds, or `null` back to the whole data. */
   readonly rangeChange: { readonly range: { readonly min: number; readonly max: number } | null };
 }
@@ -85,8 +90,6 @@ let charts = 0;
 const AIDS_REST_MS = 200;
 /** A range covering the whole extent is no zoom. */
 const wholeOrNull = (r: Range, e: Extent): Range | null => (r.min <= e.min && r.max >= e.max ? null : r);
-/** Between the reset button and the plot's edges. */
-const RESET_INSET = 8;
 const APPEAR_MS = 400;
 const UPDATE_MS = 250;
 
@@ -159,8 +162,11 @@ export const chart: CreateChart = (element, initial, setup) => {
   const tableBox = document.createElement('div');
   element.append(root, tableBox);
 
+  const features = resolveFeatures(setup.features);
   const backPainter: Painter = new SvgPainter(back, `${prefix}-b`);
-  const canvasPainter = new CanvasPainter(root);
+  // Planes back to front (ADR 0008): the back SVG, WebGL2, Canvas, the main SVG; each painter adds its own in order.
+  const webglPainter = features.webgl ? features.webgl(root, () => animator.shown && paintAll(animator.shown)) : null;
+  const canvasPainter = features.canvas ? features.canvas(root) : null;
   const painter: Painter = new SvgPainter(svg, prefix);
   const measurer = createMeasurer(root);
   /** Each painter gets its groups (ADR 0002): background and grid behind, Canvas groups in the middle, the rest in front. */
@@ -168,8 +174,13 @@ export const chart: CreateChart = (element, initial, setup) => {
   const paintAll = (s: Scene) => {
     const opts = { font: measurer.font };
     backPainter.paint(s, opts, (_g, layer) => behind(layer));
-    canvasPainter.paint(s, opts, (g, layer) => !behind(layer) && g.painter === 'canvas');
-    painter.paint(s, opts, (g, layer) => !behind(layer) && g.painter !== 'canvas');
+    // WebGL2 groups go to Canvas when WebGL2 cannot draw them (no module, no WebGL2, context lost; its context opened
+    // only when one comes), and Canvas groups to SVG without the Canvas module, in the same order: first in each layer.
+    const gl = webglPainter !== null && s.layers.some((l) => l.groups.some((g) => g.painter === 'webgl2')) && webglPainter.ready();
+    const raster = (g: Group) => g.painter === 'canvas' || (g.painter === 'webgl2' && !gl);
+    webglPainter?.paint(s, opts, (g, layer) => !behind(layer) && gl && g.painter === 'webgl2');
+    canvasPainter?.paint(s, opts, (g, layer) => !behind(layer) && raster(g));
+    painter.paint(s, opts, (g, layer) => !behind(layer) && (g.painter === 'svg' || (!canvasPainter && raster(g))));
   };
   const animator = new Animator(paintAll);
 
@@ -225,7 +236,7 @@ export const chart: CreateChart = (element, initial, setup) => {
       ? { ...options, series: Array.isArray(options.series) ? options.series.map((s, i) => (isRecord(s) && data.has(idOf(s, i)) ? ({ ...s, data: data.get(idOf(s, i)) } as SeriesOptions) : s)) : options.series }
       : options;
     // The page's zone, the default of a time axis (time-axis.md 2): read here, the core never reads the host.
-    const r = normalize(withData, setup.types, { zone: new Intl.DateTimeFormat().resolvedOptions().timeZone });
+    const r = normalize(withData, setup.types, { zone: new Intl.DateTimeFormat().resolvedOptions().timeZone, kit: features.kit });
     model = r.model;
     found = r.problems;
     for (const s of model.series) {
@@ -307,13 +318,8 @@ export const chart: CreateChart = (element, initial, setup) => {
       else writeAids();
       moving = false;
       legend.update(m, l, view, messages);
-      navControls.update();
-      placeRangeButtons(m, l, width, dir);
-      // The reset button, at the end of the plot's top edge (zoom-pan.md 7).
-      reset.textContent = messages.resetZoom;
-      reset.hidden = range === null;
-      reset.style.insetBlockStart = `${l.plot.y + RESET_INSET}px`;
-      reset.style.insetInlineEnd = `${dir === 'rtl' ? l.plot.x + RESET_INSET : width - l.plot.x - l.plot.width + RESET_INSET}px`;
+      navPart?.update(width, dir);
+      zoomPart?.place(l.plot, width, dir, range, messages.resetZoom);
     }
 
     const next = [...found, ...l.problems, ...(callProblem ? [callProblem] : [])];
@@ -368,9 +374,11 @@ export const chart: CreateChart = (element, initial, setup) => {
     viewVersion++;
     if (!visible && highlight === id) highlight = undefined;
     const s = model?.series.find((o) => o.id === id);
-    const name = s ? seriesName(s, words.messages) : id;
+    // A slice's item (ADR 0007): named and reported as the slice of its series.
+    const item = laid?.legend?.items.find((i) => i.key === id && i.point);
+    const name = s ? seriesName(s, words.messages) : (item?.name ?? id);
     live.textContent = visible ? words.messages.seriesShown(name) : words.messages.seriesHidden(name);
-    emit('legendToggle', { seriesId: id, shown: visible });
+    emit('legendToggle', item?.point ? { seriesId: item.seriesId, index: item.point.index, shown: visible } : { seriesId: id, shown: visible });
     schedule('data');
   };
 
@@ -430,18 +438,25 @@ export const chart: CreateChart = (element, initial, setup) => {
 
   // Gestures and the navigator listen before the hover (review 10): on the move that starts a drag, or the finger
   // that starts a pinch, `busy()` is already true when the hover asks.
-  const gestures = new Gestures(root, svg, { frame: frameOf, setRange });
+  // Each only when its module came (ADR 0006).
+  const zoomPart =
+    features.zoom?.(root, svg, {
+      frame: frameOf,
+      setRange,
+      // The reset button goes: the focus goes back to the points rather than to the page.
+      refocus: () => {
+        const at = items.activePoint;
+        if (at) items.focusPoint(at);
+      },
+    }) ?? null;
   const navGroup = document.createElementNS(NS, 'g');
-  const navControls = new NavigatorControls(svg, navGroup, {
-    state: () => {
-      const nav = laid?.navigator;
-      return nav && model ? { nav, range, label: (v: number) => xValueLabel(model!, nav.axisId, v, words.locale) } : null;
-    },
-    setRange: (r, how) => setRange(r, how, 'pointer'),
-    words: () => ({ start: words.messages.rangeStart, end: words.messages.rangeEnd }),
-  });
+  const navPart =
+    features.navigator?.(svg, navGroup, root, {
+      state: () => (model && laid ? { model, layout: laid, range, locale: words.locale, messages: words.messages } : null),
+      setRange: (r, how) => setRange(r, how, 'pointer'),
+    }) ?? null;
   const hover = new Hover(root, svg, {
-    busy: () => gestures.busy() || navControls.busy(),
+    busy: () => (zoomPart?.busy() ?? false) || (navPart?.busy() ?? false),
     state: () => (model && laid && scene ? { model, layout: laid, scene, locale: words.locale, text: words.messages, font: (r) => measurer.font(r), view } : null),
     highlight: setHighlight,
     hovered: (point) => emit('pointHover', { point: point && keyed(point) }),
@@ -465,64 +480,9 @@ export const chart: CreateChart = (element, initial, setup) => {
     escape: () => hover.hideTooltip(),
     key: (e, point) => {
       const s = model?.series.find((o) => o.id === point.seriesId);
-      return gestures.key(e, s ? s.columns.x[point.index]! : null);
+      return zoomPart?.key(e, s ? s.columns.x[point.index]! : null) ?? false;
     },
   });
-  const reset = document.createElement('button');
-  reset.type = 'button';
-  reset.className = 'dzgraph-reset';
-  reset.hidden = true;
-  Object.assign(reset.style, { position: 'absolute', zIndex: '2' });
-  reset.addEventListener('click', () => {
-    const had = document.activeElement === reset;
-    setRange(null, 'animate', had ? 'keyboard' : 'pointer');
-    // The button goes: the focus goes back to the points rather than to the page.
-    const at = items.activePoint;
-    if (had && at) items.focusPoint(at);
-  });
-  root.appendChild(reset);
-
-  // ---- The range buttons (range-buttons.md): a row of HTML buttons in the layout's range bar. ----
-  const BUTTONS = ['1m', '3m', 'ytd', '1y', 'all'] as const;
-  const rangeBox = document.createElement('div');
-  rangeBox.className = 'dzgraph-range-buttons';
-  rangeBox.hidden = true;
-  Object.assign(rangeBox.style, { position: 'absolute', zIndex: '2', display: 'flex', gap: '4px' });
-  const rangeButtons = BUTTONS.map((p) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.addEventListener('click', () => {
-      const id = xAxisId();
-      if (!model || id === undefined) return;
-      if (p === 'all') return setRange(null, 'animate', 'pointer');
-      const r = rangeButtonSpan(model, id, p);
-      const e = xExtent();
-      if (r && e) setRange(wholeOrNull(clampRange(r, e), e), 'animate', 'pointer');
-    });
-    rangeBox.appendChild(b);
-    return b;
-  });
-  root.appendChild(rangeBox);
-  const placeRangeButtons = (m: ChartModel, l: ChartLayout, width: number, dir: 'ltr' | 'rtl') => {
-    const bar = l.rangeBar;
-    const id = xAxisId();
-    rangeBox.hidden = !bar || id === undefined;
-    // `hidden` loses to the inline display: hide it through the style too.
-    rangeBox.style.display = rangeBox.hidden ? 'none' : 'flex';
-    if (!bar || id === undefined) return;
-    rangeBox.style.insetBlockStart = `${bar.y}px`;
-    rangeBox.style.insetInlineStart = `${dir === 'rtl' ? width - bar.x - bar.width : bar.x}px`;
-    const names = { '1m': words.messages.range1m, '3m': words.messages.range3m, ytd: words.messages.rangeYtd, '1y': words.messages.range1y, all: words.messages.rangeAll };
-    BUTTONS.forEach((p, i) => {
-      const b = rangeButtons[i]!;
-      b.textContent = names[p];
-      const r = p === 'all' ? null : rangeButtonSpan(m, id, p);
-      b.disabled = p !== 'all' && !r?.fits;
-      const pressed = p === 'all' ? range === null : r !== null && range !== null && Math.abs(r.min - range.min) < 1 && Math.abs(r.max - range.max) < 1;
-      b.setAttribute('aria-pressed', String(pressed));
-    });
-  };
-
   // ---- The table's range (data-table.md 5): the visible range, or all the data. ----
   /** The user's choice, once they made one; until then the app's (`dataTable.rows`). */
   let tableWhich: 'visible' | 'all' | null = null;
@@ -586,8 +546,9 @@ export const chart: CreateChart = (element, initial, setup) => {
       const axis = model?.xAxes.find((a) => a.id === xAxisId());
       const read = (v: unknown) => {
         if (typeof v === 'number') return Number.isFinite(v) ? v : Number.NaN;
-        if (typeof v === 'string' && axis?.scale === 'time') {
-          const t = parseInstant(v, axis.zone ?? 'UTC');
+        const time = model?.kit.time;
+        if (typeof v === 'string' && axis?.scale === 'time' && time) {
+          const t = time.parse(v, axis.zone ?? 'UTC');
           return typeof t === 'number' ? t : Number.NaN;
         }
         return Number.NaN;
@@ -617,9 +578,10 @@ export const chart: CreateChart = (element, initial, setup) => {
       resize.disconnect();
       animator.stop();
       hover.destroy();
-      gestures.destroy();
-      canvasPainter.destroy();
-      navControls.destroy();
+      zoomPart?.destroy();
+      canvasPainter?.destroy();
+      webglPainter?.destroy();
+      navPart?.destroy();
       root.remove();
       tableBox.remove();
       listeners.clear();

@@ -4,16 +4,16 @@
  * on its alphabetic baseline (the one baseline every painter draws alike); each group's painter chosen by what it
  * draws (ADR 0002).
  */
-import { navigatorGroups } from './navigator.js';
 import type { ChartModel } from './model.js';
 import type { ChartLayout, PlacedText } from './layout.js';
 import type { MarkSet, SeriesType } from './series-type.js';
 import type { ColorToken, Group, Layer, LayerId, PainterKind, Primitive, Rect, Scene, TextMeasurer, TextPrimitive } from './scene.js';
 import { sceneId, symbolOf } from './series/shared.js';
-import { isShown, type View } from './view.js';
+import { isShown, pointKey, type View } from './view.js';
 
-/** Past this many marks a group is painted on a Canvas (spike S1, ADR 0002). */
-export const CANVAS_THRESHOLD = 2_000;
+import { CANVAS_THRESHOLD, WEBGL_THRESHOLD } from './points-batch.js';
+
+export { CANVAS_THRESHOLD, WEBGL_THRESHOLD };
 
 export interface ComposeInput {
   readonly model: ChartModel;
@@ -29,9 +29,30 @@ export interface ComposeInput {
   readonly highlight?: string;
 }
 
-/** The painter for a set of marks: paths stay in SVG; marks move to a Canvas past the threshold. */
+/**
+ * The painter for a set of marks (ADR 0002, 0008): paths stay in SVG; marks move to a Canvas past the threshold, a
+ * batch counting its points; a set of batches only, past the WebGL threshold, to WebGL2.
+ */
 export function painterFor(set: Pick<MarkSet, 'role' | 'items'>): PainterKind {
-  return set.role === 'marks' && set.items.length > CANVAS_THRESHOLD ? 'canvas' : 'svg';
+  if (set.role !== 'marks') return 'svg';
+  let n = 0;
+  let batches = true;
+  for (const p of set.items) {
+    if (p.kind === 'points') n += p.x.length;
+    else {
+      n++;
+      batches = false;
+    }
+  }
+  if (batches && n > WEBGL_THRESHOLD) return 'webgl2';
+  return n > CANVAS_THRESHOLD ? 'canvas' : 'svg';
+}
+
+/** A series' painter: one for all its sets (ADR 0002), the one its most demanding set needs; WebGL2 only if all can. */
+function seriesPainter(sets: readonly Pick<MarkSet, 'role' | 'items'>[]): PainterKind {
+  const each = sets.map(painterFor);
+  if (each.length && each.every((p) => p === 'webgl2')) return 'webgl2';
+  return each.some((p) => p !== 'svg') ? 'canvas' : 'svg';
 }
 
 /** A one-pixel line's coordinate on a pixel's centre. */
@@ -83,21 +104,34 @@ export function composeScene(input: ComposeInput): Scene {
   const axisOf = (dimension: 'x' | 'y', id: string) => layout.axes.find((a) => a.dimension === dimension && a.id === id);
   for (const s of shown) {
     const type = typeOf.get(s.type);
+    // A polar series draws from where it placed itself (ADR 0007); a point of it may be the one highlighted.
+    const placement = layout.placements.get(s.id);
+    if (type?.system === 'polar' && placement) {
+      const lit = input.highlight === undefined ? null : (placement.order.find((i) => pointKey(s.id, i) === input.highlight) ?? null);
+      const sets = type.marks({ series: s, frame: { placement }, plot, slot: 0, slots: 1, stacked: null, highlight: lit, dir, measureText });
+      const faded = input.highlight !== undefined && lit === null && input.highlight !== s.id;
+      sets.forEach((set, k) => add(set.layer, { sceneId: sceneId('s', s.id, k), painter: 'svg', ...(faded ? { opacity: FADED } : {}), items: set.items }));
+      continue;
+    }
     const xa = axisOf('x', s.xAxis);
     const ya = axisOf('y', s.yAxis);
     if (!type || !xa || !ya || type.system !== 'cartesian') continue;
-    const peers = shown.filter((o) => o.type === s.type && o.xAxis === s.xAxis && o.yAxis === s.yAxis);
+    // A pile takes one slot, in the place of its first series (stacking.md 2).
+    const slotOf = (o: (typeof shown)[number]) => (o.stack !== null && layout.stacks.has(o.id) ? `stack ${o.stack}` : `series ${o.id}`);
+    const slots = [...new Set(shown.filter((o) => o.type === s.type && o.xAxis === s.xAxis && o.yAxis === s.yAxis).map(slotOf))];
     const sets = type.marks({
       series: s,
       frame: { x: xa.scale, y: ya.scale, orientation: model.orientation },
       plot,
-      slot: peers.indexOf(s),
-      slots: peers.length,
+      slot: slots.indexOf(slotOf(s)),
+      slots: slots.length,
+      stacked: layout.stacks.get(s.id) ?? null,
+      highlight: null,
       dir,
       measureText,
     });
     // One painter for the whole series (ADR 0002): its line never sits under its own markers on another plane.
-    const painter: PainterKind = sets.some((set) => painterFor(set) === 'canvas') ? 'canvas' : 'svg';
+    const painter = seriesPainter(sets);
     sets.forEach((set, k) => {
       const items = set.role === 'marks' ? set.items.map(snapRect) : set.items;
       // Lines are clipped to the plot; marks to the plot grown by a marker's half, so one on the edge shows whole
@@ -123,6 +157,14 @@ export function composeScene(input: ComposeInput): Scene {
       items.push({ kind: 'line', sceneId: sceneId('axis', a.dimension, a.id, 'line'), paint, x1: x, y1: plot.y, x2: x, y2: plot.y + plot.height });
       a.ticks.forEach((t, i) => items.push({ kind: 'line', sceneId: sceneId('axis', a.dimension, a.id, 't', i), paint: { stroke: 'tick', strokeWidth: 1 }, x1: x, y1: crisp(t.at), x2: x + out, y2: crisp(t.at) }));
     }
+    // The signs of its series, before its title (combined.md 5): their colour and their symbol, or a square.
+    for (const sign of a.signs) {
+      const s = model.series.find((o) => o.id === sign.seriesId);
+      if (!s) continue;
+      const id = sceneId('axis-sign', a.id, s.id);
+      if ((typeOf.get(s.type)?.sign ?? 'square') === 'square') items.push({ kind: 'rect', sceneId: id, paint: { fill: s.color }, x: Math.round(sign.x - 4), y: Math.round(sign.y - 4), width: 8, height: 8, radius: 2 });
+      else items.push({ kind: 'marker', sceneId: id, paint: { fill: s.color }, x: sign.x, y: sign.y, size: 8, symbol: symbolOf(s.rank) });
+    }
     add('axes', { sceneId: sceneId('axis', a.dimension, a.id), painter: 'svg', items });
   }
 
@@ -144,12 +186,13 @@ export function composeScene(input: ComposeInput): Scene {
     for (const item of layout.legend.items) {
       const s = model.series.find((o) => o.id === item.seriesId);
       if (!s) continue;
-      const color: ColorToken = item.hidden ? 'text-muted' : s.color;
+      // A point's item (a slice) wears its colour, as a square (ADR 0007).
+      const color: ColorToken = item.hidden ? 'text-muted' : (item.point?.color ?? s.color);
       const { sign } = item;
       const cx = sign.x + sign.width / 2;
       const cy = sign.y + sign.height / 2;
-      const kind = typeOf.get(s.type)?.sign ?? 'square';
-      const id = (part: string) => sceneId('legend', s.id, part);
+      const kind = item.point ? 'square' : (typeOf.get(s.type)?.sign ?? 'square');
+      const id = (part: string) => sceneId('legend', s.id, ...(item.point ? [item.point.index] : []), part);
       if (kind === 'line') {
         items.push({ kind: 'line', sceneId: id('line'), paint: { stroke: color, strokeWidth: 2 }, x1: sign.x, y1: crisp(cy), x2: sign.x + sign.width, y2: crisp(cy) });
         items.push({ kind: 'marker', sceneId: id('marker'), paint: { fill: color }, x: cx, y: cy, size: 6, symbol: symbolOf(s.rank) });
@@ -161,13 +204,14 @@ export function composeScene(input: ComposeInput): Scene {
   }
 
   // The navigator (navigator.md 1–2).
-  if (layout.navigator) for (const g of navigatorGroups(model, layout.navigator, input.view, (t, id) => text(t, id, 'text-muted'))) add('navigator', g);
+  const navKit = model.kit.navigator;
+  if (layout.navigator && navKit) for (const g of navKit.groups(model, layout.navigator, input.view, (t, id) => text(t, id, 'text-muted'))) add('navigator', g);
 
   const order: LayerId[] = ['background', 'grid', 'series', 'axes', 'labels', 'legend', 'navigator', 'overlay'];
-  // In each layer, Canvas groups first, in their order (ADR 0002): the screen draws the Canvas plane under the SVG, so
-  // the export (sceneToSvg), drawing the scene in order, puts them under too.
-  const canvasFirst = (groups: readonly Group[]) => [...groups.filter((g) => g.painter === 'canvas'), ...groups.filter((g) => g.painter !== 'canvas')];
-  const out: Layer[] = order.map((id) => ({ id, groups: canvasFirst(layers.get(id) ?? []) }));
+  // In each layer, WebGL2 groups first, then Canvas, then SVG, each in their order (ADR 0002, 0008): the screen stacks
+  // its planes so, and the export (sceneToSvg), drawing the scene in order, puts them under each other the same way.
+  const rasterFirst = (groups: readonly Group[]) => (['webgl2', 'canvas', 'svg'] as const).flatMap((k) => groups.filter((g) => g.painter === k));
+  const out: Layer[] = order.map((id) => ({ id, groups: rasterFirst(layers.get(id) ?? []) }));
   return { width: layout.width, height: layout.height, dir, areas: { plot }, layers: out };
 }
 

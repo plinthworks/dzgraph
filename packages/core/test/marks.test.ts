@@ -13,12 +13,12 @@ const Y = linearScale([0, 10], [100, 0]);
 function model(ys: readonly (number | null)[], over: Partial<SeriesModel> = {}, xs?: readonly number[]): SeriesModel {
   const y = Float64Array.from(ys, (v) => (v === null ? Number.NaN : v));
   const x = Float64Array.from(xs ?? ys.map((_, i) => i));
-  return { id: 's', type: 'line', name: null, rank: 0, color: 'series-1', xAxis: 'x', yAxis: 'y', initiallyHidden: false, columns: { x, y }, keys: null, names: null, sorted: true, tooltip: 'shared', options: { type: 'line', data: [] }, ...over };
+  return { id: 's', type: 'line', name: null, rank: 0, color: 'series-1', xAxis: 'x', yAxis: 'y', stack: null, initiallyHidden: false, columns: { x, y }, keys: null, names: null, sorted: true, tooltip: 'shared', options: { type: 'line', data: [] }, ...over };
 }
 
 function marks<O extends SeriesBase<string, unknown>>(type: SeriesType<O, 'cartesian'>, s: SeriesModel, extra: Partial<MarkContext<O, 'cartesian'>> = {}): readonly MarkSet[] {
   const x = linearScale([0, Math.max(1, s.columns.x.length - 1)], [0, 200]);
-  const ctx = { series: s as SeriesModel<O>, frame: { x, y: Y, orientation: 'vertical' as const }, plot, slot: 0, slots: 1, dir: 'ltr' as const, measureText: () => ({ width: 0, ascent: 0, descent: 0 }), ...extra };
+  const ctx = { series: s as SeriesModel<O>, frame: { x, y: Y, orientation: 'vertical' as const }, plot, slot: 0, slots: 1, stacked: null, dir: 'ltr' as const, measureText: () => ({ width: 0, ascent: 0, descent: 0 }), ...extra };
   return type.marks(ctx as MarkContext<O, 'cartesian'>);
 }
 

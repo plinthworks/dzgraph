@@ -5,6 +5,7 @@
 import type { Formatter, ScaleKind } from './options.js';
 import type { InstantMs } from './time.js';
 import type { SeriesModel } from './series-type.js';
+import type { Kit } from './kit.js';
 
 export interface AxisModel {
   readonly id: string;
@@ -23,6 +24,8 @@ export interface AxisModel {
     readonly grid: boolean | null;
   };
   readonly zone: string | null;
+  /** A y axis whose piles are drawn as shares (stacking.md 9), or null. */
+  readonly stacking: 'percent' | null;
 }
 
 export interface ChartModel {
@@ -30,14 +33,16 @@ export interface ChartModel {
   readonly xAxes: readonly AxisModel[];
   readonly yAxes: readonly AxisModel[];
   readonly title: { readonly text: string; readonly subtitle: string | null; readonly align: 'start' | 'center' | 'end' } | null;
-  /** Null when no legend is shown. */
-  readonly legend: { readonly position: 'top' | 'bottom' | 'start' | 'end'; readonly align: 'start' | 'center' | 'end' } | null;
+  /** Null when no legend is shown; `auto`: shown only when a polar type needs it (its labels did not fit). */
+  readonly legend: { readonly position: 'top' | 'bottom' | 'start' | 'end'; readonly align: 'start' | 'center' | 'end'; readonly auto: boolean } | null;
   readonly locale: string | null;
   readonly dir: 'ltr' | 'rtl' | null;
   readonly mirror: boolean;
   readonly aspectRatio: number;
   readonly description: string | null;
   readonly orientation: 'vertical' | 'horizontal';
+  /** The chart's coordinate system, its first series' (ADR 0007): a polar chart has no axes. */
+  readonly system: 'cartesian' | 'polar';
   readonly highlight: boolean;
   readonly animation: boolean;
   readonly dataTable: boolean;
@@ -46,4 +51,6 @@ export interface ChartModel {
   readonly navigator: boolean;
   /** Null: shown with the navigator when the x axis is a time axis (range-buttons.md). */
   readonly rangeButtons: boolean | null;
+  /** What the imported features lend the core (ADR 0006). */
+  readonly kit: Kit;
 }

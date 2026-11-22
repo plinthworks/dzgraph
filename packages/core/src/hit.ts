@@ -6,7 +6,8 @@
  */
 import type { ChartModel } from './model.js';
 import type { ChartLayout } from './layout.js';
-import type { MarkerPrimitive, PointRef, RectPrimitive, Scene } from './scene.js';
+import type { ArcPrimitive, MarkerPrimitive, PointRef, PointsPrimitive, RectPrimitive, Scene } from './scene.js';
+import { pointsAt } from './points-batch.js';
 import type { SeriesModel } from './series-type.js';
 import { isShown, type View } from './view.js';
 import { pointAt } from './points.js';
@@ -103,6 +104,40 @@ interface MarkGrid {
   readonly cols: number;
   readonly rows: number;
   readonly cells: Map<number, Hittable[]>;
+  readonly batches: readonly BatchGrid[];
+}
+
+/**
+ * A batch's points by cell (ADR 0008): typed arrays, no object per point. Cells of POINT_REACH with a border row and
+ * column all round, each point in its own cell only; a lookup reads the pointer's cell and its eight neighbours.
+ * Within a cell, points in index order (a counting sort keeps it).
+ */
+interface BatchGrid {
+  readonly prim: PointsPrimitive;
+  /** The scene order of its first point; point i's is `order + i`. */
+  readonly order: number;
+  readonly cols: number;
+  readonly start: Uint32Array;
+  readonly points: Uint32Array;
+}
+
+function batchGrid(p: PointsPrimitive, order: number, x0: number, y0: number, cols: number, rows: number): BatchGrid {
+  // Cell of each point, or −1 when it is not within reach of the plot.
+  const w = cols + 2;
+  const cell = new Int32Array(p.x.length);
+  const start = new Uint32Array(w * (rows + 2) + 1);
+  for (let i = 0; i < cell.length; i++) {
+    const at = pointsAt(p, i);
+    const c = at ? Math.floor((at[0] - x0) / POINT_REACH) + 1 : -1;
+    const r = at ? Math.floor((at[1] - y0) / POINT_REACH) + 1 : -1;
+    if (c < 0 || r < 0 || c > cols + 1 || r > rows + 1) cell[i] = -1;
+    else start[(cell[i] = r * w + c) + 1]!++;
+  }
+  for (let k = 1; k < start.length; k++) start[k]! += start[k - 1]!;
+  const fill = start.slice(0, -1);
+  const points = new Uint32Array(start[start.length - 1]!);
+  for (let i = 0; i < cell.length; i++) if (cell[i]! >= 0) points[fill[cell[i]!]!++] = i;
+  return { prim: p, order, cols: w, start, points };
 }
 
 const grids = new WeakMap<Scene, Map<string, MarkGrid>>();
@@ -133,20 +168,27 @@ function gridOf(scene: Scene, orientation: 'vertical' | 'horizontal'): MarkGrid 
       }
   };
   let order = 0;
+  const batches: BatchGrid[] = [];
   for (const grp of scene.layers.find((l) => l.id === 'series')?.groups ?? [])
     for (const p of grp.items) {
+      if (p.kind === 'points') {
+        batches.push(batchGrid(p, order, x0, y0, cols, rows));
+        order += p.x.length;
+        continue;
+      }
       if (!p.point || (p.kind !== 'rect' && p.kind !== 'marker')) continue;
       const h: Hittable = { order: order++, prim: p, ref: p.point };
       if (p.kind === 'marker') add(h, p.x - POINT_REACH, p.y - POINT_REACH, p.x + POINT_REACH, p.y + POINT_REACH);
+      // A column's band runs the plot's whole height (a bar's, its whole width): above a short column is still its band.
       else if (orientation === 'vertical') {
         const reach = p.width * 0.75;
-        add(h, p.x - reach, p.y, p.x + p.width + reach, p.y + p.height);
+        add(h, p.x - reach, plot.y, p.x + p.width + reach, plot.y + plot.height);
       } else {
         const reach = p.height * 0.75;
-        add(h, p.x, p.y - reach, p.x + p.width, p.y + p.height + reach);
+        add(h, plot.x, p.y - reach, plot.x + plot.width, p.y + p.height + reach);
       }
     }
-  g = { x0, y0, cols, rows, cells };
+  g = { x0, y0, cols, rows, cells, batches };
   byOrientation.set(orientation, g);
   return g;
 }
@@ -158,14 +200,16 @@ function gridOf(scene: Scene, orientation: 'vertical' | 'horizontal'): MarkGrid 
  */
 export function hitMark(scene: Scene, px: number, py: number, orientation: 'vertical' | 'horizontal' = 'vertical', ofSeries: (seriesId: string) => boolean = () => true): PointRef | null {
   if (!inside(scene.areas.plot, px, py)) return null;
+  // Slices (ADR 0007): the one whose ring and angle hold the pointer. A pie has few; read them in order.
+  for (const grp of scene.layers.find((l) => l.id === 'series')?.groups ?? [])
+    for (const p of grp.items) if (p.kind === 'arc' && p.point && ofSeries(p.point.seriesId) && inArc(p, px, py)) return p.point;
   const g = gridOf(scene, orientation);
   const c = Math.min(g.cols - 1, Math.floor((px - g.x0) / POINT_REACH));
   const r = Math.min(g.rows - 1, Math.floor((py - g.y0) / POINT_REACH));
-  const list = g.cells.get(r * g.cols + c);
-  if (!list) return null;
+  const list = g.cells.get(r * g.cols + c) ?? [];
   let under: Hittable | null = null;
   let band: { h: Hittable; d: number } | null = null;
-  let dot: { h: Hittable; d: number } | null = null;
+  let dot: { ref: PointRef; d: number; order: number } | null = null;
   // Each cell's list is in scene order: the first rect under the pointer, and the first of equal distances, win.
   for (const h of list) {
     const p = h.prim;
@@ -180,10 +224,35 @@ export function hitMark(scene: Scene, px: number, py: number, orientation: 'vert
       if (d <= reach && (!band || d < band.d)) band = { h, d };
     } else {
       const d = Math.hypot(p.x - px, p.y - py);
-      if (d <= POINT_REACH && (!dot || d < dot.d)) dot = { h, d };
+      if (d <= POINT_REACH && (!dot || d < dot.d)) dot = { ref: h.ref, d, order: h.order };
     }
   }
   // A rect under the pointer wins over any marker, as in the scan: every rect under the pointer is in its cell.
   if (under) return under.ref;
-  return dot?.h.ref ?? band?.h.ref ?? null;
+  // Batches' points: the nearest within reach; on a tie, the earlier in the scene, as for markers.
+  for (const b of g.batches) {
+    if (!ofSeries(b.prim.seriesId)) continue;
+    for (let rr = r; rr <= r + 2; rr++)
+      for (let cc = c; cc <= c + 2; cc++) {
+        const k = rr * b.cols + cc;
+        for (let j = b.start[k]!; j < b.start[k + 1]!; j++) {
+          const i = b.points[j]!;
+          const [x, y] = pointsAt(b.prim, i)!;
+          const d = Math.hypot(x - px, y - py);
+          if (d <= POINT_REACH && (!dot || d < dot.d || (d === dot.d && b.order + i < dot.order))) dot = { ref: { seriesId: b.prim.seriesId, index: i }, d, order: b.order + i };
+        }
+      }
+  }
+  return dot?.ref ?? band?.h.ref ?? null;
+}
+
+/** Whether a pixel is in an arc: between its radii, and within its angles (clockwise from twelve o'clock). */
+function inArc(a: ArcPrimitive, px: number, py: number): boolean {
+  const dx = px - a.cx;
+  const dy = py - a.cy;
+  const r = Math.hypot(dx, dy);
+  if (r < a.innerRadius || r > a.outerRadius) return false;
+  const turn = 2 * Math.PI;
+  const angle = (((Math.atan2(dx, -dy) - a.startAngle) % turn) + turn) % turn;
+  return angle <= a.endAngle - a.startAngle;
 }

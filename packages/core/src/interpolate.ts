@@ -3,7 +3,7 @@
  * other; paths of the same commands have their points interpolated, others take the new shape; text takes the new
  * state; a group that comes fades in, one that goes fades out. Pure: the DOM's animator asks for frames.
  */
-import type { Group, Layer, Primitive, Scene } from './scene.js';
+import type { Affine, Group, Layer, Primitive, Scene } from './scene.js';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -34,9 +34,30 @@ function between(a: Primitive, b: Primitive, t: number): Primitive {
       for (let i = 0; i < coords.length; i++) coords[i] = lerp(p.path.coords[i]!, b.path.coords[i]!, t);
       return { ...b, path: { commands: b.path.commands, coords } };
     }
+    case 'points': {
+      // The same points under two maps: each moves in a straight line, so the map's offset and scale are interpolated
+      // as a pixel = offset + v · k (ADR 0008). Other points: the new ones at once.
+      const q = a as typeof b;
+      if (q.x !== b.x || q.y !== b.y || q.swapped !== b.swapped || q.mapX.log !== b.mapX.log || q.mapY.log !== b.mapY.log) return b;
+      return { ...b, mapX: mapBetween(q.mapX, b.mapX, t), mapY: mapBetween(q.mapY, b.mapY, t) };
+    }
     case 'text':
       return b;
   }
+}
+
+/** A map whose pixels are the two maps' pixels interpolated, kept on the second's origin. */
+function mapBetween(a: Affine, b: Affine, t: number): Affine {
+  const k = lerp(a.k, b.k, t);
+  const offset = lerp(a.r0 - a.d0 * a.k, b.r0 - b.d0 * b.k, t);
+  return { d0: b.d0, r0: offset + b.d0 * k, k, log: b.log };
+}
+
+/** A mark whose opacity changes goes from one to the other (markers fading in as they appear, animation.md 1). */
+function fading(a: Primitive, m: Primitive, t: number): Primitive {
+  const from = a.paint.opacity ?? 1;
+  const to = m.paint.opacity ?? 1;
+  return from === to ? m : { ...m, paint: { ...m.paint, opacity: lerp(from, to, t) } } as Primitive;
 }
 
 function faded(g: Group, opacity: number): Group {
@@ -55,7 +76,7 @@ export function interpolateScene(a: Scene, b: Scene, t: number): Scene {
       const old = new Map(ga.items.map((p) => [p.sceneId, p]));
       const items: Primitive[] = gb.items.map((p) => {
         const q = old.get(p.sceneId);
-        return q ? between(q, p, t) : { ...p, paint: { ...p.paint, opacity: (p.paint.opacity ?? 1) * t } };
+        return q ? fading(q, between(q, p, t), t) : { ...p, paint: { ...p.paint, opacity: (p.paint.opacity ?? 1) * t } };
       });
       const kept = new Set(gb.items.map((p) => p.sceneId));
       for (const q of ga.items) if (!kept.has(q.sceneId)) items.push({ ...q, paint: { ...q.paint, opacity: (q.paint.opacity ?? 1) * (1 - t) } });
@@ -84,7 +105,13 @@ export function appearFrom(scene: Scene, opts: { readonly fromXMax?: boolean } =
     if (l.id !== 'series') return l;
     const groups = l.groups.map((g) => {
       const clip = g.clip && g.items.some((p) => p.kind === 'path') ? { ...g.clip, x: startsAtMax ? g.clip.x + g.clip.width : g.clip.x, width: 0 } : g.clip;
+      // Slices open from where the first one starts (pie-donut.md 16): the top, clockwise, or anticlockwise from it.
+      const arcs = g.items.filter((p) => p.kind === 'arc' && p.point);
+      const opening = arcs.length && arcs.some((p) => p.kind === 'arc' && p.startAngle === 0) ? 0 : 2 * Math.PI;
       const items = g.items.map((p): Primitive => {
+        // A gauge's value fills from its scale's start (gauge.md 11); a track or a ring is there at once.
+        if (p.kind === 'arc' && p.point && p.grows) return p.grows === 'start' ? { ...p, endAngle: p.startAngle } : { ...p, startAngle: p.endAngle };
+        if (p.kind === 'arc' && p.point) return { ...p, startAngle: opening, endAngle: opening };
         if (p.kind === 'rect') {
           // The base: opposite the rounded free end (a column the plot cut grows from where it is drawn from).
           switch (p.roundEnd) {
@@ -98,7 +125,7 @@ export function appearFrom(scene: Scene, opts: { readonly fromXMax?: boolean } =
               return { ...p, y: p.y + p.height, height: 0 };
           }
         }
-        if (p.kind === 'marker') return { ...p, paint: { ...p.paint, opacity: 0 } };
+        if (p.kind === 'marker' || p.kind === 'points') return { ...p, paint: { ...p.paint, opacity: 0 } };
         return p;
       });
       return { ...g, items, ...(clip ? { clip } : {}) };

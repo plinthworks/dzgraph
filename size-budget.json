@@ -1,13 +1,13 @@
 {
-  "note": "Bundled, minified, gzipped (a stylesheet as it ships). Budgets: the measure after Phase 1 + 5 % (owner 2026-11-21); raised when a feature needs it, without asking (owner), said in the step's report. Phase 2 (hover, legend, keyboard, accessibility, animation) raised dom, apps and theme 2026-11-21. Phase 3 (time axes, Canvas painter, zoom and pan, navigator, range buttons) raised dom, apps and theme 2026-11-21.",
+  "note": "Bundled, minified, gzipped (a stylesheet as it ships). Budgets: the measure after Phase 1 + 5 % (owner 2026-11-21); raised when a feature needs it, without asking (owner), said in the step's report. Phase 2 (hover, legend, keyboard, accessibility, animation) raised dom, apps and theme 2026-11-21. Phase 3 (time axes, Canvas painter, zoom and pan, navigator, range buttons) raised dom, apps and theme 2026-11-21. Phase 4 step 1 (features as imported modules, ADR 0006) lowered the apps without features to their new measure + 5 %, raised dom (it now holds every feature) and added the app with everything, 2026-11-22. Phase 4 step 3 (stacking: piles, shares, totals; a core rule every column and area chart carries) raised core and the apps without features to their measure + 5 %, 2026-11-22. Phase 4 step 4 (log scale) raised the app with everything to its measure + 5 %, 2026-11-22. Phase 4 step 6 (polar system: pie, donut, gauge; their layout, legend, hover, keyboard and table seams in every chart) raised every entry to its measure + 5 %, 2026-11-22. Phase 3 bis (dense scatters as one batch, WebGL2 painter, table and value-axis fit for unsorted series without a full scan, ADR 0008) raised dom and the apps to their measure + 5 %, 2026-11-22.",
   "entries": {
     "core": {
       "file": "packages/core/src/index.ts",
-      "maxGzip": 4900
+      "maxGzip": 10750
     },
     "dom": {
       "file": "packages/dom/src/index.ts",
-      "maxGzip": 14500,
+      "maxGzip": 20450,
       "external": [
         "@dzgraph/core",
         "@dzgraph/core/internal"
@@ -15,15 +15,19 @@
     },
     "line chart (app)": {
       "file": "scripts/size/line-chart.ts",
-      "maxGzip": 37850
+      "maxGzip": 40250
     },
     "every Phase 1 type (app)": {
       "file": "scripts/size/all-types.ts",
-      "maxGzip": 38700
+      "maxGzip": 41400
+    },
+    "every type and feature (app)": {
+      "file": "scripts/size/everything.ts",
+      "maxGzip": 56250
     },
     "theme": {
       "file": "packages/theme/dzgraph.css",
-      "maxGzip": 1390
+      "maxGzip": 1480
     }
   }
 }

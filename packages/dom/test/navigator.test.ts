@@ -2,7 +2,7 @@
 // data-table.md 5). Step 3.6.
 import { describe, it, expect, afterEach } from 'vitest';
 import { allTypes } from '@dzgraph/core';
-import { chart, type Chart, type ChartEvents } from '@dzgraph/dom';
+import { allFeatures, chart, type Chart, type ChartEvents } from '@dzgraph/dom';
 
 const made: { el: HTMLElement; c: Chart }[] = [];
 const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
@@ -13,7 +13,7 @@ function mount(options: Parameters<typeof chart>[1], attrs: Record<string, strin
   el.setAttribute('style', 'inline-size:600px;block-size:400px');
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
   document.body.appendChild(el);
-  const c = chart(el, { animation: false, ...options }, { types: allTypes });
+  const c = chart(el, { animation: false, ...options }, { types: allTypes, features: allFeatures });
   made.push({ el, c });
   const ranges: ChartEvents['rangeChange'][] = [];
   c.on('rangeChange', (d) => ranges.push(d));

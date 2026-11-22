@@ -4,9 +4,10 @@
  * a probe element (so `light-dark()` follows the colour scheme), its backing store on whole device pixels and its
  * origin on the device-pixel grid (spike S5).
  */
-import type { Group, Paint, Primitive, Scene } from '@dzgraph/core';
-import { cornerRadii, cssColor, markerPolygon, type SvgOptions } from '@dzgraph/core/internal';
+import type { Group, Paint, PointsPrimitive, Primitive, Rect, Scene } from '@dzgraph/core';
+import { cornerRadii, cssColor, markerPolygon, place, type SvgOptions } from '@dzgraph/core/internal';
 import type { Painter } from './painter.js';
+import { placeRaster } from './raster.js';
 
 export class CanvasPainter implements Painter {
   readonly canvas: HTMLCanvasElement;
@@ -45,27 +46,7 @@ export class CanvasPainter implements Painter {
     }
     // Colours are read again at each drawing: a theme or colour-scheme change is picked up.
     this.colours.clear();
-    const dpr = window.devicePixelRatio || 1;
-    // On the device-pixel grid (S5): the canvas starts on the whole device pixel at or before the scene's origin, its
-    // drawing shifted by the rest. Its place without the shift is the root's inline start: the start edge, or in RTL
-    // the end edge less its width (review 7).
-    // The scene's (0, 0) is the main SVG's corner: the root's start, or in RTL its end less the scene's width (the SVG
-    // is a block at the inline start). Computed, not read: the SVG may not have its new size yet.
-    const root = this.canvas.parentElement!.getBoundingClientRect();
-    const rtl = getComputedStyle(this.canvas.parentElement!).direction === 'rtl';
-    const o = { x: rtl ? root.x + root.width - scene.width : root.x, y: root.y };
-    const fx = ((o.x * dpr) % 1 + 1) % 1;
-    const fy = ((o.y * dpr) % 1 + 1) % 1;
-    const w = Math.ceil(scene.width * dpr + fx);
-    const h = Math.ceil(scene.height * dpr + fy);
-    if (this.canvas.width !== w || this.canvas.height !== h) {
-      this.canvas.width = w;
-      this.canvas.height = h;
-    }
-    const naturalX = rtl ? root.x + root.width - w / dpr : root.x;
-    const dx = o.x - fx / dpr - naturalX;
-    const dy = o.y - fy / dpr - root.y;
-    Object.assign(this.canvas.style, { display: 'block', inlineSize: `${w / dpr}px`, blockSize: `${h / dpr}px`, translate: `${dx}px ${dy}px` });
+    const { dpr, fx, fy, w, h } = placeRaster(this.canvas, scene);
     const ctx = this.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, w, h);
@@ -79,13 +60,17 @@ export class CanvasPainter implements Painter {
       }
       // save/restore reset the context's style: what was set before does not hold.
       this.style = { alpha: Number.NaN, fill: undefined, stroke: undefined, width: Number.NaN, dash: undefined };
-      this.group(ctx, g.items, g.opacity ?? 1);
+      this.group(ctx, g.items, g.opacity ?? 1, g.clip);
       ctx.restore();
     }
   }
 
-  private group(ctx: CanvasRenderingContext2D, items: readonly Primitive[], groupAlpha: number): void {
+  private group(ctx: CanvasRenderingContext2D, items: readonly Primitive[], groupAlpha: number, clip: Rect | undefined): void {
     for (const p of items) {
+      if (p.kind === 'points') {
+        this.points(ctx, p, groupAlpha, clip);
+        continue;
+      }
       ctx.beginPath();
       switch (p.kind) {
         case 'rect': {
@@ -126,6 +111,32 @@ export class CanvasPainter implements Painter {
         case 'text':
           // Text never goes to Canvas (ADR 0002: only marks do).
           continue;
+      }
+      this.fill(ctx, p.paint, groupAlpha);
+    }
+  }
+
+  /**
+   * A batch (ADR 0008): each point placed through its maps and filled on its own, so piles read darker as with
+   * markers; those that cannot show in the clip skipped; no object per point.
+   */
+  private points(ctx: CanvasRenderingContext2D, p: PointsPrimitive, groupAlpha: number, clip: Rect | undefined): void {
+    const r = p.size / 2;
+    const m = p.size;
+    const [x0, x1, y0, y1] = clip ? [clip.x - m, clip.x + clip.width + m, clip.y - m, clip.y + clip.height + m] : [-Infinity, Infinity, -Infinity, Infinity];
+    const shape = p.symbol === 'circle' ? null : markerPolygon(p.symbol, 0, 0, p.size);
+    for (let i = 0; i < p.x.length; i++) {
+      const a = place(p.mapX, p.x[i]!);
+      const b = place(p.mapY, p.y[i]!);
+      const x = p.swapped ? b : a;
+      const y = p.swapped ? a : b;
+      // NaN (a gap) fails every comparison: skipped with what is outside.
+      if (!(x >= x0 && x <= x1 && y >= y0 && y <= y1)) continue;
+      ctx.beginPath();
+      if (!shape) ctx.arc(x, y, r, 0, 2 * Math.PI);
+      else {
+        for (let k = 0; k < shape.length; k++) (k ? ctx.lineTo : ctx.moveTo).call(ctx, x + shape[k]![0], y + shape[k]![1]);
+        ctx.closePath();
       }
       this.fill(ctx, p.paint, groupAlpha);
     }

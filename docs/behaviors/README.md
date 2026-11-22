@@ -26,3 +26,8 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [navigator.md](navigator.md) — the navigator | 3 |
 | [range-buttons.md](range-buttons.md) — range buttons | 3 |
 | [big-data.md](big-data.md) — big series, Canvas, WebGL2 | 3 |
+| [stacking.md](stacking.md) — stacked columns, bars and areas, values and percent | 4 |
+| [log-scale.md](log-scale.md) — logarithmic axes | 4 |
+| [combined.md](combined.md) — several types in one chart, two value axes | 4 |
+| [pie-donut.md](pie-donut.md) — pie and donut, labels, « Autres » | 4 |
+| [gauge.md](gauge.md) — the gauge | 4 |

@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import type { FontRole, TextMeasurer } from '@dzgraph/core';
 import { allTypes } from '@dzgraph/core';
-import { normalize } from '../src/normalize.js';
+import { normalizeFull as normalize } from './helpers/kit.js';
 import { layout } from '../src/layout.js';
 import { composeScene } from '../src/compose.js';
 import { rangeButtonSpan } from '../src/navigator.js';

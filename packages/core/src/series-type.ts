@@ -5,7 +5,9 @@
  */
 import type { Problem } from './problem.js';
 import type { SeriesBase } from './options.js';
-import type { ColorToken, LayerId, Primitive, Rect, TextMeasurer } from './scene.js';
+import type { Affine, ColorToken, LayerId, Primitive, Rect, TextMeasurer } from './scene.js';
+import type { Stacked } from './stack.js';
+import type { View } from './view.js';
 
 /** A series after checking: named columns of numbers, whatever shape the app wrote. */
 export interface SeriesModel<O extends SeriesBase<string, unknown> = SeriesBase<string, unknown>> {
@@ -20,6 +22,8 @@ export interface SeriesModel<O extends SeriesBase<string, unknown> = SeriesBase<
   /** The axes it is drawn against, by id. */
   readonly xAxis: string;
   readonly yAxis: string;
+  /** The stack it is piled in (stacking.md 1), or null: it stands alone. */
+  readonly stack: string | null;
   /** Read once, when the series first appears (GLOSSARY: Hidden series). */
   readonly initiallyHidden: boolean;
   /** Every column the type reads, same length: `x` and `y` for most types, `open`/`high`/`low`/`close`, `z`… NaN is a gap. */
@@ -42,6 +46,8 @@ export interface Scale {
   invert(pixel: number): number;
   /** For categories: one category's size in pixels; 0 for continuous scales. */
   readonly bandwidth: number;
+  /** `map` as numbers (ADR 0008), for painters that place many points themselves. */
+  readonly affine: Affine;
 }
 
 export interface Bounds {
@@ -63,9 +69,75 @@ export interface FramesBySystem {
     readonly y: Scale;
     readonly orientation: 'vertical' | 'horizontal';
   };
+  /**
+   * Around a centre (pie, donut, gauge: ADR 0007): the type placed itself (`SeriesType.place`); its marks receive that
+   * placement back, as their own type.
+   */
+  polar: {
+    readonly placement: Placement;
+  };
 }
 
 export type CoordinateSystemName = keyof FramesBySystem;
+
+/** What a polar type is given to place itself (ADR 0007). */
+export interface PlaceInput {
+  readonly series: SeriesModel;
+  /** The room it has: the chart less its title (and its legend, when the legend is shown). */
+  readonly box: Rect;
+  /** Whether it may label its points beside itself; false once the legend shows instead (pie-donut.md 9). */
+  readonly labels: boolean;
+  readonly view: View | undefined;
+  readonly dir: 'ltr' | 'rtl';
+  readonly mirror: boolean;
+  readonly locale: string | undefined;
+  readonly measureText: TextMeasurer;
+  readonly text: PlaceText;
+}
+
+/** The words a placement writes in the scene (the DOM layer's translated messages). */
+export interface PlaceText {
+  readonly seriesName: (place: number) => string;
+  /** A point without a name, by its place (from 1): « Part 3 ». */
+  readonly pointName: (place: number) => string;
+  /** The slice that holds the smallest ones (pie-donut.md 7). */
+  readonly others: string;
+  /** The word under a donut's total (pie-donut.md 3). */
+  readonly total: string;
+  /** A slice's label from its name and share (pie-donut.md 9). */
+  readonly sliceLabel: (name: string, share: string) => string;
+}
+
+/** A legend item a placement asks for: one per point (a slice), instead of one for the series. */
+export interface PlacedLegendItem {
+  readonly index: number;
+  readonly name: string;
+  readonly color: ColorToken;
+  readonly hidden: boolean;
+}
+
+/**
+ * Where a polar type put itself (ADR 0007), as the core asks it: kept by the layout, handed back to the type's marks.
+ * Point indices are the series'; one past the last stands for « Autres » when the type groups small slices.
+ */
+export interface Placement {
+  /** Its legend items, in order; the legend shows them when shown. */
+  readonly legend: readonly PlacedLegendItem[];
+  /** Whether it needs the legend to be read (its labels did not fit). */
+  readonly needsLegend: boolean;
+  /** The points drawn, in drawing order (the keyboard's order). */
+  readonly order: readonly number[];
+  /** Where a drawn point is (its tooltip's anchor, its focus ring's centre), or null. */
+  anchor(index: number): { readonly x: number; readonly y: number } | null;
+  /** A drawn point's share of the whole (0 to 1), NaN when it has none. */
+  share(index: number): number;
+  /** The points a drawn point stands for (« Autres »), or null for a point of its own. */
+  members(index: number): readonly number[] | null;
+  /** A drawn point's name: its own, by its place, or « Autres ». */
+  name(index: number): string;
+  /** A gauge's scale, value and threshold (gauge.md 7–10): read as a meter. */
+  readonly meter?: { readonly min: number; readonly max: number; readonly value: number; readonly threshold: string | null };
+}
 
 /** Everything a type needs to draw one series in a laid-out chart. */
 export interface MarkContext<O extends SeriesBase<string, unknown>, S extends CoordinateSystemName> {
@@ -75,6 +147,10 @@ export interface MarkContext<O extends SeriesBase<string, unknown>, S extends Co
   /** The series' place among the visible series sharing its type and axes (side-by-side columns), and their count. */
   readonly slot: number;
   readonly slots: number;
+  /** Its pile, when the series is stacked (stacking.md): each point's segment from `base` to `top`. */
+  readonly stacked: Stacked | null;
+  /** The point pointed at in this series, when the chart highlights one (a slice brought out, pie-donut.md 12). */
+  readonly highlight: number | null;
   readonly dir: 'ltr' | 'rtl';
   readonly measureText: TextMeasurer;
 }
@@ -96,7 +172,10 @@ export type OwnOptionNames<O> = { readonly [K in Exclude<keyof O, keyof SeriesBa
 export interface SeriesType<O extends SeriesBase<string, unknown> = SeriesBase<string, unknown>, S extends CoordinateSystemName = CoordinateSystemName> {
   readonly name: O['type'];
   readonly system: S;
-  /** For a cartesian type: the chart's orientation it needs (bars: `horizontal`). Default `vertical`. */
+  /**
+   * For a cartesian type: the chart's orientation it sets (columns `vertical`, bars `horizontal`); a type without one
+   * (lines, areas, scatters) follows the chart's, `vertical` when nothing sets it (combined.md 3).
+   */
   readonly orientation?: 'vertical' | 'horizontal';
   /**
    * For a cartesian type on a continuous x axis: round the axis's ends outwards to ticks, like a value axis (scatter
@@ -105,6 +184,8 @@ export interface SeriesType<O extends SeriesBase<string, unknown> = SeriesBase<s
   readonly roundX?: boolean;
   /** Whether its value axis always shows zero (columns, bars, areas: axes.md 1), also when zoomed. */
   readonly zeroBased?: boolean;
+  /** Whether its series may stack (columns, bars, areas: stacking.md 1); the core then reads their `stack` option. */
+  readonly stackable?: boolean;
   /** Whether the type draws its points in x order (lines, areas): x going backwards is reported (`unsorted-x`). */
   readonly sortedX?: boolean;
   /** How the legend draws the series' sign (legend.md 3): a short line with its marker, a square, or its marker. */
@@ -119,9 +200,11 @@ export interface SeriesType<O extends SeriesBase<string, unknown> = SeriesBase<s
    * Reads the type's own data shape into columns. Absent: the core reads `DataInput` (x and y). Unknown input, like
    * `check`; reports instead of throwing.
    */
-  readData?(data: unknown, path: string): { readonly columns: SeriesModel['columns']; readonly keys: readonly (string | null)[] | null; readonly problems: readonly Problem[] };
+  readData?(data: unknown, path: string, seriesId: string): { readonly columns: SeriesModel['columns']; readonly keys: readonly (string | null)[] | null; readonly names?: readonly (string | null)[] | null; readonly problems: readonly Problem[] };
   /** Where the series reaches on its axes, before stacking. */
   bounds(series: SeriesModel<O>): { readonly x: Bounds | null; readonly y: Bounds | null };
   /** The series' primitives; the core groups them, picks painters and orders the layers. */
   marks(context: MarkContext<O, S>): readonly MarkSet[];
+  /** A polar type places itself (ADR 0007): its geometry, labels and legend items, in the box it is given. */
+  place?(input: PlaceInput): Placement;
 }

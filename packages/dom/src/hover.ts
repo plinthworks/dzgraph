@@ -3,9 +3,10 @@
  * points live in their own group drawn over the scene; the tooltip is an HTML element in the chart, for the eyes only.
  * Content and hit tests come from the core (`hitShared`, `hitMark`, `tooltipOf`); this file only places and shows.
  */
-import type { MarkerPrimitive, PointRef, Primitive, Scene } from '@dzgraph/core';
+import type { ArcPrimitive, MarkerPrimitive, PointRef, Scene } from '@dzgraph/core';
+import type { SvgPrimitive } from '@dzgraph/core/internal';
 import type { ChartLayout, ChartModel, LayoutText, Tooltip, View } from '@dzgraph/core/internal';
-import { crisp, hitMark, hitShared, pointAt, svgOf, tooltipOf } from '@dzgraph/core/internal';
+import { crisp, hitMark, hitShared, pointAt, pointKey, pointsAt, svgOf, tooltipOf } from '@dzgraph/core/internal';
 
 const NS = 'http://www.w3.org/2000/svg';
 /** The tooltip's distance from the point (hover-tooltip.md 7). */
@@ -18,7 +19,8 @@ export interface HoverState {
   readonly layout: ChartLayout;
   readonly scene: Scene;
   readonly locale: string;
-  readonly text: Pick<LayoutText, 'seriesName'>;
+  /** Series names, and the word under a pile (stacking.md 14). */
+  readonly text: Pick<LayoutText, 'seriesName'> & { readonly total: string; readonly moreSlices: (count: string) => string; readonly gaugeNote: (min: string, max: string, threshold: string | undefined) => string };
   readonly font: (role: 'legend') => string;
   /** The chart's view: a hidden series is never in the tooltip. */
   readonly view: View;
@@ -48,7 +50,7 @@ interface Found {
   /** The series to highlight (per-mark hover and keyboard focus). */
   readonly highlight: string | undefined;
   /** A focus ring (keyboard.md 4). */
-  readonly ring?: Primitive;
+  readonly ring?: SvgPrimitive;
 }
 
 export class Hover {
@@ -141,8 +143,10 @@ export class Hover {
     const perMark = new Set(model.series.filter((o) => o.tooltip === 'mark').map((o) => o.id));
     const mark = hitMark(scene, x, y, model.orientation, (id) => perMark.has(id));
     if (mark) {
-      const p = drawnPoint(scene, mark);
-      return { point: mark, tooltip: tooltipOf(model, layout, { points: [mark] }, locale, text), at: p ?? { x, y }, marks: [], crosshair: null, highlight: model.highlight ? mark.seriesId : undefined };
+      // A slice (ADR 0007): its anchor, and it alone highlighted (pie-donut.md 12).
+      const polar = layout.placements.has(mark.seriesId);
+      const p = polar ? pointAt(model, layout, mark) : drawnPoint(scene, mark);
+      return { point: mark, tooltip: tooltipOf(model, layout, { points: [mark] }, locale, text), at: p ?? { x, y }, marks: [], crosshair: null, highlight: model.highlight ? (polar ? pointKey(mark.seriesId, mark.index) : mark.seriesId) : undefined };
     }
     return this.findShared(x, y);
   }
@@ -179,11 +183,17 @@ export class Hover {
     if (series.tooltip === 'shared') {
       const found = this.findShared(px, py);
       if (!found) return null;
-      const ring: Primitive = { kind: 'marker', sceneId: 'focus', paint: { stroke: 'focus', strokeWidth: 2 }, x: px, y: py, size: 18, symbol: 'circle' };
+      const ring: SvgPrimitive = { kind: 'marker', sceneId: 'focus', paint: { stroke: 'focus', strokeWidth: 2 }, x: px, y: py, size: 18, symbol: 'circle' };
       return { ...found, point: ref, at: { x: px, y: py }, ring };
     }
+    // A slice's ring follows its outline (pie-donut.md 13).
+    const slice = drawnArc(scene, ref);
+    if (slice) {
+      const ring: SvgPrimitive = { ...slice, sceneId: 'focus', paint: { stroke: 'focus', strokeWidth: 2 } };
+      return { point: ref, tooltip: tooltipOf(model, layout, { points: [ref] }, locale, text), at: { x: px, y: py }, marks: [], crosshair: null, highlight: model.highlight ? pointKey(ref.seriesId, ref.index) : undefined, ring };
+    }
     const drawn = drawnRect(scene, ref);
-    const ring: Primitive = drawn
+    const ring: SvgPrimitive = drawn
       ? { kind: 'rect', sceneId: 'focus', paint: { stroke: 'focus', strokeWidth: 2 }, x: drawn.x - 3, y: drawn.y - 3, width: drawn.width + 6, height: drawn.height + 6, radius: 3 }
       : { kind: 'marker', sceneId: 'focus', paint: { stroke: 'focus', strokeWidth: 2 }, x: px, y: py, size: 18, symbol: 'circle' };
     return { point: ref, tooltip: tooltipOf(model, layout, { points: [ref] }, locale, text), at: drawn ? { x: drawn.x + drawn.width / 2, y: drawn.y } : { x: px, y: py }, marks: [], crosshair: null, highlight: model.highlight ? ref.seriesId : undefined, ring };
@@ -227,7 +237,7 @@ export class Hover {
 
   private visuals(found: Found, scene: Scene): SVGElement[] {
     const out: SVGElement[] = [];
-    const prims: Primitive[] = [];
+    const prims: SvgPrimitive[] = [];
     if (found.crosshair !== null) {
       const x = crisp(found.crosshair);
       prims.push({ kind: 'line', sceneId: 'crosshair', paint: { stroke: 'axis-line', strokeWidth: 1 }, x1: x, y1: scene.areas.plot.y, x2: x, y2: scene.areas.plot.y + scene.areas.plot.height });
@@ -268,8 +278,48 @@ export class Hover {
       value.className = 'dzgraph-tooltip-value';
       value.textContent = r.value;
       row.append(sign, name, value);
+      // A stacked point's share of its pile (stacking.md 14).
+      if (r.share) {
+        const share = document.createElement('span');
+        share.className = 'dzgraph-tooltip-share';
+        share.textContent = r.share;
+        row.append(share);
+      }
       return row;
     });
+    // A gauge's scale and threshold, under its value (gauge.md 7).
+    if (t.range) {
+      const row = document.createElement('div');
+      row.className = 'dzgraph-tooltip-row dzgraph-tooltip-note';
+      row.textContent = s.text.gaugeNote(t.range.min, t.range.max, t.threshold);
+      rows.push(row);
+    }
+    // « Autres » past ten slices: how many more (pie-donut.md 8).
+    if (t.more) {
+      const row = document.createElement('div');
+      row.className = 'dzgraph-tooltip-row dzgraph-tooltip-more';
+      row.textContent = s.text.moreSlices(new Intl.NumberFormat(s.locale).format(t.more));
+      rows.push(row);
+    }
+    // Under a pile, its total closes the tooltip.
+    if (t.total !== undefined) {
+      const row = document.createElement('div');
+      row.className = 'dzgraph-tooltip-row dzgraph-tooltip-total';
+      const name = document.createElement('span');
+      name.className = 'dzgraph-tooltip-name';
+      name.textContent = s.text.total;
+      const value = document.createElement('span');
+      value.className = 'dzgraph-tooltip-value';
+      value.textContent = t.total;
+      row.append(name, value);
+      // An empty share cell keeps the total under the values, not under the shares.
+      if (t.rows.some((r) => r.share)) {
+        const pad = document.createElement('span');
+        pad.className = 'dzgraph-tooltip-share';
+        row.append(pad);
+      }
+      rows.push(row);
+    }
     this.tooltip.replaceChildren(heading, ...rows);
     this.tooltip.style.font = s.font('legend');
     this.tooltip.dir = s.layout.dir;
@@ -301,7 +351,11 @@ function drawnPoint(scene: Scene, ref: PointRef): { x: number; y: number } | nul
   for (const l of scene.layers)
     for (const g of l.groups)
       for (const p of g.items)
-        if (p.point?.seriesId === ref.seriesId && p.point.index === ref.index) {
+        if (p.kind === 'points') {
+          // A batch's point (ADR 0008): placed through its maps.
+          const at = p.seriesId === ref.seriesId ? pointsAt(p, ref.index) : null;
+          if (at) return { x: at[0], y: at[1] };
+        } else if (p.point?.seriesId === ref.seriesId && p.point.index === ref.index) {
           if (p.kind === 'rect') return { x: p.x + p.width / 2, y: p.y };
           if (p.kind === 'marker') return { x: p.x, y: p.y };
         }
@@ -309,6 +363,12 @@ function drawnPoint(scene: Scene, ref: PointRef): { x: number; y: number } | nul
 }
 
 /** A drawn column's rectangle, for its focus ring. */
+function drawnArc(scene: Scene, ref: PointRef): ArcPrimitive | null {
+  for (const l of scene.layers)
+    for (const g of l.groups) for (const p of g.items) if (p.kind === 'arc' && p.point?.seriesId === ref.seriesId && p.point.index === ref.index) return p;
+  return null;
+}
+
 function drawnRect(scene: Scene, ref: PointRef): { x: number; y: number; width: number; height: number } | null {
   for (const l of scene.layers)
     for (const g of l.groups) for (const p of g.items) if (p.kind === 'rect' && p.point?.seriesId === ref.seriesId && p.point.index === ref.index) return p;

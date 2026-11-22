@@ -34,6 +34,8 @@
   --dzgraph-tick: var(--tz-border);
   --dzgraph-grid-line: color-mix(in oklab, var(--tz-border) 55%, var(--tz-bg));
   --dzgraph-focus: var(--tz-accent);
+  --dzgraph-others: var(--tz-fg-muted);
+  --dzgraph-track: color-mix(in oklab, var(--tz-border) 70%, var(--tz-bg));
   --dzgraph-font-title: 600 16px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
   --dzgraph-font-subtitle: 400 13px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
   --dzgraph-font-axis-title: 500 12px var(--tz-font-family, system-ui, -apple-system, "Segoe UI", sans-serif);
@@ -72,6 +74,25 @@
   padding-inline-start: 16px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.dzgraph-tooltip-share {
+  min-inline-size: 4ch;
+  color: var(--tz-fg-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.dzgraph-tooltip-note,
+.dzgraph-tooltip-more {
+  color: var(--tz-fg-muted);
+}
+
+.dzgraph-tooltip-total {
+  margin-block-start: 2px;
+  padding-block-start: 2px;
+  padding-inline-start: 18px;
+  border-block-start: 1px solid var(--tz-border);
 }
 
 .dzgraph-legend-button,
@@ -179,6 +200,8 @@
     --dzgraph-tick: CanvasText;
     --dzgraph-grid-line: GrayText;
     --dzgraph-focus: Highlight;
+    --dzgraph-others: GrayText;
+    --dzgraph-track: GrayText;
   }
   .dzgraph .dzgraph-tooltip {
     border-color: CanvasText;

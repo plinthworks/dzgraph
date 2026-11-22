@@ -21,7 +21,8 @@ export function writeTable(box: HTMLElement, model: ChartModel, layout: ChartLay
   caption.textContent = t.range ? `${name} (${messages.tableRange(t.range.from, t.range.to)})` : name;
   // The x column's header: the axis's title, else a word for what x is (review 10).
   const xa = model.xAxes[0];
-  const xHeader = xa?.title ?? (xa?.scale === 'category' ? messages.category : messages.xValue);
+  // A polar chart's rows are its named points (slices): categories, whatever its unused x axis says.
+  const xHeader = model.system === 'polar' ? messages.category : (xa?.title ?? (xa?.scale === 'category' ? messages.category : messages.xValue));
   const head = document.createElement('thead');
   const hr = document.createElement('tr');
   for (const name of [xHeader, ...t.columns]) {

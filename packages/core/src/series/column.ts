@@ -1,14 +1,21 @@
 /**
- * Columns and bars (columns-bars.md): one rectangle per point from zero, the series side by side in each band. Bars
- * are columns in a horizontal chart: the same code, turned by the frame's orientation.
+ * Columns and bars (columns-bars.md): one rectangle per point from zero, the series side by side in each band, or
+ * piled when stacked (stacking.md). Bars are columns in a horizontal chart: the same code, turned by the frame's
+ * orientation.
  */
 import type { SeriesBase } from '../options.js';
 import type { Bounds, MarkContext, MarkSet, SeriesModel, SeriesType } from '../series-type.js';
 import type { RectPrimitive } from '../scene.js';
 import { isGap, rangeOf, sceneId, withZero } from './shared.js';
 
-export interface ColumnSeriesOptions extends SeriesBase<'column'> {}
-export interface BarSeriesOptions extends SeriesBase<'bar'> {}
+export interface ColumnSeriesOptions extends SeriesBase<'column'> {
+  /** Stacks the column on the other columns of the same stack (stacking.md 1); `true`: the stack `default`. */
+  readonly stack?: boolean | string | undefined;
+}
+export interface BarSeriesOptions extends SeriesBase<'bar'> {
+  /** Stacks the bar on the other bars of the same stack (stacking.md 1); `true`: the stack `default`. */
+  readonly stack?: boolean | string | undefined;
+}
 
 declare module '../options.js' {
   interface SeriesOptionsByType {
@@ -54,15 +61,29 @@ function columnMarks<O extends SeriesBase<string, unknown>>(ctx: MarkContext<O, 
   // The plot's span along the values: a column is cut where the axis's bounds cut it (review 5).
   const [v0, v1] = across ? [ctx.plot.y, ctx.plot.y + ctx.plot.height] : [ctx.plot.x, ctx.plot.x + ctx.plot.width];
   const clamp = (v: number) => Math.min(v1, Math.max(v0, v));
+  /** Which way, in pixels, values grow along the plot (+1 or −1), whatever the scale. */
+  const rising = Y.invert(v1) > Y.invert(v0) ? 1 : -1;
   const rects: RectPrimitive[] = [];
+  const pile = ctx.stacked;
   for (let i = 0; i < x.length; i++) {
     const v = y[i]!;
     if (isGap(s, i) || v === 0) continue;
     const start = X.map(x[i]!) + offset;
-    let a = zero;
-    let b = Y.map(v);
-    // A value that is not zero is at least 1 px (columns-bars.md 3), grown away from zero.
-    if (Math.abs(b - a) < 1) b = a + (b < a ? -1 : 1);
+    // Stacked: the segment from the pile below it to its own end (stacking.md 4).
+    const from = pile ? pile.base[i]! : 0;
+    let a = pile ? Y.map(from) : zero;
+    let b = Y.map(pile ? pile.top[i]! : v);
+    const outer = !pile || pile.outer[i] === 1;
+    if (pile) {
+      // Two px of background between segments (stacking.md 12): one taken from each side of every joint.
+      const toward = b < a ? -1 : 1;
+      if (from !== 0) a += toward;
+      if (!outer) b -= toward;
+      if ((b - a) * toward < 1) b = a + toward;
+    }
+    // A value that is not zero is at least 1 px (columns-bars.md 3), grown away from zero — on a log axis, up from
+    // the bottom even at the axis's lowest value, where the column has no length of its own (log-scale.md 8).
+    if (Math.abs(b - a) < 1) b = a + (b !== a ? Math.sign(b - a) : v > 0 ? rising : -rising);
     a = clamp(a);
     const cut = clamp(b) !== b;
     b = clamp(b);
@@ -72,7 +93,8 @@ function columnMarks<O extends SeriesBase<string, unknown>>(ctx: MarkContext<O, 
     const point = { seriesId: s.id, index: i };
     const id = sceneId('s', s.id, 'c', i);
     // The free end is rounded, unless the plot cut it (that is not the column's end).
-    const radius = cut ? 0 : Math.min(END_RADIUS, width / 2, size);
+    // Only the pile's end is rounded; the segments inside it stay straight (stacking.md 12).
+    const radius = cut || !outer ? 0 : Math.min(END_RADIUS, width / 2, size);
     // The free end is always named (animation grows the column from the edge opposite it, review 11); rounded unless cut.
     const end: NonNullable<RectPrimitive['roundEnd']> = across ? (b < a ? 'y-min' : 'y-max') : b > a ? 'x-max' : 'x-min';
     const round = radius > 0 ? { radius, roundEnd: end } : { roundEnd: end };
@@ -96,9 +118,11 @@ function columnBounds(s: SeriesModel): { x: Bounds | null; y: Bounds | null } {
 export const column: SeriesType<ColumnSeriesOptions, 'cartesian'> = {
   name: 'column',
   system: 'cartesian',
+  orientation: 'vertical',
   zeroBased: true,
   sign: 'square',
-  optionNames: {},
+  stackable: true,
+  optionNames: { stack: true },
   check: () => [],
   bounds: columnBounds,
   marks: columnMarks,
@@ -110,7 +134,8 @@ export const bar: SeriesType<BarSeriesOptions, 'cartesian'> = {
   zeroBased: true,
   orientation: 'horizontal',
   sign: 'square',
-  optionNames: {},
+  stackable: true,
+  optionNames: { stack: true },
   check: () => [],
   bounds: columnBounds,
   marks: columnMarks,

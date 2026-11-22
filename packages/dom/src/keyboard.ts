@@ -51,7 +51,11 @@ export class PointItems {
   update(ready: Ready): void {
     this.ready = ready;
     const shown = ready.model.series.filter((s) => isShown(s, ready.view));
-    this.order = new Map(shown.map((s) => [s.id, validOrder(s)]));
+    // A polar series' points in drawing order, « Autres » included (ADR 0007); others by index.
+    this.order = new Map(shown.map((s) => {
+      const placement = ready.layout.placements.get(s.id);
+      return [s.id, placement ? Int32Array.from(placement.order) : validOrder(s)];
+    }));
     // The active point stays if it still has a value; else the nearest point of its series that does; else the first
     // point of the first visible series (review 3: the tab stop must never vanish).
     const own = this.active ? this.order.get(this.active.seriesId) : undefined;
@@ -75,6 +79,8 @@ export class PointItems {
         this.lists.set(s.id, list);
       }
       list.setAttribute('aria-label', ready.messages.seriesList(seriesName(s, ready.messages), count.format(indices.length)));
+      // A gauge's one point is a meter (gauge.md 9), in a group, not a list.
+      list.setAttribute('role', ready.layout.placements.get(s.id)?.meter ? 'group' : 'list');
       if (list !== listCursor) this.group.insertBefore(list, listCursor);
       listCursor = list.nextSibling;
       let itemCursor: ChildNode | null = list.firstChild;
@@ -126,6 +132,13 @@ export class PointItems {
     if (label) {
       const n = new Intl.NumberFormat(r.locale);
       item.setAttribute('aria-label', r.messages.point({ ...label, position: n.format(label.position), count: n.format(label.count) }));
+      if (label.meter) {
+        item.setAttribute('role', 'meter');
+        item.setAttribute('aria-valuemin', String(label.meter.low));
+        item.setAttribute('aria-valuemax', String(label.meter.high));
+        item.setAttribute('aria-valuenow', String(label.meter.now));
+        item.setAttribute('aria-valuetext', item.getAttribute('aria-label')!);
+      }
     }
   }
 

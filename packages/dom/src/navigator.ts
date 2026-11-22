@@ -3,8 +3,9 @@
  * where it is pressed outside it; two sliders take the keyboard. The strip itself is in the scene (the core's
  * `navigatorGroups`); this only turns gestures into ranges.
  */
-import type { NavigatorLayout, Range } from '@dzgraph/core/internal';
-import { HANDLE_HEIGHT, HANDLE_WIDTH, clampRange, panBy, sliderStep } from '@dzgraph/core/internal';
+import type { ChartLayout, ChartModel, NavigatorLayout, Range, RangeButton } from '@dzgraph/core/internal';
+import { HANDLE_HEIGHT, HANDLE_WIDTH, clampRange, extentOf, panBy, sliderStep, xValueLabel } from '@dzgraph/core/internal';
+import type { Messages } from './messages.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 /** How near a handle the pointer must be to take it. */
@@ -176,3 +177,98 @@ export class NavigatorControls {
     return this.grab !== null;
   }
 }
+
+export interface NavigatorPartHooks {
+  /** The chart as last laid out, the range shown (null: the whole), and its words. */
+  state(): { readonly model: ChartModel; readonly layout: ChartLayout; readonly range: Range | null; readonly locale: string; readonly messages: Messages } | null;
+  setRange(range: Range | null, how: 'animate' | 'now'): void;
+}
+
+const BUTTONS = ['1m', '3m', 'ytd', '1y', 'all'] as const;
+
+/** The navigator module's part of the chart (ADR 0006): the strip's controls and the range buttons. */
+export class NavigatorPart {
+  private readonly controls: NavigatorControls;
+  private readonly box = document.createElement('div');
+  private readonly buttons: HTMLButtonElement[];
+
+  constructor(svg: SVGSVGElement, group: SVGGElement, root: HTMLElement, private readonly hooks: NavigatorPartHooks) {
+    this.controls = new NavigatorControls(svg, group, {
+      state: () => {
+        const s = hooks.state();
+        const nav = s?.layout.navigator;
+        return s && nav ? { nav, range: s.range, label: (v: number) => xValueLabel(s.model, nav.axisId, v, s.locale) } : null;
+      },
+      setRange: (r, how) => hooks.setRange(r, how),
+      words: () => {
+        const m = hooks.state()?.messages;
+        return { start: m?.rangeStart ?? '', end: m?.rangeEnd ?? '' };
+      },
+    });
+    // The range buttons (range-buttons.md): a row of HTML buttons in the layout's range bar.
+    const box = this.box;
+    box.className = 'dzgraph-range-buttons';
+    box.hidden = true;
+    Object.assign(box.style, { position: 'absolute', zIndex: '2', display: 'flex', gap: '4px' });
+    this.buttons = BUTTONS.map((p) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        if (p === 'all') return hooks.setRange(null, 'animate');
+        const r = this.span(p);
+        if (r) hooks.setRange(r.range, 'animate');
+      });
+      box.appendChild(b);
+      return b;
+    });
+    root.appendChild(box);
+  }
+
+  /** A button's range, kept inside the data (null: the whole), and whether the data reach that far. */
+  private span(p: RangeButton): { range: Range | null; fits: boolean; min: number; max: number } | null {
+    const s = this.hooks.state();
+    const id = s ? xAxisOf(s.model, s.layout) : undefined;
+    if (!s || id === undefined) return null;
+    const r = s.model.kit.navigator?.span(s.model, id, p);
+    const e = extentOf(s.model, id);
+    if (!r || !e) return null;
+    const c = clampRange(r, e);
+    return { range: c.min <= e.min && c.max >= e.max ? null : c, fits: r.fits, min: r.min, max: r.max };
+  }
+
+  busy(): boolean {
+    return this.controls.busy();
+  }
+
+  update(width: number, dir: 'ltr' | 'rtl'): void {
+    this.controls.update();
+    const s = this.hooks.state();
+    const bar = s?.layout.rangeBar;
+    const box = this.box;
+    box.hidden = !s || !bar || xAxisOf(s.model, s.layout) === undefined;
+    // `hidden` loses to the inline display: hide it through the style too.
+    box.style.display = box.hidden ? 'none' : 'flex';
+    if (!s || !bar || box.hidden) return;
+    box.style.insetBlockStart = `${bar.y}px`;
+    box.style.insetInlineStart = `${dir === 'rtl' ? width - bar.x - bar.width : bar.x}px`;
+    const m = s.messages;
+    const names = { '1m': m.range1m, '3m': m.range3m, ytd: m.rangeYtd, '1y': m.range1y, all: m.rangeAll };
+    const range = s.range;
+    BUTTONS.forEach((p, i) => {
+      const b = this.buttons[i]!;
+      b.textContent = names[p];
+      const r = p === 'all' ? null : this.span(p);
+      b.disabled = p !== 'all' && !r?.fits;
+      const pressed = p === 'all' ? range === null : r !== null && range !== null && Math.abs(r.min - range.min) < 1 && Math.abs(r.max - range.max) < 1;
+      b.setAttribute('aria-pressed', String(pressed));
+    });
+  }
+
+  destroy(): void {
+    this.controls.destroy();
+    this.box.remove();
+  }
+}
+
+/** The x axis the range follows: the laid-out one, else the first. */
+const xAxisOf = (m: ChartModel, l: ChartLayout) => l.axes.find((a) => a.dimension === 'x')?.id ?? m.xAxes[0]?.id;

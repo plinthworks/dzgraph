@@ -7,7 +7,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect
 import type { ChartOptions, PointRef, Problem } from '@dzgraph/core';
 import { allTypes } from '@dzgraph/core';
 import type { SeriesType } from '@dzgraph/core/internal';
-import { chart, type Chart, type ChartSetup } from '@dzgraph/dom';
+import { allFeatures, chart, type Chart, type ChartSetup, type Feature } from '@dzgraph/dom';
 
 @Component({
   selector: 'dz-chart',
@@ -21,6 +21,8 @@ export class DzChart {
   readonly options = input.required<ChartOptions>();
   /** The series types it may draw: every type by default; pass only those you use to ship less (ADR 0005). */
   readonly types = input<readonly SeriesType[]>(allTypes);
+  /** The features it may use (time axes, zoom, navigator, Canvas, WebGL2): every one by default (ADR 0006, 0008). */
+  readonly features = input<readonly Feature[]>(allFeatures);
   /** Words to use instead of the built-in ones. */
   readonly messages = input<ChartSetup['messages']>();
   /** Drive the animations yourself (animation.md 6). */
@@ -43,7 +45,7 @@ export class DzChart {
       const messages = untracked(this.messages);
       const animate = untracked(this.animate);
       const options = untracked(this.options);
-      const c = chart(host, options, { types: untracked(this.types), ...(messages ? { messages } : {}), ...(animate ? { animate } : {}) });
+      const c = chart(host, options, { types: untracked(this.types), features: untracked(this.features), ...(messages ? { messages } : {}), ...(animate ? { animate } : {}) });
       this.instance = c;
       this.given = options;
       c.on('problems', (d) => this.problems.emit(d.problems));
@@ -66,9 +68,10 @@ export class DzChart {
         this.instance.update(changes);
       });
     });
-    // The types and the words are the chart's setup: a new value draws a new chart.
+    // The types, the features and the words are the chart's setup: a new value draws a new chart.
     effect(() => {
       this.types();
+      this.features();
       this.messages();
       this.animate();
       untracked(() => this.instance && create());

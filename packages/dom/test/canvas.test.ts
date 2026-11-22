@@ -2,14 +2,14 @@
 // Canvas under the SVG; axes and labels stay in the SVG; the Canvas sits on whole device pixels. Step 3.4.
 import { describe, it, expect, afterEach } from 'vitest';
 import { column, line, scatter } from '@dzgraph/core';
-import { chart, type Chart } from '@dzgraph/dom';
+import { canvas, chart, type Chart } from '@dzgraph/dom';
 
 const made: { el: HTMLElement; c: Chart }[] = [];
 function mount(options: Parameters<typeof chart>[1]) {
   const el = document.createElement('div');
   el.setAttribute('style', 'inline-size:600px;block-size:400px');
   document.body.appendChild(el);
-  const c = chart(el, { animation: false, ...options }, { types: [line, column, scatter] });
+  const c = chart(el, { animation: false, ...options }, { types: [line, column, scatter], features: [canvas] });
   made.push({ el, c });
   return { el, c };
 }
@@ -73,14 +73,47 @@ describe('the Canvas lies under the SVG, whatever the direction (review 7, spike
       el.setAttribute('style', 'inline-size:600.5px;block-size:400px;margin-inline-start:0.25px');
       el.setAttribute('dir', dir);
       document.body.appendChild(el);
-      const c = chart(el, { animation: false, series: [{ type: 'scatter', data: dense }] }, { types: [line, column, scatter] });
+      const c = chart(el, { animation: false, series: [{ type: 'scatter', data: dense }] }, { types: [line, column, scatter], features: [canvas] });
       made.push({ el, c });
       const svg = el.querySelector('svg')!.getBoundingClientRect();
-      const canvas = el.querySelector('canvas')!.getBoundingClientRect();
+      const plane = el.querySelector('canvas')!.getBoundingClientRect();
       const dpr = devicePixelRatio;
       const frac = (((svg.x * dpr) % 1) + 1) % 1;
-      expect(Math.abs(canvas.x - (svg.x - frac / dpr))).toBeLessThan(0.02);
-      expect(Math.abs((canvas.x * dpr) - Math.round(canvas.x * dpr))).toBeLessThan(0.02);
+      expect(Math.abs(plane.x - (svg.x - frac / dpr))).toBeLessThan(0.02);
+      expect(Math.abs((plane.x * dpr) - Math.round(plane.x * dpr))).toBeLessThan(0.02);
     });
 });
 
+
+describe('a batch of points on Canvas (ADR 0008)', () => {
+  it('draws the same pixels as the markers it stands for, gaps and points out of the clip left out', async () => {
+    const { CanvasPainter } = await import('../src/canvas-painter.js');
+    const { markersOf } = await import('@dzgraph/core/internal');
+    const host = document.createElement('div');
+    host.setAttribute('style', 'position:relative;inline-size:200px;block-size:100px');
+    document.body.appendChild(host);
+    const n = 500;
+    const x = Float64Array.from({ length: n }, (_, i) => (i * 37) % 210);
+    const y = Float64Array.from({ length: n }, (_, i) => (i % 7 === 0 ? Number.NaN : (i * 13) % 100));
+    const symbols = ['circle', 'square', 'diamond', 'triangle', 'triangle-down'] as const;
+    const clip = { x: 10, y: 10, width: 170, height: 80 };
+    const sceneOf = (items: import('@dzgraph/core').Primitive[]): import('@dzgraph/core').Scene => ({ width: 200, height: 100, dir: 'ltr', areas: { plot: clip }, layers: [{ id: 'series', groups: [{ sceneId: 'g', painter: 'canvas', clip, opacity: 0.9, items }] }] });
+    for (const symbol of symbols) {
+      const p = { kind: 'points', sceneId: 'b', seriesId: 's', paint: { fill: 'series-1', opacity: 0.8 }, x, y, mapX: { d0: 0, r0: 0, k: 1, log: false }, mapY: { d0: 0, r0: 100, k: -1, log: false }, swapped: false, size: 8, symbol } as const;
+      const pixels = (items: import('@dzgraph/core').Primitive[]) => {
+        const painter = new CanvasPainter(host);
+        painter.paint(sceneOf(items), {}, () => true);
+        const data = painter.canvas.getContext('2d')!.getImageData(0, 0, painter.canvas.width, painter.canvas.height).data;
+        painter.destroy();
+        return data;
+      };
+      const a = pixels([p]);
+      const b = pixels(markersOf(p));
+      expect(a.length).toBe(b.length);
+      let differ = 0;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) differ++;
+      expect(differ, symbol).toBe(0);
+    }
+    host.remove();
+  });
+});

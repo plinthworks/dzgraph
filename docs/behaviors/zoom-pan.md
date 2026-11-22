@@ -2,6 +2,7 @@
 
 Phase 3. Owner 2026-11-21: drag = zoom on x, Shift + drag = pan, the wheel scrolls the page (Ctrl/⌘ + wheel zooms),
 pinch on touch.
+Comes with the `zoom` module (ADR 0006): without it the user cannot zoom; `setRange()` still works.
 
 ## What the user does
 Selects a part of a chart to see it closer, moves along it, goes back to the whole.

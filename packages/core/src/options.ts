@@ -138,6 +138,8 @@ export interface LinearAxisOptions extends AxisBase {
   readonly min?: number | undefined;
   readonly max?: number | undefined;
   readonly ticks?: TicksOptions<number> | undefined;
+  /** On a y axis: its piles drawn as shares of their totals, from 0 to 100 % (stacking.md 9). */
+  readonly stacking?: 'percent' | undefined;
 }
 
 export interface LogAxisOptions extends AxisBase {
@@ -145,6 +147,8 @@ export interface LogAxisOptions extends AxisBase {
   readonly min?: number | undefined;
   readonly max?: number | undefined;
   readonly ticks?: TicksOptions<number> | undefined;
+  /** Not on a log axis: a pile's parts do not add up along it (log-scale.md 10); reported. */
+  readonly stacking?: undefined;
 }
 
 export interface CategoryAxisOptions extends AxisBase {

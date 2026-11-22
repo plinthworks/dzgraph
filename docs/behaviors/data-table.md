@@ -7,7 +7,9 @@ Needs the numbers behind the chart: a screen-reader user, someone who cannot tel
 
 ## What they observe
 1. Every chart has a table equivalent: a caption (the title), a first column with the x values (categories,
-   formatted x, or point names), then one column per visible series, values formatted as in the tooltip.
+   formatted x, or point names), then one column per visible series, values formatted as in the tooltip. One row
+   per x, shared by the series; a series of marks with two points at one x (a scatter plot) has a row per point. (Phase 4:
+   columns no longer get a row per point, so grouped and stacked columns read across one row.)
 2. It is hidden from sight but read by screen readers, after the chart; `dataTable: true` shows it under the chart.
 3. A hidden series is not in it (GLOSSARY: Hidden series).
 4. At most 1 000 rows; beyond, its last row says how many were left out (the CSV export of Phase 6 gives them all).

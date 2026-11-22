@@ -62,8 +62,78 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   cached bounds, aids (summary, points, table) written once a gesture rests (200 ms), container measured only on
   resize, `sceneId` fast path, Canvas styles set only when they change.
   Close: code review (12 findings) and architecture check done, fixes with failing tests first (list at the end of
-  `docs/phase-3-steps/plan.md`). Phase 3 closed, uncommitted. Next: Phase 3 bis (WebGL2). Open question for the
-  owner: opt-in feature modules (ADR 0006) at the start of Phase 4.
+  `docs/phase-3-steps/plan.md`). Phase 3 closed; staged, the commit waits for the owner (the permission check
+  refused it). Owner 2026-11-21: Phase 4 next, Phase 3 bis (WebGL2) after it.
+
+## 2026-11-22 — Phase 4 (modules, stacking, log scale, pie, donut, gauge), plan `docs/phase-4-steps/plan.md`
+
+- **Step 1 done: features are imported modules (ADR 0006).** `chart(el, options, { types, features })`, `allFeatures`;
+  `timeAxis`, `zoom`, `navigatorStrip` (brings `zoom`; not `navigator`, the browser's global), `canvas`. The core
+  receives a kit (`kit.ts`: time, navigator) with the options and keeps it on the model; `missing-module` problem;
+  `setRange()` needs no module. DOM: `features.ts`, `ZoomControls` (gestures + reset button), `NavigatorPart`
+  (controls + range buttons). One-line app 37.3 → 30.6 KB gz; everything 39.1 KB (+0.9 KB for the seams). Budgets:
+  apps lowered to measure + 5 %, dom raised to 15 850 (it holds every feature), new entry « every type and feature ».
+  Found on the way by the hit property test (seed 855148467), a Phase 3 bug fixed: above a short column, more than a
+  cell away, the hover missed it (the grid kept a column's band to its own height).
+- **Step 2 done: the sheets** `stacking.md`, `log-scale.md`, `combined.md`, `pie-donut.md`, `gauge.md`; glossary:
+  Stack, Share, Others, Threshold. Choices made on the way are listed in the plan's notes.
+- **Step 3 done: stacking.** `stack: true | 'name'` on columns, bars and areas; `stacking: 'percent'` on a y axis.
+  `stack.ts` computes the piles once per layout (`layout.stacks`): positives up, negatives down, gaps add nothing,
+  areas by equal x. Columns: one slot per pile, 2 px between segments, only the pile's end rounded. Stacked areas:
+  filled down to the layer below, never decimated. Tooltip: share and the pile's total; screen readers: « 25 % of 4 »,
+  « Stacked column chart »; the table adds a total column per pile. Table rule changed on the way: columns share a
+  row per x (a series of marks gets a row per point only when it repeats an x). Reference images: three new cases
+  (160 images, 0 differ). Budgets: core 5 350, line app 33 800, all types 34 750.
+- **Step 4 done: the log scale.** `scale: 'log'` drawn (the Phase 1 seam `not-available` for scales is gone):
+  values ≤ 0 become gaps reported `non-positive-log-value` (count), bounds ≤ 0 `invalid-option`, no stacking on log.
+  `logTicks` (ticks.ts): ends to powers of ten over a decade, to 1-2-5 within one; the densest tick set that fits
+  (1–9, 1-2-5, powers, every 2nd/5th/10th power); `logScale` maps ≤ 0 to the axis's bottom, so columns and areas
+  grow from there; labels each with their own decimals. Reference case `log` (168 images, 0 differ). Budget: the
+  app with everything 43 850. 631 tests.
+- **Step 5 done: combined charts and two value axes.** With two value axes in use, each shows its visible series'
+  signs before its title (`AxisLayout.signs`, drawn in the axes layer); the summary names the kinds (« Combined
+  chart: columns, areas, and lines ») and each series' axis; the table's headers add the axis's title. Lines, areas
+  and scatters now follow the chart's orientation (a line in a bar chart runs down the categories); only columns and
+  bars set it. 651 tests, 168 images (the `dual` case redrawn with its signs).
+- **Step 6 done: the polar system (ADR 0007).** One coordinate system per chart (the first series'); `pie`, `donut`
+  and `gauge` place themselves (`SeriesType.place` → a `Placement` kept in `layout.placements`: anchor, order, share,
+  members, legend items, meter). Slices are points: the legend lists them and hides one by its point key in the view;
+  « Autres » is the point one past the data. Arcs hit-tested from the scene; a slice pointed at comes 6 px out, the
+  others fade; the keyboard goes round; the table gives shares (pie) or bounds and threshold (gauge, a WAI-ARIA
+  `meter`). Theme tokens `--dzgraph-others`, `--dzgraph-track`. The import guard no longer reads `'from'` in a
+  string as an import. Reference cases `pie`, `donut`, `gauge` (192 images, 0 differ). 730 tests. Budgets raised to
+  measure + 5 % (line app 38 200: the polar, log and legend seams in layout, a11y and the words).
+- **Step 7 done: Phase 4 closed.** Chrome, Firefox and WebKit: 1 173 tests. Architecture check: no series type named
+  outside its module; a one-line app ships no polar code. Code review (9 findings, each a test that failed first,
+  `review-phase4.test.ts`): a whole-turn slice drawn in SVG (two half arcs), « Autres » read by screen readers,
+  unnamed slices named in the table, a gauge without value not « no data », a y gap on a log axis keeps its row, the
+  meter's value within its bounds, slice labels and the gauge's note worded by the DOM's messages, a pile's tooltip
+  ordered by where segments end, a pie hidden from the start keeps its legend item. 748 tests, 192 images.
+  Seen once and not reproduced in 9 000 runs: the decimation property test (Phase 1 code, unchanged) failed in a gate.
+- Next: the owner's commits (Phase 3 staged, Phase 4 unstaged), then Phase 3 bis (WebGL2).
+
+## 2026-11-22 — Phase 3 bis (WebGL2 for dense scatters), plan `docs/phase-3bis-steps/plan.md`, ADR 0008
+
+- Owner: « continue sans m'attendre ». Decisions taken alone, to review: ADR 0008, the WebGL threshold (100 000 points,
+  measured; D.20 said ~1 M).
+- **Steps 1–6 done.** A scatter past 2 000 points is one `points` primitive in data units (its columns, an affine map
+  per direction, `Scale.affine`); SVG draws it as markers (only those in the plot), Canvas without an object per point
+  (same pixels as markers), WebGL2 (`webgl` module, brings `canvas`) past 100 000. WebGL2: points on the card as int32
+  steps + float32 rests (a float high/low split broke under Metal's fast math), symbols in the fragment shader,
+  colours through the probe read back from a 1×1 Canvas, context opened on demand, freed on destroy, Canvas while it is
+  lost. Hit test: a typed grid per batch. The benches found the slow part elsewhere: the data table (one merge in x
+  order, a bounded heap for series out of order) and the value axis fit (buckets on x, `x-buckets.ts`). Measured:
+  100 k on Canvas 19 → 3.4 ms a zoom frame; 1 M and 10 M on WebGL2 0.9 ms. Reference case `cloud` (200 images, 0
+  differ). Gate green (785 tests); Chrome, Firefox, WebKit green (1 275). Budgets raised to measure + 5 % (dom 20 450,
+  line app 40 250).
+- **Step 7 done: Phase 3 bis closed.** Code review (agent): no serious defect; fixed with failing tests first — an
+  int32 wrap in the shader (step now within 2²⁹), black drawn when no colour could be read (now nothing), and an older
+  one: marks did not fade in as they appeared (opacity now interpolated). Architecture check: `chart.ts` reaches WebGL2
+  only through its module; every output reads the batch (SVG, export, Canvas, WebGL2, hit, hover, animation); ADR 0006
+  and the Angular wrapper mention `webgl`. Gate green (789), Chrome, Firefox, WebKit green (1 284), 200 images match.
+  Leftovers at the end of the plan.
+- Next: the owner's commits (Phase 3 staged; Phase 4 and 3 bis unstaged), review of ADR 0007, ADR 0008 and the WebGL
+  threshold; then Phase 5 (exploration).
 
 ## Working rules
 
@@ -84,3 +154,9 @@ the owner asks. On GitHub since 2026-11-21 (`git@github.com:plinthworks/dzgraph.
 ## Waiting for the owner
 
 - S6 listening (screen reader patterns A and B): `node spikes/s6-screen-reader/serve.mjs`.
+
+## 2026-11-22 — Phase 5 (exploration), plan `docs/phase-5-steps/plan.md`
+
+- Plan validated by the owner: a mode bar (Zoom, Selection, Measure), aggregation by type (sum for columns, mean for
+  lines), polar charts select by click only, two halves 5a (view, crosshair, compare, measure, selection) and 5b
+  (aggregation, drilldown, menu, linked charts).

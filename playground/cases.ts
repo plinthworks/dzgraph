@@ -79,6 +79,65 @@ export const cases: Record<string, Case> = {
       yAxis: [{ title: 'kg' }, { title: 'mm', opposite: true }],
     }),
   },
+  stacked: {
+    title: 'Colonnes empilées',
+    options: () => ({
+      title: 'Bilan des paniers fictifs',
+      series: [
+        { type: 'column', name: 'Pommes', stack: true, data: ['T1', 'T2', 'T3', 'T4'].map((q, i) => [q, 30 + i * 8]) },
+        { type: 'column', name: 'Poires', stack: true, data: ['T1', 'T2', 'T3', 'T4'].map((q, i) => [q, 22 - i * 3]) },
+        { type: 'column', name: 'Pertes', stack: true, data: ['T1', 'T2', 'T3', 'T4'].map((q, i) => [q, -6 - (i % 2) * 5]) },
+        { type: 'column', name: 'Prunes', stack: 'autre', data: ['T1', 'T2', 'T3', 'T4'].map((q, i) => [q, 18 + ((i * 7) % 11)]) },
+      ],
+    }),
+  },
+  'stacked-area': {
+    title: 'Aires empilées',
+    options: () => ({
+      title: 'Visiteurs par entrée (fictif)',
+      series: ['Nord', 'Est', 'Sud'].map((name, k) => ({ type: 'area', name, stack: true, data: months.map((m, i) => [m, Math.round(60 + 40 * Math.sin((i + k * 3) / 2.4) + k * 20)]) })),
+    }),
+  },
+  percent: {
+    title: 'Parts empilées',
+    options: () => ({
+      title: 'Parts des variétés (fictif)',
+      yAxis: { stacking: 'percent' },
+      series: ['Reinette', 'Gala', 'Boskoop'].map((name, k) => ({ type: 'column', name, stack: true, data: ['T1', 'T2', 'T3', 'T4'].map((q, i) => [q, 10 + ((i * 13 + k * 29) % 40)]) })),
+    }),
+  },
+  log: {
+    title: 'Échelle log',
+    options: () => ({
+      title: 'Ruches fictives : abeilles et frelons',
+      yAxis: { scale: 'log', title: 'individus' },
+      series: [
+        { type: 'line', name: 'Abeilles', data: months.map((m, i) => [m, Math.round(400 * 2.1 ** i)]) },
+        { type: 'line', name: 'Frelons', data: months.map((m, i) => [m, Math.round(3 + 2.5 * i * i)]) },
+      ],
+    }),
+  },
+  pie: {
+    title: 'Secteurs',
+    options: () => ({
+      title: 'Récolte fictive par variété',
+      series: [{ type: 'pie', name: 'Récolte', data: [['Reinette', 182], ['Gala', 154], ['Boskoop', 121], ['Conférence', 98], ['Williams', 77], ['Mirabelle', 45], ['Quetsche', 21], ['Coing', 12], ['Nèfle', 4]] }],
+    }),
+  },
+  donut: {
+    title: 'Anneau',
+    options: () => ({
+      title: 'Paniers fictifs vendus',
+      series: [{ type: 'donut', name: 'Paniers', data: [['Marché', 420], ['Boutique', 260], ['En ligne', 180], ['Cantines', 90]] }],
+    }),
+  },
+  gauge: {
+    title: 'Jauge',
+    options: () => ({
+      title: 'Remplissage du pressoir fictif',
+      series: [{ type: 'gauge', name: 'Remplissage', data: 72, thresholds: [{ from: 0, to: 60, label: 'Normal' }, { from: 60, to: 85, label: 'Élevé' }, { from: 85, to: 100, label: 'Plein' }] }],
+    }),
+  },
   many: {
     title: 'Beaucoup de catégories',
     options: () => ({ title: 'Rangs du verger', series: [{ type: 'column', name: 'Arbres', data: Array.from({ length: 30 }, (_, i) => [`Rang nord n° ${i + 1}`, 10 + ((i * 17) % 23)]) }] }),
@@ -99,6 +158,23 @@ export const cases: Record<string, Case> = {
       const r = prng(11);
       const cloud = (cx: number, cy: number, n: number) => Array.from({ length: n }, () => [cx + (r() + r() + r() - 1.5) * 30, cy + (r() + r() + r() - 1.5) * 20] as [number, number]);
       return { title: 'Calibre des fruits au tri (fictif)', series: [{ type: 'scatter', name: 'Pommes', data: cloud(80, 160, 2_500) }, { type: 'scatter', name: 'Poires', data: cloud(65, 190, 2_500) }], xAxis: { title: 'Diamètre (mm)' }, yAxis: { title: 'Poids (g)' } };
+    },
+  },
+  cloud: {
+    title: 'Nuage de 200 000 points (WebGL2)',
+    options: () => {
+      const r = prng(13);
+      const cloud = (cx: number, cy: number, n: number) => {
+        const x = new Float64Array(n);
+        const y = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+          x[i] = cx + (r() + r() + r() - 1.5) * 30;
+          y[i] = cy + (r() + r() + r() - 1.5) * 20;
+        }
+        return { x, y };
+      };
+      // The first on WebGL2 (past 100 000 points), the second on Canvas, above it (ADR 0008).
+      return { title: 'Calibre des fruits au tri, toute la saison (fictif)', series: [{ type: 'scatter', name: 'Pommes', data: cloud(80, 160, 200_000) }, { type: 'scatter', name: 'Poires', data: cloud(65, 190, 3_000) }], xAxis: { title: 'Diamètre (mm)' }, yAxis: { title: 'Poids (g)' } };
     },
   },
   time: {

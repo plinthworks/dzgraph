@@ -6,20 +6,22 @@
  * The axes depend on each other (a y axis's width on its labels, its labels on its ticks, its ticks on the plot's
  * height, the plot's height on the x axis's labels…): the sizes are settled by a few passes until they stop changing.
  */
-import type { FontRole, Rect, TextMeasurer } from './scene.js';
+import { yWithin } from './x-buckets.js';
+import type { ColorToken, FontRole, Rect, TextMeasurer } from './scene.js';
 import type { Problem } from './problem.js';
 import type { Formatter } from './options.js';
 import type { InstantMs } from './time.js';
-import type { Scale, SeriesModel, SeriesType } from './series-type.js';
+import type { Placement, Scale, SeriesModel, SeriesType } from './series-type.js';
 import type { AxisModel, ChartModel } from './model.js';
 import { edgeX, sideOf, type Dir, type XSide } from './dir.js';
-import { categoryScale, linearScale } from './scale.js';
-import { alignedTicks, numericTicks, tickTarget, type Ticks } from './ticks.js';
-import { formatTicks } from './format.js';
-import { timeLabels, timeTicks } from './time.js';
-import { isShown, type View } from './view.js';
+import { categoryScale, linearScale, logScale } from './scale.js';
+import { alignedTicks, logTicks, numericTicks, tickTarget, type Ticks } from './ticks.js';
+import { formatLogTicks, formatPercentTicks, formatTicks } from './format.js';
+import { rangeOf } from './series/shared.js';
+import { stacksOf, type Stacked, type Stacks } from './stack.js';
+import { isShown, pointKey, type View } from './view.js';
 import { rangeMinMax } from './decimate.js';
-import { NAV_STRIP, navigatorLayout, type NavigatorLayout } from './navigator.js';
+import type { NavigatorLayout } from './navigator.js';
 
 /** The words layout writes, translated by the DOM layer. */
 export interface LayoutText {
@@ -27,6 +29,12 @@ export interface LayoutText {
   seriesName(place: number): string;
   noData: string;
   ellipsis: string;
+  /** For polar charts (ADR 0007): a point without a name, by its place; « Autres »; the word under a donut's total. */
+  pointName?: (place: number) => string;
+  others?: string;
+  total?: string;
+  /** A slice's label from its name and share (pie-donut.md 9): the words' order is the language's (review 7). */
+  sliceLabel?: (name: string, share: string) => string;
 }
 
 export interface LayoutInput {
@@ -73,12 +81,23 @@ export interface AxisLayout {
   /** Gridlines across the plot from its ticks. */
   readonly grid: boolean;
   readonly title: PlacedText | null;
+  /**
+   * With two value axes in use, the signs of each one's visible series, before its title (combined.md 5): their
+   * centres, in series order.
+   */
+  readonly signs: readonly { readonly seriesId: string; readonly x: number; readonly y: number }[];
   /** A time axis's second tier (time-axis.md 7): the larger unit, at its first tick and where it changes. */
   readonly second: readonly PlacedText[];
 }
 
 export interface LegendItemLayout {
+  /** What the item hides and shows: its series' id, or a point's key (a slice, ADR 0007). */
+  readonly key: string;
   readonly seriesId: string;
+  /** A point's item (a slice): its index and colour; null for a series' item. */
+  readonly point: { readonly index: number; readonly color: ColorToken } | null;
+  /** Its full name, for its button (the label may end with « … »). */
+  readonly name: string;
   /** The whole item (sign and name): the target of a click or a focus ring. */
   readonly box: Rect;
   readonly sign: Rect;
@@ -102,6 +121,10 @@ export interface ChartLayout {
   readonly navigator: NavigatorLayout | null;
   /** The row the range buttons go in, above the plot (range-buttons.md 1); the DOM places its buttons there. */
   readonly rangeBar: Rect | null;
+  /** The piles of the stacked visible series (stacking.md): where each point's segment starts and ends. */
+  readonly stacks: Stacks;
+  /** Where each polar series placed itself (ADR 0007), by series id. */
+  readonly placements: ReadonlyMap<string, Placement>;
 }
 
 // Spacing, in CSS pixels (layout.md, legend.md).
@@ -117,6 +140,10 @@ const ROW_GAP = 6;
 const TICK = 5;
 const LABEL_GAP = 3;
 const AXIS_TITLE_GAP = 6;
+/** An axis's signs (combined.md 5): 8 px each, 12 px apart, 6 px from the title. */
+const AXIS_SIGN = 8;
+const AXIS_SIGN_PITCH = 12;
+const AXIS_SIGN_GAP = 6;
 /** Between the x axis's labels and the navigator; the range buttons' row and the gap under it. */
 const NAV_GAP = 14;
 const RANGE_BAR = 24;
@@ -136,9 +163,10 @@ const MIN_PLOT_SHARE = 0.4;
 /** Lays the chart out. */
 export function layout(input: LayoutInput): ChartLayout {
   const { width: W, height: H, dir } = input;
+  const stacks = stacksOf(input.model, input.view);
   if (W < MIN_WIDTH || H < MIN_HEIGHT) {
     // Too small for axes (layout.md 5): the plot alone.
-    return { width: W, height: H, dir, plot: { x: MARGIN, y: MARGIN, width: Math.max(0, W - 2 * MARGIN), height: Math.max(0, H - 2 * MARGIN) }, title: [], subtitle: null, axes: [], legend: null, noData: null, problems: [], navigator: null, rangeBar: null };
+    return { width: W, height: H, dir, plot: { x: MARGIN, y: MARGIN, width: Math.max(0, W - 2 * MARGIN), height: Math.max(0, H - 2 * MARGIN) }, title: [], subtitle: null, axes: [], legend: null, noData: null, problems: [], navigator: null, rangeBar: null, stacks, placements: new Map() };
   }
   // Give way, in order, until the plot keeps its share (layout.md 4): axis titles, the legend, the title, then the
   // labels of the second axes, then every label (the ticks stay).
@@ -152,7 +180,7 @@ export function layout(input: LayoutInput): ChartLayout {
   ];
   let result: ChartLayout | null = null;
   for (const a of attempts) {
-    result = attempt(input, a);
+    result = attempt(input, a, stacks);
     if (result.plot.height >= MIN_PLOT_SHARE * H && result.plot.width >= MIN_PLOT_SHARE * W) break;
   }
   return result!;
@@ -166,7 +194,7 @@ interface Options {
   readonly labels: 'all' | 'primary' | 'none';
 }
 
-function attempt(input: LayoutInput, opts: Options): ChartLayout {
+function attempt(input: LayoutInput, opts: Options, stacks: Stacks): ChartLayout {
   const { model, width: W, height: H, dir, measureText, text } = input;
   const lineHeight = (font: FontRole) => {
     const m = measureText('', font);
@@ -200,13 +228,32 @@ function attempt(input: LayoutInput, opts: Options): ChartLayout {
     top += TITLE_GAP;
   }
 
+  // A polar chart (ADR 0007): its series places itself, first in the whole room, with its labels.
+  const polarSeries = model.system === 'polar' ? model.series.find((s) => isShown(s, input.view) && typeOf(input, s)?.place) : undefined;
+  const placeIn = (box: Rect, labels: boolean): Placement | null => {
+    const type = polarSeries ? typeOf(input, polarSeries) : undefined;
+    if (!polarSeries || !type?.place) return null;
+    const t = input.text;
+    return type.place({ series: polarSeries, box, labels, view: input.view, dir, mirror: model.mirror, locale: input.locale, measureText, text: { seriesName: t.seriesName, pointName: t.pointName ?? t.seriesName, others: t.others ?? t.ellipsis, total: t.total ?? '', sliceLabel: t.sliceLabel ?? ((name, share) => `${name} ${share}`) } });
+  };
+  const firstPlace = placeIn({ x: minX, y: top, width: maxX - minX, height: bottom - top }, true);
+  // A polar series hidden (from the start, or by the app): its own item stays, the only way back (review 9).
+  const hiddenPolar = model.system === 'polar' && !polarSeries ? model.series[0] : undefined;
+  const pointItems = firstPlace && polarSeries
+    ? firstPlace.legend.map((i) => ({ key: pointKey(polarSeries.id, i.index), seriesId: polarSeries.id, point: { index: i.index, color: i.color }, name: i.name, hidden: i.hidden }))
+    : hiddenPolar
+      ? [{ key: hiddenPolar.id, seriesId: hiddenPolar.id, point: null, name: hiddenPolar.name ?? input.text.seriesName(hiddenPolar.rank + 1), hidden: true }]
+      : undefined;
+  // Its legend shows when asked, or by default when its labels did not fit (pie-donut.md 11), or it is hidden.
+  const legendWanted = model.legend !== null && (model.system !== 'polar' || !model.legend.auto || (firstPlace?.needsLegend ?? false) || hiddenPolar !== undefined);
+
   // Legend (legend.md): its room, before the axes.
   let legend: ChartLayout['legend'] = null;
-  if (opts.legend && model.legend && model.series.length > 0) {
+  if (opts.legend && model.legend && legendWanted && model.series.length > 0) {
     const side = model.legend.position === 'start' || model.legend.position === 'end';
     const xAxisGuess = TICK + LABEL_GAP + lineHeight('tick-label');
     const budget = side ? bottom - top : Math.min(H / 3, bottom - top - MIN_PLOT_SHARE * H - xAxisGuess - LEGEND_GAP);
-    const placed = placeLegend(input, side ? Math.min(inner.width / 4, inner.width) : inner.width, budget, side, widthOf, lineHeight('legend'), ellipsize);
+    const placed = placeLegend(input, side ? Math.min(inner.width / 4, inner.width) : inner.width, budget, side, widthOf, lineHeight('legend'), ellipsize, pointItems);
     if (placed) {
       const { rows, boxWidth, boxHeight } = placed;
       let bx: number;
@@ -230,13 +277,26 @@ function attempt(input: LayoutInput, opts: Options): ChartLayout {
     }
   }
 
+  if (model.system === 'polar') {
+    // No axes: the series has the room left, labelled unless its legend shows because its labels did not fit.
+    const plot: Rect = { x: minX, y: top, width: Math.max(0, maxX - minX), height: Math.max(0, bottom - top) };
+    const placement = legend && firstPlace?.needsLegend ? placeIn(plot, false) : legend ? placeIn(plot, true) : firstPlace;
+    const placements = new Map<string, Placement>(placement && polarSeries ? [[polarSeries.id, placement]] : []);
+    // A gauge without a value still draws its track and its dash (gauge.md 5, review 4).
+    const empty = !placement || (placement.order.length === 0 && !placement.meter);
+    const noData = empty ? { text: text.noData, x: plot.x + plot.width / 2, y: plot.y + plot.height / 2, font: 'tick-label' as const, anchor: 'middle' as const, baseline: 'middle' as const, dir } : null;
+    return { width: W, height: H, dir, plot, title, subtitle, axes: [], legend, noData, problems: [], navigator: null, rangeBar: null, stacks, placements };
+  }
+
   // The navigator (navigator.md 1): a strip and its labels at the bottom, above a bottom legend; the range buttons'
   // row (range-buttons.md 1) at the top, under the title. Charts along x only (columns, lines, areas, scatters).
   const xModel = model.xAxes[0];
   const along = model.orientation === 'vertical' && xModel !== undefined;
+  // The model asks for a navigator only when its module came (normalize.ts): the kit is there.
+  const navKit = model.navigator ? model.kit.navigator : null;
   let navTop: number | null = null;
-  if (along && model.navigator) {
-    navTop = bottom - NAV_STRIP - 2 - lineHeight('tick-label');
+  if (along && navKit) {
+    navTop = bottom - navKit.strip - 2 - lineHeight('tick-label');
     bottom = navTop - NAV_GAP;
   }
   let barTop: number | null = null;
@@ -249,18 +309,20 @@ function attempt(input: LayoutInput, opts: Options): ChartLayout {
   const problems: Problem[] = [];
   // No value to show: no series, or only gaps (axes.md 6, review 14b).
   const empty = model.series.every((s) => !s.columns.y.some((v) => !Number.isNaN(v)));
-  const axes = settleAxes(input, { top, bottom, minX, maxX }, opts, empty, problems);
+  const axes = settleAxes(input, { top, bottom, minX, maxX }, opts, empty, problems, stacks);
 
   const noData = empty ? { text: text.noData, x: axes.plot.x + axes.plot.width / 2, y: axes.plot.y + axes.plot.height / 2, font: 'tick-label' as const, anchor: 'middle' as const, baseline: 'middle' as const, dir } : null;
   const p = axes.plot;
   const xLayout = axes.layouts.find((a) => a.dimension === 'x');
   const reversed = xLayout ? xLayout.scale.map(1) < xLayout.scale.map(0) : false;
-  const nav = navTop !== null && xModel ? navigatorLayout(model, xModel.id, { x: p.x, y: navTop, width: p.width, height: NAV_STRIP }, reversed, input.locale, 'tick-label', widthOf, dir) : null;
+  const nav = navTop !== null && xModel && navKit ? navKit.layout(model, xModel.id, { x: p.x, y: navTop, width: p.width, height: navKit.strip }, reversed, input.locale, 'tick-label', widthOf, dir) : null;
   const rangeBar = barTop !== null ? { x: p.x, y: barTop, width: p.width, height: RANGE_BAR } : null;
-  return { width: W, height: H, dir, plot: p, title, subtitle, axes: axes.layouts, legend, noData, problems, navigator: nav, rangeBar };
+  return { width: W, height: H, dir, plot: p, title, subtitle, axes: axes.layouts, legend, noData, problems, navigator: nav, rangeBar, stacks, placements: new Map() };
 }
 
 /** Shortens `s` with an ellipsis to fit `max` px; `force` adds the ellipsis even if it fits (a cut list). */
+const typeOf = (input: LayoutInput, s: SeriesModel) => input.types.find((t) => t.name === s.type);
+
 function fit(s: string, max: number, font: FontRole, widthOf: (s: string, f: FontRole) => number, ellipsis: string, force: boolean): string {
   if (!force && widthOf(s, font) <= max) return s;
   const chars = [...s];
@@ -299,7 +361,10 @@ function wrap(s: string, max: number, lines: number, widthOf: (s: string, f: Fon
 }
 
 interface LegendEntry {
+  readonly key: string;
   readonly seriesId: string;
+  readonly point: LegendItemLayout['point'];
+  readonly name: string;
   readonly text: string;
   readonly width: number;
   readonly hidden: boolean;
@@ -314,12 +379,14 @@ function placeLegend(
   widthOf: (s: string, f: FontRole) => number,
   lineH: number,
   ellipsize: (s: string, max: number, f: FontRole, force?: boolean) => string,
+  /** A polar chart's items, one per point (ADR 0007); absent: one per series. */
+  points?: readonly Omit<LegendEntry, 'text' | 'width'>[],
 ): { rows: LegendEntry[][]; boxWidth: number; boxHeight: number } | null {
   const rowH = Math.max(lineH, SIGN_HEIGHT);
   const labelMax = maxWidth - SIGN_WIDTH - SIGN_GAP;
-  const entries: LegendEntry[] = input.model.series.map((s) => {
-    const name = ellipsize(s.name ?? input.text.seriesName(s.rank + 1), labelMax, 'legend');
-    return { seriesId: s.id, text: name, width: SIGN_WIDTH + SIGN_GAP + widthOf(name, 'legend'), hidden: !isShown(s, input.view) };
+  const entries: LegendEntry[] = (points ?? input.model.series.map((s) => ({ key: s.id, seriesId: s.id, point: null, name: s.name ?? input.text.seriesName(s.rank + 1), hidden: !isShown(s, input.view) }))).map((e) => {
+    const text = ellipsize(e.name, labelMax, 'legend');
+    return { ...e, text, width: SIGN_WIDTH + SIGN_GAP + widthOf(text, 'legend') };
   });
   const rows: LegendEntry[][] = [];
   if (side) for (const e of entries) rows.push([e]);
@@ -372,7 +439,10 @@ function arrangeLegend(rows: LegendEntry[][], area: Rect, align: 'start' | 'cent
       const signX = dir === 'ltr' ? ix : ix + e.width - SIGN_WIDTH;
       const labelX = dir === 'ltr' ? signX + SIGN_WIDTH + SIGN_GAP : signX - SIGN_GAP;
       items.push({
+        key: e.key,
         seriesId: e.seriesId,
+        point: e.point,
+        name: e.name,
         box: { x: ix, y, width: e.width, height: rowH },
         sign: { x: signX, y: y + (rowH - SIGN_HEIGHT) / 2, width: SIGN_WIDTH, height: SIGN_HEIGHT },
         label: { text: e.text, x: labelX, y: y + rowH / 2, font: 'legend', anchor: 'start', baseline: 'middle', dir },
@@ -408,7 +478,7 @@ interface Box {
   readonly maxX: number;
 }
 
-function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean, problems: Problem[]): { plot: Rect; layouts: AxisLayout[] } {
+function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean, problems: Problem[], stacks: Stacks): { plot: Rect; layouts: AxisLayout[] } {
   const { model, dir } = input;
   const horizontal = model.orientation === 'horizontal';
   const visible = model.series.filter((s) => isShown(s, input.view));
@@ -430,7 +500,12 @@ function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean,
         const zoomedRaw = kind === 'y' ? input.view?.range?.[s.xAxis] : undefined;
         // A category axis shows whole categories, rounded as the axis rounds them (zoom-pan.md 10, review 1).
         const zoomedX = zoomedRaw && model.xAxes.find((x) => x.id === s.xAxis)?.scale === 'category' ? { min: Math.round(zoomedRaw.min), max: Math.round(zoomedRaw.max) } : zoomedRaw;
-        const b = zoomedX ? visibleY(s, zoomedX, typeOf.get(s.type)?.zeroBased === true) : boundsOf(s)[kind];
+        // A stacked series reaches as far as its segments do (stacking.md 8).
+        const pile = kind === 'y' ? stacks.get(s.id) : undefined;
+        // A log axis fits the positive values themselves: zero is not on it (log-scale.md 8).
+        const log = a.scale === 'log';
+        const zeroBased = !log && typeOf.get(s.type)?.zeroBased === true;
+        const b = pile ? pileBounds(s, pile, zoomedX ?? null) : zoomedX ? visibleY(s, zoomedX, zeroBased) : log ? rangeOf(kind === 'x' ? s.columns.x : s.columns.y) : boundsOf(s)[kind];
         if (b) {
           min = Math.min(min, b.min);
           max = Math.max(max, b.max);
@@ -505,10 +580,15 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
   let overhang = 0;
   /** The first y axis's ticks: the second ones sit on its gridlines (axes.md 9). */
   let primaryTicks: Ticks | null = null;
+  // With two value axes in use, each shows its series' signs (combined.md 5).
+  const visible = model.series.filter((s) => isShown(s, input.view));
+  const valueAxesInUse = model.yAxes.filter((y) => visible.some((s) => s.yAxis === y.id)).length;
 
   for (const p of plans) {
     const a = p.model;
     const length = p.across ? plot.width : plot.height;
+    const signIds = p.dimension === 'y' && valueAxesInUse >= 2 ? visible.filter((s) => s.yAxis === a.id).map((s) => s.id) : [];
+    const headed = titles && (a.title !== null || signIds.length > 0);
     // Ranges on screen (direction.md 3–4): across, x runs left to right unless mirrored in RTL, and values (bars)
     // grow from the start; upright, values grow upwards and categories (bars) run down from the top.
     let range: [number, number];
@@ -525,7 +605,8 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     let ticks: { value: number; text: string | null }[] = [];
 
     let secondTier: { index: number; text: string }[] = [];
-    if (a.scale === 'time') {
+    const time = input.model.kit.time;
+    if (a.scale === 'time' && time) {
       // Time (time-axis.md 3–7): the data's ends, ticks on the zone's wall clock, the target lowered while labels overlap.
       const zone = a.zone ?? 'UTC';
       const lo = p.zoom?.min ?? a.min ?? p.data?.min ?? 0;
@@ -533,8 +614,8 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
       let target = a.ticks.target ?? tickTarget(length, p.across ? 'across' : 'upright');
       const format = safeFormat(a.ticks.format as Formatter<InstantMs> | null, path, problems, locale, 0);
       for (;;) {
-        const t = timeTicks(lo, hi, target, zone);
-        const named = timeLabels(t, locale, zone);
+        const t = time.ticks(lo, hi, target, zone);
+        const named = time.labels(t, locale, zone);
         const texts = t.values.map((v, i) => (format ? format(v as InstantMs) : null) ?? named.labels[i]!);
         const span = linearScale([lo, hi], range);
         const fits = p.across ? acrossFits(t.values.map((v) => span.map(v)), texts, widthOf, labelFont) : uprightFits(t.values.map((v) => span.map(v)), LH);
@@ -546,6 +627,33 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
         target--;
       }
       scale = linearScale([lo, hi === lo ? lo + 1 : hi], range);
+    } else if (a.scale === 'log') {
+      // Log (log-scale.md 3–7): powers of ten, ticks per decade by room; a bound the app gives is kept exactly.
+      const min = p.zoom?.min ?? a.min;
+      const max = p.zoom?.max ?? a.max;
+      const lo = min ?? p.data?.min ?? (max !== null ? max / 10 : 1);
+      const hi = max ?? p.data?.max ?? (min !== null ? min * 10 : 10);
+      const both = min !== null && max !== null;
+      let target = a.ticks.target ?? tickTarget(length, p.across ? 'across' : 'upright');
+      let t: Ticks;
+      for (;;) {
+        if (both || !p.round) t = logTicks(lo, hi, target, 'inside');
+        else {
+          const r = logTicks(lo, hi, target, 'loose');
+          const tmin = min ?? r.min;
+          const tmax = max ?? r.max;
+          t = { min: tmin, max: tmax, step: r.step, values: r.values.filter((v) => v >= tmin * (1 - 1e-9) && v <= tmax * (1 + 1e-9)) };
+        }
+        const span = logScale([t.min, t.max], range);
+        const texts = numberLabels(t, a, path, problems, locale);
+        const fits = p.across ? acrossFits(t.values.map((v) => span.map(v)), texts, widthOf, labelFont) : uprightFits(t.values.map((v) => span.map(v)), LH);
+        if (fits || target <= 2 || a.ticks.target !== null) {
+          ticks = t.values.map((v, i) => ({ value: v, text: texts[i]! }));
+          break;
+        }
+        target--;
+      }
+      scale = logScale([t.min, t.max], range);
     } else if (a.scale === 'category') {
       const cats = a.categories ?? [];
       // Zoomed: whole categories (zoom-pan.md 10), the first and last shown in full.
@@ -621,7 +729,7 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     // Upright axes share what the plot does not need (layout.md 4): wider labels end with « … ».
     if (!p.across) {
       const upright = plans.filter((q) => !q.across).length;
-      const max = (input.width * (1 - MIN_PLOT_SHARE) - 2 * MARGIN) / upright - TICK - LABEL_GAP - LABEL_PAD - (titles && a.title ? lh('axis-title') + AXIS_TITLE_GAP : 0);
+      const max = (input.width * (1 - MIN_PLOT_SHARE) - 2 * MARGIN) / upright - TICK - LABEL_GAP - LABEL_PAD - (headed ? lh('axis-title') + AXIS_TITLE_GAP : 0);
       texts = texts.map((s) => (s ? fit(s, Math.max(max, 0), labelFont, widthOf, input.text.ellipsis, false) : s));
     }
     const lineX = p.edge === 'x-min' ? plot.x : plot.x + plot.width;
@@ -656,7 +764,7 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     // Room taken (axes.md 17: the title beyond the labels).
     const shown = tickLayouts.filter((t) => t.label).map((t) => widthOf(t.label!.text, labelFont));
     const widest = shown.length ? Math.max(...shown) : 0;
-    const titleH = titles && a.title ? lh('axis-title') + AXIS_TITLE_GAP : 0;
+    const titleH = headed ? lh('axis-title') + AXIS_TITLE_GAP : 0;
     let room: number;
     const secondShown = showLabels && secondTier.length > 0 && (p.edge === 'bottom' || p.edge === 'top');
     const secondH = secondShown ? LH + SECOND_GAP : 0;
@@ -667,13 +775,28 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     sizes.set(p, room);
 
     let title: PlacedText | null = null;
-    if (titles && a.title) {
+    const signs: { seriesId: string; x: number; y: number }[] = [];
+    if (headed) {
       const th = lh('axis-title');
-      if (p.edge === 'bottom') title = { text: a.title, x: plot.x + plot.width / 2, y: plot.y + plot.height + room - th, font: 'axis-title', anchor: 'middle', baseline: 'top', dir };
-      else if (p.edge === 'top') title = { text: a.title, x: plot.x + plot.width / 2, y: plot.y - room, font: 'axis-title', anchor: 'middle', baseline: 'top', dir };
-      else {
+      // The title and the signs before it, as one run centred on the plot's side (combined.md 5).
+      const w = a.title !== null ? widthOf(a.title, 'axis-title') : 0;
+      const block = signIds.length ? signIds.length * AXIS_SIGN_PITCH - (AXIS_SIGN_PITCH - AXIS_SIGN) : 0;
+      const run = w + (w && block ? AXIS_SIGN_GAP : 0) + block;
+      if (p.edge === 'bottom' || p.edge === 'top') {
+        const y = p.edge === 'bottom' ? plot.y + plot.height + room - th : plot.y - room;
+        // Along the reading direction: the signs first, then the title.
+        const ltr = dir === 'ltr';
+        const first = plot.x + plot.width / 2 + (ltr ? -run / 2 : run / 2);
+        const towards = ltr ? 1 : -1;
+        signIds.forEach((id, k) => signs.push({ seriesId: id, x: first + towards * (AXIS_SIGN / 2 + k * AXIS_SIGN_PITCH), y: y + th / 2 }));
+        if (a.title) title = { text: a.title, x: first + towards * (run - w / 2), y, font: 'axis-title', anchor: 'middle', baseline: 'top', dir };
+      } else {
+        // Turned to read upwards: what comes before the title is below it.
         const outer = p.edge === 'x-min' ? plot.x - room + th / 2 : plot.x + plot.width + room - th / 2;
-        title = { text: a.title, x: outer, y: plot.y + plot.height / 2, font: 'axis-title', anchor: 'middle', baseline: 'middle', rotate: -90, dir };
+        const top = plot.y + plot.height / 2 - run / 2;
+        if (a.title) title = { text: a.title, x: outer, y: top + w / 2, font: 'axis-title', anchor: 'middle', baseline: 'middle', rotate: -90, dir };
+        const start = top + w + (w && block ? AXIS_SIGN_GAP : 0);
+        signIds.forEach((id, k) => signs.push({ seriesId: id, x: outer, y: start + AXIS_SIGN / 2 + k * AXIS_SIGN_PITCH }));
       }
     }
     const grid = a.ticks.grid ?? (p.dimension === 'y' && p.primary);
@@ -695,7 +818,7 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
         second.push({ text: t.text, x: rightward ? lo : lo + w, y, font: labelFont, anchor, baseline: p.edge === 'bottom' ? 'top' : 'bottom', dir });
       }
     }
-    layouts.push({ id: a.id, dimension: p.dimension, edge: p.edge, scale, ticks: tickLayouts, grid, title, second });
+    layouts.push({ id: a.id, dimension: p.dimension, edge: p.edge, scale, ticks: tickLayouts, grid, title, signs, second });
   }
   return { layouts, sizes, overhang: Math.max(0, overhang) };
 }
@@ -734,7 +857,7 @@ function uprightFits(at: readonly number[], lineH: number): boolean {
 
 /** An axis's number labels: the app's formatter, or the locale's (format.ts). */
 function numberLabels(t: Ticks, a: AxisModel, path: string, problems: Problem[], locale: string | undefined): string[] {
-  const defaults = formatTicks(t.values, t.step, locale);
+  const defaults = a.stacking === 'percent' ? formatPercentTicks(t.values, locale) : a.scale === 'log' ? formatLogTicks(t.values, locale) : formatTicks(t.values, t.step, locale);
   const format = safeFormat(a.ticks.format as Formatter<number> | Formatter<InstantMs> | null, path, problems, locale, t.step);
   if (!format) return defaults;
   return t.values.map((v, i) => format(v as number & InstantMs) ?? defaults[i]!);
@@ -763,7 +886,26 @@ function safeFormat<V>(format: Formatter<V> | null, path: string, problems: Prob
   };
 }
 
-/** The lowest and highest value of a series' points within an x range (zoom-pan.md 6), zero kept for zero-based types. */
+/** The lowest and highest ends of a stacked series' segments, within an x range when zoomed; zero always in. */
+function pileBounds(s: SeriesModel, pile: Stacked, r: { readonly min: number; readonly max: number } | null): { min: number; max: number } {
+  const { x } = s.columns;
+  let min = 0;
+  let max = 0;
+  for (let i = 0; i < x.length; i++) {
+    if (r && (x[i]! < r.min || x[i]! > r.max)) continue;
+    const a = pile.base[i]!;
+    const b = pile.top[i]!;
+    if (Number.isNaN(a)) continue;
+    min = Math.min(min, a, b);
+    max = Math.max(max, a, b);
+  }
+  return { min, max };
+}
+
+/**
+ * The lowest and highest value of a series' points within an x range (zoom-pan.md 6), zero kept for zero-based types:
+ * a sorted series through its pyramid, an unsorted one through its buckets on x (x-buckets.ts).
+ */
 function visibleY(s: SeriesModel, r: { readonly min: number; readonly max: number }, zeroBased: boolean): { min: number; max: number } | null {
   const { x, y } = s.columns;
   let b: { min: number; max: number } | null = null;
@@ -783,14 +925,6 @@ function visibleY(s: SeriesModel, r: { readonly min: number; readonly max: numbe
       else hi = m;
     }
     b = rangeMinMax(y, lo, end);
-  } else {
-    let min = Infinity;
-    let max = -Infinity;
-    for (let i = 0; i < x.length; i++) if (x[i]! >= r.min && x[i]! <= r.max && !Number.isNaN(y[i]!)) {
-      min = Math.min(min, y[i]!);
-      max = Math.max(max, y[i]!);
-    }
-    b = min <= max ? { min, max } : null;
-  }
+  } else b = yWithin(x, y, r.min, r.max);
   return b && zeroBased ? { min: Math.min(0, b.min), max: Math.max(0, b.max) } : b;
 }

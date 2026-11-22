@@ -3,6 +3,7 @@
  * without a zone. Both are branded, so the compiler refuses to mix them; values of these types come only from the
  * core's own checks.
  */
+import type { TimeKit } from './kit.js';
 declare const instantBrand: unique symbol;
 declare const dayBrand: unique symbol;
 
@@ -291,3 +292,26 @@ export function formatInstant(ms: number, locale: string | undefined, zone: stri
   if (w.h !== 0 || w.mi !== 0) return dateFormat(locale, zone, { ...date, hour: '2-digit', minute: '2-digit' }).format(ms);
   return dateFormat(locale, zone, date).format(ms);
 }
+
+// ---- Calendar steps (range-buttons.md 2–3). ----
+
+const daysIn = (y: number, mo: number) => (mo === 2 ? (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0) ? 29 : 28) : [4, 6, 9, 11].includes(mo) ? 30 : 31);
+
+/** The same wall-clock time `months` calendar months earlier: the same day, or that month's last when it is shorter. */
+export function monthsBefore(ms: number, months: number, zone: string): number {
+  const w = wallOf(ms, zone);
+  const n = w.y * 12 + (w.mo - 1) - months;
+  const y = Math.floor(n / 12);
+  const mo = n - y * 12 + 1;
+  const d = Math.min(w.d, daysIn(y, mo));
+  // A wall-clock time the clock skipped that day: the day's start plus the time, as the clock would have read.
+  return instantsOf({ ...w, y, mo, d }, zone)[0] ?? dayStart(y, mo, d, zone) + ((w.h * 60 + w.mi) * 60 + w.s) * 1000 + w.ms;
+}
+
+/** Midnight of 1 January of the instant's year, on the zone's calendar. */
+export function yearStart(ms: number, zone: string): number {
+  return dayStart(wallOf(ms, zone).y, 1, 1, zone);
+}
+
+/** The time axis's part of the core (ADR 0006): what `timeAxis` lends it. */
+export const timeKit: TimeKit = { parse: parseInstant, ticks: timeTicks, labels: timeLabels, format: formatInstant, monthsBefore, yearStart };

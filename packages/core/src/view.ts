@@ -15,3 +15,13 @@ export interface View {
 export function isShown(series: Pick<SeriesModel, 'id' | 'initiallyHidden'>, view: View | undefined): boolean {
   return view?.hidden ? !view.hidden.has(series.id) : !series.initiallyHidden;
 }
+
+/**
+ * A point's key in the view's hidden set (ADR 0007: a slice hidden from the legend). No series id equals one: app ids
+ * never start with `#`, and default ids are `#` and digits only.
+ */
+export const pointKey = (seriesId: string, index: number): string => `#${index}/${seriesId}`;
+
+export function isPointShown(seriesId: string, index: number, view: View | undefined): boolean {
+  return !view?.hidden?.has(pointKey(seriesId, index));
+}

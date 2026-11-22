@@ -2,7 +2,7 @@
 // zooming and panning big series, and what a pointer move costs. Numbers are measured and reported, never asserted.
 // Data is made up and deterministic.
 import { allTypes } from '@dzgraph/core';
-import { chart, type Chart } from '@dzgraph/dom';
+import { allFeatures, canvas, chart, type Chart, type Feature } from '@dzgraph/dom';
 
 const host = document.getElementById('host')!;
 const raf = () => new Promise<number>((r) => requestAnimationFrame(r));
@@ -18,10 +18,14 @@ function prng(seed: number) {
   };
 }
 
+/** Wall time from each change to the frame after the one that drew it: what the eye waits, painting included. */
+const walls: number[] = [];
+
 /** One frame's script: the chart's own frame callback, between ours registered before and after it. */
 async function frameCost(c: Chart, change: () => void): Promise<number> {
   let t0 = 0;
   let t1 = 0;
+  const start = performance.now();
   requestAnimationFrame(() => (t0 = performance.now()));
   change();
   requestAnimationFrame(() => {
@@ -30,7 +34,8 @@ async function frameCost(c: Chart, change: () => void): Promise<number> {
     t1 = performance.now();
   });
   await raf();
-  await raf();
+  // The next frame comes once the drawn one is painted (Canvas rasters after the script; WebGL2 draws on the card).
+  walls.push((await raf()) - start);
   void c;
   return t1 - t0;
 }
@@ -56,7 +61,8 @@ async function zoomAndPan(c: Chart, min: number, max: number) {
     const from = min + (span - w) * (i / 59);
     pan.push(await frameCost(c, () => c.setRange({ min: from, max: from + w })));
   }
-  return { zoom: stats(zoom), pan: stats(pan) };
+  const wall = stats(walls.splice(0));
+  return { zoom: stats(zoom), pan: stats(pan), wall };
 }
 
 /** Pointer moves across the plot: the hover's work, synchronous in the event. */
@@ -72,10 +78,10 @@ function hoverCost(): ReturnType<typeof stats> {
   return stats(out);
 }
 
-async function mount(options: Parameters<typeof chart>[1]): Promise<{ c: Chart; first: number }> {
+async function mount(options: Parameters<typeof chart>[1], features: readonly Feature[] = allFeatures): Promise<{ c: Chart; first: number }> {
   host.replaceChildren();
   const t = performance.now();
-  const c = chart(host, { animation: false, ...options }, { types: allTypes });
+  const c = chart(host, { animation: false, ...options }, { types: allTypes, features });
   host.getBoundingClientRect();
   const first = performance.now() - t;
   await raf();
@@ -84,9 +90,11 @@ async function mount(options: Parameters<typeof chart>[1]): Promise<{ c: Chart; 
 
 async function run() {
   const results: Record<string, unknown> = {};
+  // `?quick`: the 1M scatter only, while working on it.
+  const quick = new URLSearchParams(location.search).has('quick');
 
   // 1. A line of 10 million points (big-data.md 4).
-  {
+  if (!quick) {
     const r = prng(1);
     const n = 10_000_000;
     const y = new Float64Array(n);
@@ -98,7 +106,7 @@ async function run() {
   }
 
   // 2. A time axis: one reading every five minutes for ten years (about a million), Paris.
-  {
+  if (!quick) {
     const r = prng(2);
     const n = 1_051_200;
     const x = new Float64Array(n);
@@ -114,18 +122,25 @@ async function run() {
     c.destroy();
   }
 
-  // 3. A scatter of 100 000 points on Canvas (big-data.md 2–3).
-  {
-    const r = prng(3);
-    const n = 100_000;
+  // 3. Scatters (big-data.md 2–3, 6–8): on Canvas (without the WebGL2 module) and on WebGL2, at several sizes, to set
+  // the WebGL threshold (ADR 0008). Script time only: the graphics card draws after it.
+  const cloud = (n: number, seed: number) => {
+    const r = prng(seed);
     const x = new Float64Array(n);
     const y = new Float64Array(n);
     for (let i = 0; i < n; i++) {
       x[i] = (r() + r() + r()) * 100;
       y[i] = (r() + r() + r()) * 50;
     }
-    const { c, first } = await mount({ series: [{ type: 'scatter', data: { x, y } }] });
-    results['scatter 100k (Canvas)'] = { first, hover: hoverCost(), ...(await zoomAndPan(c, 0, 300)) };
+    return { x, y };
+  };
+  for (const [n, plane] of (quick ? [[1_000_000, 'WebGL2']] : [[20_000, 'Canvas'], [50_000, 'Canvas'], [100_000, 'Canvas'], [200_000, 'Canvas'], [200_000, 'WebGL2'], [1_000_000, 'WebGL2'], [10_000_000, 'WebGL2']]) as readonly (readonly [number, string])[]) {
+    const { x, y } = cloud(n, 3);
+    const label = `scatter ${n >= 1e6 ? `${n / 1e6}M` : `${n / 1e3}k`} (${plane})`;
+    const { c, first } = await mount({ series: [{ type: 'scatter', data: { x, y } }] }, plane === 'Canvas' ? [canvas] : allFeatures);
+    // Which plane drew it: the first canvas is WebGL2's when the module is there.
+    const drew = [...host.querySelectorAll('canvas')].map((e) => e.style.display);
+    results[label] = { first, drew, hover: hoverCost(), ...(await zoomAndPan(c, 0, 300)) };
     c.destroy();
   }
 

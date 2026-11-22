@@ -15,7 +15,10 @@ export type ColorToken =
   | 'axis-line'
   | 'grid-line'
   | 'tick'
-  | 'focus';
+  | 'focus'
+  /** « Autres » in a pie (pie-donut.md 7), and a gauge's unfilled scale (gauge.md 2). */
+  | 'others'
+  | 'track';
 
 /**
  * A colour in the scene: a token, or a mix of two tokens (`amount` of the second, 0–1), for colour scales (heat maps,
@@ -103,6 +106,8 @@ export interface ArcPrimitive extends PrimitiveBase {
   /** Radians, clockwise from twelve o'clock. */
   readonly startAngle: number;
   readonly endAngle: number;
+  /** The end it grows from when it appears (a gauge's value, gauge.md 11); absent: it opens as a pie's slice. */
+  readonly grows?: 'start' | 'end';
 }
 
 /** The symbols of markers: they tell series apart as well as colours do. */
@@ -112,6 +117,35 @@ export interface MarkerPrimitive extends PrimitiveBase {
   readonly kind: 'marker';
   readonly x: number;
   readonly y: number;
+  readonly size: number;
+  readonly symbol: MarkerSymbol;
+}
+
+/**
+ * Where a value goes along one screen direction (ADR 0008): `pixel = r0 + (v − d0) · k`, `v` the value or, on a log
+ * axis, its log10. Every scale has one (`Scale.affine`); a value ≤ 0 on a log axis has no place.
+ */
+export interface Affine {
+  readonly d0: number;
+  readonly r0: number;
+  readonly k: number;
+  readonly log: boolean;
+}
+
+/**
+ * A scatter's points as one batch (ADR 0008): past the Canvas threshold the core does not build a primitive per point.
+ * The series' own columns (no copy; a gap — NaN in either — is not drawn), each placed through its map: `x` across
+ * the screen and `y` down it, or the other way round when `swapped` (a bar chart). Every point is the series' point at
+ * its index (`seriesId`), as a marker's `point` says.
+ */
+export interface PointsPrimitive extends PrimitiveBase {
+  readonly kind: 'points';
+  readonly seriesId: string;
+  readonly x: Float64Array;
+  readonly y: Float64Array;
+  readonly mapX: Affine;
+  readonly mapY: Affine;
+  readonly swapped: boolean;
   readonly size: number;
   readonly symbol: MarkerSymbol;
 }
@@ -131,7 +165,7 @@ export interface TextPrimitive extends PrimitiveBase {
   readonly dir?: 'ltr' | 'rtl';
 }
 
-export type Primitive = PathPrimitive | RectPrimitive | LinePrimitive | ArcPrimitive | MarkerPrimitive | TextPrimitive;
+export type Primitive = PathPrimitive | RectPrimitive | LinePrimitive | ArcPrimitive | MarkerPrimitive | PointsPrimitive | TextPrimitive;
 
 /** Which painter draws a group (ADR 0002: chosen by the core from the marks drawn). */
 export type PainterKind = 'svg' | 'canvas' | 'webgl2';

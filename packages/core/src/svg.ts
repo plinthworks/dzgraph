@@ -3,11 +3,12 @@
  * painter applies it to live elements, `sceneToSvg` writes it as a standalone string (exports, node, tests). One
  * translation for both, so the screen and the export cannot drift apart.
  */
-import type { FontRole, MarkerSymbol, Paint, PathData, Primitive, Scene } from './scene.js';
+import type { FontRole, MarkerSymbol, Paint, PathData, PointsPrimitive, Primitive, Rect, Scene } from './scene.js';
 import { endRadius, markerPolygon } from './geometry.js';
 import { PathCommand } from './scene.js';
 import { cssColor, type ResolveColor } from './paint.js';
 import { clipIndex, clipsOf } from './compose.js';
+import { markersOf } from './points-batch.js';
 
 export interface SvgElementSpec {
   readonly tag: 'path' | 'rect' | 'line' | 'circle' | 'text';
@@ -79,14 +80,30 @@ function roundedEnd(x: number, y: number, w: number, h: number, radius: number, 
 /** An annular sector: radians clockwise from twelve o'clock. */
 function arcPath(cx: number, cy: number, r0: number, r1: number, a0: number, a1: number): string {
   const at = (r: number, a: number) => `${num(cx + r * Math.sin(a))} ${num(cy - r * Math.cos(a))}`;
+  // A whole turn (a pie of one slice): an arc whose ends meet draws nothing, so two half arcs (review 1); the hole
+  // anticlockwise, so the non-zero rule leaves it empty.
+  if (a1 - a0 >= 2 * Math.PI - 1e-9) {
+    const mid = a0 + Math.PI;
+    const ring = (r: number, sweep: 0 | 1) => `M${at(r, a0)}A${num(r)} ${num(r)} 0 1 ${sweep} ${at(r, mid)}A${num(r)} ${num(r)} 0 1 ${sweep} ${at(r, a0)}Z`;
+    return r0 > 0 ? ring(r1, 1) + ring(r0, 0) : ring(r1, 1);
+  }
   const large = a1 - a0 > Math.PI ? 1 : 0;
   const outer = `M${at(r1, a0)}A${num(r1)} ${num(r1)} 0 ${large} 1 ${at(r1, a1)}`;
   if (r0 <= 0) return `${outer}L${num(cx)} ${num(cy)}Z`;
   return `${outer}L${at(r0, a1)}A${num(r0)} ${num(r0)} 0 ${large} 0 ${at(r0, a0)}Z`;
 }
 
+/** A primitive SVG draws as one element: everything but a batch, which is drawn as its markers (`drawnItems`). */
+export type SvgPrimitive = Exclude<Primitive, PointsPrimitive>;
+
+/** A group's items as SVG draws them: a batch as one marker per point that may show in the clip (ADR 0008). */
+export function drawnItems(items: readonly Primitive[], clip?: Rect): readonly SvgPrimitive[] {
+  if (!items.some((p) => p.kind === 'points')) return items as readonly SvgPrimitive[];
+  return items.flatMap((p) => (p.kind === 'points' ? markersOf(p, clip) : [p]));
+}
+
 /** One primitive as an SVG element. */
-export function svgOf(p: Primitive, opts: SvgOptions = {}): SvgElementSpec {
+export function svgOf(p: SvgPrimitive, opts: SvgOptions = {}): SvgElementSpec {
   const paint = paintAttrs(p.paint, opts);
   switch (p.kind) {
     case 'path':
@@ -138,7 +155,7 @@ export function sceneToSvg(scene: Scene, opts: SvgOptions & { readonly prefix?: 
     for (const g of layer.groups) {
       const opacity = g.opacity !== undefined && g.opacity !== 1 ? ` opacity="${num(g.opacity)}"` : '';
       out += g.clip ? `<g clip-path="url(#${clipId(prefix, clipIndex(clips, g.clip))})"${opacity}>` : `<g${opacity}>`;
-      for (const p of g.items) {
+      for (const p of drawnItems(g.items, g.clip)) {
         const e = svgOf(p, opts);
         const attrs = Object.entries(e.attrs).map(([k, v]) => ` ${k}="${escape(v)}"`).join('');
         out += e.text === undefined ? `<${e.tag}${attrs}/>` : `<${e.tag}${attrs}>${escape(e.text)}</${e.tag}>`;

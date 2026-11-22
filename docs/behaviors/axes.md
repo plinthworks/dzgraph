@@ -1,6 +1,6 @@
 # Axes, ticks and labels
 
-Phase 1: linear and category scales. Time (Phase 3) and log (Phase 4) get their own lines here then.
+Phase 1: linear and category scales. Time: time-axis.md (Phase 3); log: log-scale.md (Phase 4).
 
 ## What the user does
 Looks at a chart and reads values off its axes; resizes the window; looks at a chart with one value, no data, or

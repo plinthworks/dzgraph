@@ -39,6 +39,7 @@ export const line: SeriesType<TestLineOptions, 'cartesian'> = {
 export const column: SeriesType<TestColumnOptions, 'cartesian'> = {
   name: 'column',
   system: 'cartesian',
+  orientation: 'vertical',
   sign: 'square',
   optionNames: {},
   check: () => noProblems,

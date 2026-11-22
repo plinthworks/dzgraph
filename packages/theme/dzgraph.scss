@@ -90,6 +90,9 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     --dzgraph-tick: var(--tz-border);
     --dzgraph-grid-line: color-mix(in oklab, var(--tz-border) 55%, var(--tz-bg));
     --dzgraph-focus: var(--tz-accent);
+    // « Autres » in a pie, neutral and still 3:1 on the surface (pie-donut.md 7); a gauge's unfilled scale (gauge.md 2).
+    --dzgraph-others: var(--tz-fg-muted);
+    --dzgraph-track: color-mix(in oklab, var(--tz-border) 70%, var(--tz-bg));
 
     // Fonts, by role (the DOM layer measures with these, then draws with them).
     --dzgraph-font-title: 600 16px #{$font};
@@ -132,6 +135,28 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     padding-inline-start: 16px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+  }
+
+  // A stacked point's share of its pile, after its value; the pile's total under a rule (stacking.md 14).
+  .dzgraph-tooltip-share {
+    min-inline-size: 4ch;
+    color: var(--tz-fg-muted);
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  // A gauge's scale and threshold, and « Autres »'s count of slices left out (gauge.md 7, pie-donut.md 8).
+  .dzgraph-tooltip-note,
+  .dzgraph-tooltip-more {
+    color: var(--tz-fg-muted);
+  }
+
+  .dzgraph-tooltip-total {
+    margin-block-start: 2px;
+    padding-block-start: 2px;
+    // Under the names: past the signs' 12 px and their gap.
+    padding-inline-start: 18px;
+    border-block-start: 1px solid var(--tz-border);
   }
 
   // Focus: the legend's buttons and the points (legend-interaction.md 2, keyboard.md 4) show a ring in the focus colour.
@@ -253,6 +278,8 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
       --dzgraph-tick: CanvasText;
       --dzgraph-grid-line: GrayText;
       --dzgraph-focus: Highlight;
+      --dzgraph-others: GrayText;
+      --dzgraph-track: GrayText;
 
       .dzgraph-tooltip {
         border-color: CanvasText;

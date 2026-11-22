@@ -137,6 +137,7 @@ describe('accessibility models (screen-reader.md, data-table.md)', () => {
         { name: 'Pears', min: '5', max: '15' },
       ],
       x: { from: 'Jan', to: 'Mar' },
+      stacked: false,
     });
   });
 

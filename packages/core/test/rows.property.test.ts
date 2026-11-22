@@ -1,6 +1,7 @@
 // dataRows with a limit (data-table.md 4–5, step 3.7): the same rows as reading every point into a map, cut at the
 // limit, and the right total — on sorted series with gaps, repeated x, ranges and hidden series. The oracle below is
-// the Phase 2 reading, kept as it was.
+// the Phase 2 reading, with the Phase 4 rule (stacking.md 17): marks share a row per x too, unless their series has
+// two points at one x.
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import type { FontRole, PointRef, TextMeasurer } from '@dzgraph/core';
@@ -20,12 +21,13 @@ function oracle(model: ChartModel, view: View | undefined) {
   const rowsByKey = new Map<string, { x: number; order: number; from: PointRef; values: (number | null)[] }>();
   let order = 0;
   shown.forEach((s, k) => {
-    const perPoint = s.tooltip === 'mark' || !s.sorted;
+    const valued = s.columns.x.filter((_, i) => !Number.isNaN(s.columns.y[i]!));
+    const perPoint = !s.sorted || (s.tooltip === 'mark' && new Set(valued).size < valued.length);
     const r = view?.range?.[s.xAxis];
     s.columns.x.forEach((x, i) => {
       if (Number.isNaN(x) || (r && (x < r.min || x > r.max))) return;
       const y = s.columns.y[i]!;
-      if (perPoint && Number.isNaN(y)) return;
+      if ((perPoint || s.tooltip === 'mark') && Number.isNaN(y)) return;
       const key = perPoint ? `p\u0000${s.id}\u0000${i}` : `x\u0000${x}`;
       let row = rowsByKey.get(key);
       if (!row) rowsByKey.set(key, (row = { x, order: order++, from: { seriesId: s.id, index: i }, values: shown.map(() => null) }));
@@ -41,7 +43,30 @@ const series = fc.array(fc.tuple(fc.integer({ min: 0, max: 2 }), fc.option(fc.in
   return pts.map(([dx, y]) => [(x += dx), y] as [number, number | null]);
 });
 
+// Points in any order: x 0–30, y a number or a gap.
+const loose = fc.array(fc.tuple(fc.integer({ min: 0, max: 30 }), fc.option(fc.integer({ min: -9, max: 9 }), { nil: null })), { minLength: 0, maxLength: 60 });
+
 describe('dataRows with a limit', () => {
+  it('series out of x order (scatters, ADR 0008), mixed with sorted lines and marks: the same rows', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.oneof(series.map((data) => ({ type: 'line', data })), series.map((data) => ({ type: 'scatter', data })), loose.map((data) => ({ type: 'scatter', data }))), { minLength: 1, maxLength: 4 }),
+        fc.option(fc.tuple(fc.integer({ min: 0, max: 60 }), fc.integer({ min: 0, max: 60 }))),
+        fc.integer({ min: 0, max: 40 }),
+        (all, r, limit) => {
+          const { model } = normalize({ series: all.map((o, i) => ({ ...o, id: `s${i}` })) }, allTypes);
+          const l = layout({ model, types: allTypes, width: 500, height: 300, dir: 'ltr', measureText, text, locale: 'en-US' });
+          const view: View = r ? { range: { x: { min: Math.min(...r), max: Math.max(...r) } } } : {};
+          const full = oracle(model, view);
+          const got = dataRows(model, l, view, 'visible', limit);
+          expect(got.rows).toEqual(full.slice(0, limit));
+          expect(got.total).toBe(full.length);
+        },
+      ),
+      { numRuns: 400 },
+    );
+  });
+
   it('the first rows of the full reading, and its count', () => {
     fc.assert(
       fc.property(

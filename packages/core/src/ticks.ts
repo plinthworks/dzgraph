@@ -165,3 +165,66 @@ export function alignedTicks(a: number, b: number, count: number): Ticks {
   }
   return numericTicks(lo, hi, count, 'loose');
 }
+
+/** `m × 10^e`, written exactly (0.01, not 0.010000000000000002). */
+const decade = (m: number, e: number): number => Number.parseFloat((m * 10 ** e).toPrecision(12));
+const exponent = (v: number): number => Math.floor(Math.log10(v) + NOISE);
+const isPowerOfTen = (v: number): boolean => decade(1, exponent(v)) === v;
+
+/** The mantissas a decade's ticks may use, densest first (log-scale.md 4). */
+const MANTISSAS: readonly (readonly number[])[] = [[1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 5], [1]];
+
+/** The ticks of one set within [lo, hi]: `ms` in every `every`-th decade (exponents multiples of `every`). */
+function logValues(lo: number, hi: number, ms: readonly number[], every: number): number[] {
+  const out: number[] = [];
+  for (let e = Math.floor(exponent(lo) / every) * every; e <= exponent(hi) + 1; e += every)
+    for (const m of ms) {
+      const v = decade(m, e);
+      if (v >= lo * (1 - NOISE) && v <= hi * (1 + NOISE)) out.push(v);
+    }
+  return out;
+}
+
+/**
+ * Ticks on a log axis (log-scale.md 3, 4, 7), for positive data from `a` to `b`. Loose: rounded outwards to powers of
+ * ten over a decade or more, to 1-2-5 ticks within one; one value gets the decade around it. Then the densest set of
+ * ticks that keeps to `target`: 1–9, 1-2-5, the powers of ten, every second (fifth, tenth…) power.
+ */
+export function logTicks(a: number, b: number, target: number, mode: 'loose' | 'inside'): Ticks {
+  let lo = Math.min(a, b);
+  let hi = Math.max(a, b);
+  if (!(lo > 0) || !Number.isFinite(hi)) return { min: 1, max: 10, step: 1, values: [1, 10] };
+  if (mode === 'loose') {
+    if (lo === hi) {
+      const e = exponent(lo);
+      [lo, hi] = isPowerOfTen(lo) ? [decade(1, e - 1), decade(1, e + 1)] : [decade(1, e), decade(1, e + 1)];
+    } else if (hi / lo >= 10 * (1 - NOISE)) [lo, hi] = [decade(1, exponent(lo)), decade(1, Math.ceil(Math.log10(hi) - NOISE))];
+    else {
+      const below = logValues(lo / 10, lo, [1, 2, 5], 1).filter((v) => v <= lo * (1 + NOISE));
+      const above = logValues(hi, hi * 10, [1, 2, 5], 1).filter((v) => v >= hi * (1 - NOISE));
+      [lo, hi] = [below.at(-1) ?? lo, above[0] ?? hi];
+    }
+  }
+  let chosen: number[] | null = null;
+  for (const ms of MANTISSAS) {
+    const v = logValues(lo, hi, ms, 1);
+    if (v.length <= target) {
+      chosen = v;
+      break;
+    }
+  }
+  // More decades than room: every k-th power of ten, k a round number (2, 5, 10, 20, 50…).
+  for (let z = 0; chosen === null && z < 400; z++)
+    for (const q of z === 0 ? [2, 5] : [1, 2, 5]) {
+      const v = logValues(lo, hi, [1], q * 10 ** z);
+      if (v.length <= target || v.length <= 2) {
+        chosen = v;
+        break;
+      }
+    }
+  chosen ??= [lo, hi];
+  // Too narrow for two ticks of the set chosen: the densest set that gives two.
+  if (chosen.length < 2) chosen = MANTISSAS.map((ms) => logValues(lo, hi, ms, 1)).find((v) => v.length >= 2) ?? chosen;
+  const step = chosen.length > 1 ? chosen[1]! - chosen[0]! : 1;
+  return { min: lo, max: hi, step, values: chosen };
+}

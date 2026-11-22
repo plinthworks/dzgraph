@@ -13,12 +13,17 @@ const ALLOWED: Record<string, readonly string[]> = {
 };
 
 export function specifiers(source: string): string[] {
-  return [...source.matchAll(/\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]!);
+  // Not a word inside a string (`k === 'from'`): the keyword is never right after a quote or a dot.
+  return [...source.matchAll(/(?<!['"`.])\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]!);
 }
 
 describe('the package graph', () => {
   it('reads specifiers, static and dynamic', () => {
     expect(specifiers("import { a } from '@dzgraph/core';\nimport type { B } from './b.js';\nconst c = await import('../c.js');\nimport './d.css';")).toEqual(['@dzgraph/core', './b.js', '../c.js', './d.css']);
+  });
+
+  it('ignores the words inside strings and properties', () => {
+    expect(specifiers("const ok = k === 'from' || k === 'to';\nconst f = t.from < t.to;")).toEqual([]);
   });
 
   it('every package is listed', () => {

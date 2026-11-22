@@ -24,14 +24,14 @@ describe('normalize: defaults', () => {
 
   it('two series: a legend under the plot, centred; the second colour', () => {
     const { model } = run({ series: [{ type: 'line', data: [1] }, { type: 'column', data: [2], name: 'B' }] });
-    expect(model.legend).toEqual({ position: 'bottom', align: 'center' });
+    expect(model.legend).toEqual({ position: 'bottom', align: 'center', auto: false });
     expect(model.series.map((s) => [s.id, s.name, s.color])).toEqual([['#1', null, 'series-1'], ['#2', 'B', 'series-2']]);
   });
 
   it('legend forced on or off; title as a string or an object', () => {
-    expect(run({ series: [{ type: 'line', data: [] }], legend: true }).model.legend).toEqual({ position: 'bottom', align: 'center' });
+    expect(run({ series: [{ type: 'line', data: [] }], legend: true }).model.legend).toEqual({ position: 'bottom', align: 'center', auto: false });
     expect(run({ series: [{ type: 'line', data: [] }, { type: 'line', data: [] }], legend: false }).model.legend).toBeNull();
-    expect(run({ series: [], legend: { position: 'end' } }).model.legend).toEqual({ position: 'end', align: 'center' });
+    expect(run({ series: [], legend: { position: 'end' } }).model.legend).toEqual({ position: 'end', align: 'center', auto: false });
     expect(run({ series: [], title: 'Ventes' }).model.title).toEqual({ text: 'Ventes', subtitle: null, align: 'start' });
     expect(run({ series: [], title: { text: 'Ventes', subtitle: '2026', align: 'center' } }).model.title).toEqual({ text: 'Ventes', subtitle: '2026', align: 'center' });
   });

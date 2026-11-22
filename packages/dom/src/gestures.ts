@@ -250,3 +250,54 @@ export class Gestures {
     if (e.target instanceof Node && this.svg.contains(e.target)) e.stopPropagation();
   };
 }
+
+export interface ZoomHooks extends GestureHooks {
+  /** The reset button was pressed from the keyboard and goes away: the focus goes back to the points. */
+  refocus(): void;
+}
+
+/** Between the reset button and the plot's edges. */
+const RESET_INSET = 8;
+
+/** The zoom module's part of the chart (ADR 0006): the gestures and the reset button (zoom-pan.md 7). */
+export class ZoomControls {
+  private readonly gestures: Gestures;
+  private readonly reset = document.createElement('button');
+
+  constructor(root: HTMLElement, svg: SVGSVGElement, hooks: ZoomHooks) {
+    this.gestures = new Gestures(root, svg, hooks);
+    const reset = this.reset;
+    reset.type = 'button';
+    reset.className = 'dzgraph-reset';
+    reset.hidden = true;
+    Object.assign(reset.style, { position: 'absolute', zIndex: '2' });
+    reset.addEventListener('click', () => {
+      const had = document.activeElement === reset;
+      hooks.setRange(null, 'animate', had ? 'keyboard' : 'pointer');
+      if (had) hooks.refocus();
+    });
+    root.appendChild(reset);
+  }
+
+  busy(): boolean {
+    return this.gestures.busy();
+  }
+
+  key(e: KeyboardEvent, x: number | null): boolean {
+    return this.gestures.key(e, x);
+  }
+
+  /** At the end of the plot's top edge, shown when zoomed. */
+  place(plot: { readonly x: number; readonly y: number; readonly width: number }, width: number, dir: 'ltr' | 'rtl', range: Range | null, label: string): void {
+    const reset = this.reset;
+    reset.textContent = label;
+    reset.hidden = range === null;
+    reset.style.insetBlockStart = `${plot.y + RESET_INSET}px`;
+    reset.style.insetInlineEnd = `${dir === 'rtl' ? plot.x + RESET_INSET : width - plot.x - plot.width + RESET_INSET}px`;
+  }
+
+  destroy(): void {
+    this.gestures.destroy();
+    this.reset.remove();
+  }
+}

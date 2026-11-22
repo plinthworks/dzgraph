@@ -12,9 +12,9 @@ import { decimate } from './decimate.js';
 import { extentOf, type Extent, type Range } from './zoom.js';
 import { numericTicks, tickTarget } from './ticks.js';
 import { formatTicks } from './format.js';
-import { dayStart, instantsOf, timeLabels, timeTicks, wallOf } from './time.js';
 import { PathBuilder, rangeOf, sceneId } from './series/shared.js';
 import { columnCache } from './column-cache.js';
+import type { NavigatorKit } from './kit.js';
 
 /** The strip's height, and the room under it for its labels (navigator.md 1). */
 export const NAV_STRIP = 40;
@@ -58,10 +58,11 @@ export function navigatorLayout(
   const axis = model.xAxes.find((a) => a.id === axisId);
   const target = Math.max(2, Math.floor(tickTarget(box.width, 'across') * 0.75));
   let ticks: { value: number; text: string }[] = [];
-  if (axis?.scale === 'time') {
+  const time = model.kit.time;
+  if (axis?.scale === 'time' && time) {
     const zone = axis.zone ?? 'UTC';
-    const t = timeTicks(extent.min, extent.max, target, zone);
-    const named = timeLabels(t, locale, zone);
+    const t = time.ticks(extent.min, extent.max, target, zone);
+    const named = time.labels(t, locale, zone);
     ticks = t.values.map((v, i) => ({ value: v, text: named.labels[i]! }));
   } else if (axis?.scale !== 'category') {
     const t = numericTicks(extent.min, extent.max, target, 'inside');
@@ -162,22 +163,13 @@ export type RangeButton = '1m' | '3m' | 'ytd' | '1y';
 export function rangeButtonSpan(model: ChartModel, axisId: string, preset: RangeButton): { min: number; max: number; fits: boolean } | null {
   const extent = extentOf(model, axisId);
   const axis = model.xAxes.find((a) => a.id === axisId);
-  if (!extent || axis?.scale !== 'time') return null;
+  const time = model.kit.time;
+  if (!extent || axis?.scale !== 'time' || !time) return null;
   const zone = axis.zone ?? 'UTC';
   const last = extent.max;
-  const w = wallOf(last, zone);
-  let min: number;
-  if (preset === 'ytd') min = dayStart(w.y, 1, 1, zone);
-  else {
-    const back = preset === '1m' ? 1 : preset === '3m' ? 3 : 12;
-    const months = w.y * 12 + (w.mo - 1) - back;
-    const y = Math.floor(months / 12);
-    const mo = months - y * 12 + 1;
-    const d = Math.min(w.d, daysIn(y, mo));
-    // A wall-clock time the clock skipped that day: the day's start plus the time, as the clock would have read.
-    min = instantsOf({ ...w, y, mo, d }, zone)[0] ?? dayStart(y, mo, d, zone) + ((w.h * 60 + w.mi) * 60 + w.s) * 1000 + w.ms;
-  }
+  const min = preset === 'ytd' ? time.yearStart(last, zone) : time.monthsBefore(last, preset === '1m' ? 1 : preset === '3m' ? 3 : 12, zone);
   return { min, max: last, fits: min >= extent.min };
 }
 
-const daysIn = (y: number, mo: number) => (mo === 2 ? (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0) ? 29 : 28) : [4, 6, 9, 11].includes(mo) ? 30 : 31);
+/** The navigator's part of the core (ADR 0006): what `navigatorStrip` lends it. */
+export const navigatorKit: NavigatorKit = { strip: NAV_STRIP, layout: navigatorLayout, groups: navigatorGroups, span: rangeButtonSpan };

@@ -68,6 +68,13 @@ les hiérarchies, 3D projeté) est un module qui s'enregistre : `chart(el, optio
 point d'entrée « tout inclus » pour qui ne compte pas les octets. Une app ne paie que ce qu'elle importe ; le cœur ne
 connaît aucun type en dur. C'est fixé dès la Phase 1 pour que les vagues 1.x n'aient rien à casser.
 
+**Fonctions importées (ADR 0006, Phase 4)** : de même, les axes de temps (`timeAxis`), le zoom (`zoom`), le
+navigateur et ses boutons de plage (`navigatorStrip`, qui amène `zoom`) et le plan Canvas (`canvas`) sont des modules :
+`chart(el, options, { types, features: [timeAxis, zoom] })`, ou `allFeatures`. Le cœur reçoit ce qu'ils lui prêtent
+(un *kit* : lire et nommer les instants, placer et dessiner le navigateur) avec les options et le garde dans le
+modèle ; il n'importe pas leur code. Une option sans son module devient un `Problem` `missing-module`. La plage
+visible reste au cœur : `setRange()` marche sans module.
+
 Le cœur a deux points d'entrée : `@dzgraph/core` (public, semver) et `@dzgraph/core/internal` (pour nos propres paquets
 seulement, sans promesse avant 1.0 : `normalize`, `layout`, `composeScene`, `svgOf`, le contrat des types). `@dzgraph/angular`
 importe `core` (types, `allTypes`) et `dom`. Graphe d'imports : `core` ← `dom` ← (`angular`, `dztooltip`, `dzgrid`). Un test le vérifie. Les ponts déclarent des
@@ -116,7 +123,7 @@ options + données ──normalize──▶ Model ──layout(size, measure)─
 | `column-cache.ts` | ce qui est calculé d'une colonne (pyramide, bornes, ordre) gardé avec elle, oublié quand une colonne de l'app est relue. |
 | `geometry.ts` | les formes que tous les peintres dessinent pareil (contour d'un marqueur, bout arrondi d'une colonne). |
 | `series-type.ts` | le contrat d'un type de série et des repères (`FramesBySystem`, `MarkSet`). |
-| `series/` | `line`, `area`, `column` (+ `bar`), `scatter`, et ce qu'ils partagent (`shared.ts`). |
+| `series/` | `line`, `area`, `column` (+ `bar`), `scatter`, et ce qu'ils partagent (`shared.ts`) ; Phase 4 : `pie` (+ `donut`) et `gauge`, les premiers types polaires, qui se placent eux-mêmes (`place()`, ADR 0007). |
 | `decimate.ts` | M4 exact sur pyramide min/max (blocs de 16 points) ; `rangeMinMax` d'une plage d'indices en O(log n). |
 | `compose.ts` | la scène : calques, traits sur les centres de pixels, textes sur leur ligne de base alphabétique ; un peintre par série (Canvas dès qu'un lot de marques dépasse le seuil), les groupes Canvas en tête de chaque calque (ADR 0002). |
 | `scene.ts` | les types de la scène (primitives, jetons de couleur, `PathData`). |
@@ -129,7 +136,8 @@ options + données ──normalize──▶ Model ──layout(size, measure)─
 | `tooltip.ts` | le contenu de l'infobulle, en données. |
 | `a11y.ts` | le résumé, les libellés des points, `dataRows` (valeurs brutes, pour le CSV de la Phase 6) et `dataTable` (texte). |
 | `interpolate.ts` | les scènes entre deux états, et l'état de départ de l'apparition (`appearFrom`). |
-| `stack.ts`, `csv.ts`, `aggregate.ts` | Phases 4 à 6, comme prévu. |
+| `stack.ts` | les piles (Phase 4) : pour chaque série empilée visible, le début et la fin de chaque segment, sa part, le total de la pile ; calculées une fois par mise en page (`layout.stacks`) et lues par les types, `pointAt`, l'infobulle, le lecteur d'écran et le tableau. |
+| `csv.ts`, `aggregate.ts` | Phases 5 et 6, comme prévu. |
 
 La pureté est imposée par un test (`purity.test.ts`, repris de DzGrid) qui se teste lui-même sur des violations plantées.
 
@@ -171,6 +179,11 @@ pincer, touches + − 0 et Maj + flèches), `navigator.ts` (poignées, fenêtre,
 réinitialisation, les boutons de plage, le bouton du tableau (plage visible ou tout) ; les aides lourdes (résumé,
 points, tableau) attendent la fin d'un geste (200 ms).
 
+*Phase 4, étape 1 (2026-11-22) :* `features.ts` (les quatre modules, `allFeatures`, leur résolution) ; `chart.ts`
+n'importe plus que les types de `gestures.ts`, `navigator.ts` et `canvas-painter.ts`. Le bouton de réinitialisation
+vit avec les gestes (`ZoomControls`), les boutons de plage avec le navigateur (`NavigatorPart`). Sans `canvas`, les
+groupes Canvas de la scène sont peints en SVG, dans le même ordre.
+
 ## 6. Thème (`@dzgraph/theme`)
 
 Variables `--dzgraph-*` pour tout : palette catégorielle (`--dzgraph-series-1` à `-10`), grille, axes, texte,
@@ -189,8 +202,10 @@ de garde, comme DzTooltip).
 ## 8. Gros volumes
 
 Données en colonnes typées, décimation par fenêtre visible (M4 : rendu visuellement identique à l'original pour une
-ligne), Canvas au-delà du seuil, recherche du point survolé en O(log n). Objectifs **[À MESURER]** en S1/S3 : 1 million
-de points affichés, zoom et déplacement à 60 images/s sur une machine moyenne.
+ligne), Canvas au-delà de 2 000 marques, recherche du point survolé en O(log n) ou par cases. Nuages : un lot de points
+en unités de données (ADR 0008), dessiné par Canvas puis, au-delà de 100 000 points, par notre WebGL2 (module `webgl`).
+Mesuré (Chrome, 2026-11-22) : ligne de 10 M points, zoom 3 ms par image ; nuage de 1 M et de 10 M points, zoom
+0,9 ms par image.
 
 ## 9. Après la 1.0 : les vagues 1.x (D.17)
 

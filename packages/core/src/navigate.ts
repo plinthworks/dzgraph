@@ -41,6 +41,16 @@ export function rankOf(order: Int32Array, index: number): number {
 export function navigate(model: ChartModel, layout: ChartLayout, view: View | undefined, at: PointRef, key: string): PointRef | null {
   const s = model.series.find((o) => o.id === at.seriesId);
   if (!s) return null;
+  // Around a circle (pie-donut.md 13): → and ↓ to the next point as drawn, ← and ↑ to the one before.
+  const placement = layout.placements.get(s.id);
+  if (placement) {
+    const ord = placement.order;
+    if (!ord.length) return null;
+    const k = Math.max(0, ord.indexOf(at.index));
+    const steps: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1, Home: -ord.length, End: ord.length };
+    const step = steps[key];
+    return step === undefined ? null : { seriesId: s.id, index: ord[Math.min(ord.length - 1, Math.max(0, k + step))]! };
+  }
   const order = validOrder(s);
   if (!order.length) return null;
   const pos = Math.min(order.length - 1, rankOf(order, at.index));

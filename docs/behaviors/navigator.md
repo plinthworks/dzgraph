@@ -1,6 +1,7 @@
 # Navigator
 
 Phase 3. Owner 2026-11-21: off by default (`navigator: true`).
+Comes with the `navigatorStrip` module, which brings `zoom` (ADR 0006); `navigator: true` without it is reported `missing-module`.
 
 ## What the user does
 Sees where the visible range sits in the whole series, and moves or resizes it there.

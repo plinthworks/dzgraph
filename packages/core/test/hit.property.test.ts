@@ -44,6 +44,18 @@ const chartArb = fc.record({
 });
 
 describe('hitMark (big-data.md 3)', () => {
+  it('a column is found anywhere up or down its band, far from its top (found by the property, seed 855148467)', () => {
+    const { model } = normalize({ series: [{ type: 'column', id: 'c', data: [0, -1] }, { type: 'column', id: 'd', data: [0, 1] }] }, allTypes);
+    const l = layout({ model, types: allTypes, width: 500, height: 300, dir: 'ltr', measureText, text, locale: 'en-US' });
+    const scene = composeScene({ model, types: allTypes, layout: l, measureText });
+    const col = scene.layers.find((x) => x.id === 'series')!.groups.flatMap((g) => g.items).find((p) => p.kind === 'rect' && p.point?.index === 1)!;
+    if (col.kind !== 'rect') throw new Error('a column is a rect');
+    // At the plot's top, well above the column, which hangs under zero in the plot's middle: in its band.
+    const py = l.plot.y + 1;
+    expect(col.y - py).toBeGreaterThan(48);
+    expect(hitMark(scene, col.x + col.width / 2, py, 'vertical')).toEqual({ seriesId: 'c', index: 1 });
+  });
+
   it('finds what a scan of every mark finds', () => {
     fc.assert(
       fc.property(chartArb, ({ kind, a, b, probes }) => {

@@ -8,12 +8,13 @@ const site = await serve(new URL('../bench/index.html', import.meta.url).href);
 const b = await browser('chrome');
 try {
   const page = await b.newPage({ viewport: { width: 1100, height: 600 } });
-  await page.goto(site.url('index.html'));
+  await page.goto(site.url(process.argv.includes('--quick') ? 'index.html?quick' : 'index.html'));
   await page.waitForFunction(() => window.benchResult || window.benchError, null, { timeout: 600_000, polling: 500 });
   const error = await page.evaluate(() => window.benchError);
   if (error) throw new Error(error);
   const result = await page.evaluate(() => window.benchResult);
-  record(new URL('../bench/index.html', import.meta.url).href, { browser: 'chrome', budgetMs: 16.7, result });
+  if (process.argv.includes('--quick')) console.log(JSON.stringify(result, null, 1));
+  else record(new URL('../bench/index.html', import.meta.url).href, { browser: 'chrome', budgetMs: 16.7, result });
 } finally {
   await b.close();
   await site.close();

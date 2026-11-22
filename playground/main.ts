@@ -1,9 +1,9 @@
 // The playground: every case, or one (`?case=line&theme=dark&dir=rtl`) for the reference images.
-import { area, bar, column, line, scatter } from '@dzgraph/core';
-import { chart } from '@dzgraph/dom';
+import { allTypes } from '@dzgraph/core';
+import { allFeatures, chart } from '@dzgraph/dom';
 import { cases } from './cases.ts';
 
-const types = [line, area, column, bar, scatter];
+const types = allTypes;
 const params = new URLSearchParams(location.search);
 const theme = params.get('theme') ?? 'light';
 const rtl = params.get('dir') === 'rtl';
@@ -24,7 +24,7 @@ for (const [name, c] of Object.entries(cases)) {
   box.className = 'chart';
   figure.append(caption, box);
   host.appendChild(figure);
-  const made = chart(box, c.options(rtl), { types });
+  const made = chart(box, c.options(rtl), { types, features: allFeatures });
   c.after?.(made);
 }
 document.body.dataset['ready'] = 'true';

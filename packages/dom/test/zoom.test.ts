@@ -2,7 +2,7 @@
 // the reset button and `rangeChange`. Step 3.5. Gestures are dispatched as pointer and wheel events on the chart.
 import { describe, it, expect, afterEach } from 'vitest';
 import { allTypes } from '@dzgraph/core';
-import { chart, type Chart, type ChartEvents } from '@dzgraph/dom';
+import { allFeatures, chart, type Chart, type ChartEvents } from '@dzgraph/dom';
 
 const made: { el: HTMLElement; c: Chart }[] = [];
 const frames = () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
@@ -11,7 +11,7 @@ function mount(options: Parameters<typeof chart>[1] = { series: [{ type: 'line',
   const el = document.createElement('div');
   el.setAttribute('style', 'inline-size:600px;block-size:400px');
   document.body.appendChild(el);
-  const c = chart(el, { animation: false, ...options }, { types: allTypes });
+  const c = chart(el, { animation: false, ...options }, { types: allTypes, features: allFeatures });
   made.push({ el, c });
   const ranges: ChartEvents['rangeChange'][] = [];
   c.on('rangeChange', (d) => ranges.push(d));
@@ -197,7 +197,7 @@ describe('the reset button (zoom-pan.md 7)', () => {
     el.setAttribute('dir', 'rtl');
     el.setAttribute('lang', 'fr');
     document.body.appendChild(el);
-    const c = chart(el, { animation: false, series: [{ type: 'line', data: Array.from({ length: 101 }, (_, i) => i % 7) }] }, { types: allTypes });
+    const c = chart(el, { animation: false, series: [{ type: 'line', data: Array.from({ length: 101 }, (_, i) => i % 7) }] }, { types: allTypes, features: allFeatures });
     made.push({ el, c });
     await frames();
     const svg = el.querySelector('svg')!;

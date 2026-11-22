@@ -57,3 +57,25 @@ export function formatTicks(values: readonly number[], step: number, locale: str
   const zero = numberFormat(locale, 0, 'standard').format(0);
   return values.map((v) => (v === 0 ? (notation === 'standard' ? f.format(0) : zero) : f.format(v)));
 }
+
+/** Labels of a percent axis (stacking.md 9): values in percent, written as the locale writes a percentage. */
+export function formatPercentTicks(values: readonly number[], locale: string | undefined): string[] {
+  const d = Math.min(decimalsNeeded(values, locale, 'standard'), 18);
+  const f = cached(locale, `pct|${d}`, { style: 'percent', minimumFractionDigits: d, maximumFractionDigits: d });
+  return values.map((v) => f.format(v === 0 ? 0 : v / 100));
+}
+
+/** A share of a whole, 0 to 1, as the tooltip writes it (stacking.md 14): whole percents, one decimal under 10 %. */
+export function formatShare(share: number, locale: string | undefined): string {
+  const small = share < 0.1;
+  const f = cached(locale, small ? 'share1' : 'share0', { style: 'percent', maximumFractionDigits: small ? 1 : 0 });
+  // Below what one decimal shows, said so (pie-donut.md 10), never « 0 % » for a slice that is there.
+  return share > 0 && share < 0.001 ? `<${f.format(0.001)}` : f.format(share);
+}
+
+/** Labels of a log axis (log-scale.md 5): axes.md 10–12, but each label with its own decimals (0,01 0,1 1 10). */
+export function formatLogTicks(values: readonly number[], locale: string | undefined): string[] {
+  const maxAbs = values.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+  const notation: Notation = maxAbs >= 1e15 || (maxAbs > 0 && maxAbs < 1e-6) ? 'scientific' : maxAbs >= 10_000 ? 'compact' : 'standard';
+  return values.map((v) => numberFormat(locale, decimalsNeeded([v], locale, notation), notation).format(v));
+}

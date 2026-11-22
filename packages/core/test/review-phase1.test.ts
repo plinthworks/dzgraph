@@ -137,9 +137,9 @@ describe('review 1: a locale Intl refuses', () => {
 });
 
 describe('architecture check (2026-11-21): seams for the next phases', () => {
-  it('a scale this version does not draw yet is reported, and drawn linear meanwhile', () => {
+  it('a scale accepted early is drawn once its phase comes: log since Phase 4, no longer reported', () => {
     const r = run({ yAxis: { scale: 'log' }, series: [{ type: 'line', data: [1, 10, 100] }] });
-    expect(r.problems).toContain('not-available yAxis[0].scale');
+    expect(r.problems).not.toContain('not-available yAxis[0].scale');
   });
 
   it('the view hides a series without touching the options (legend clicks, Phase 2)', () => {
@@ -155,6 +155,6 @@ describe('architecture check (2026-11-21): seams for the next phases', () => {
 
   it('every type in one import, for apps that do not count bytes (ADR 0005)', async () => {
     const { allTypes } = await import('@dzgraph/core');
-    expect(allTypes.map((t) => t.name)).toEqual(['line', 'area', 'column', 'bar', 'scatter']);
+    expect(allTypes.map((t) => t.name)).toEqual(['line', 'area', 'column', 'bar', 'scatter', 'pie', 'donut', 'gauge']);
   });
 });

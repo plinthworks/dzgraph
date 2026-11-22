@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8" />
+<link rel="stylesheet" href="/packages/theme/dzgraph.css" />
+<script type="importmap">{ "imports": { "@dzgraph/core": "/packages/core/src/index.ts", "@dzgraph/core/internal": "/packages/core/src/internal.ts", "@dzgraph/dom": "/packages/dom/src/index.ts" } }</script>
+<style>#host { inline-size: 1000px; block-size: 500px; }</style></head>
+<body><div id="host"></div>
+<script type="module">
+import { allTypes } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+const n = 100_000, x = new Float64Array(n), y = new Float64Array(n);
+for (let i = 0; i < n; i++) { x[i] = (Math.sin(i * 12.9898) * 43758.5453 % 1 + 1) % 1 * 300; y[i] = (Math.sin(i * 78.233) * 12345.678 % 1 + 1) % 1 * 150; }
+const c = chart(document.getElementById('host'), { animation: false, series: [{ type: 'scatter', data: { x, y } }] }, { types: allTypes });
+const raf = () => new Promise((r) => requestAnimationFrame(r));
+await raf(); await raf();
+let k = 0;
+window.step = async () => { for (let i = 0; i < 5; i++) { k++; c.setRange({ min: k, max: 150 + k }); await raf(); await raf(); } };
+window.ready = true;
+</script></body></html>

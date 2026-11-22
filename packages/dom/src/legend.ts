@@ -10,9 +10,10 @@ const NS = 'http://www.w3.org/2000/svg';
 /** Room around an item's sign and name, so the target is bigger than what is drawn. */
 const PAD = 3;
 
+/** By an item's key: its series' id, or a slice's point key (ADR 0007). */
 export interface LegendHooks {
-  toggle(seriesId: string): void;
-  highlight(seriesId: string | undefined): void;
+  toggle(key: string): void;
+  highlight(key: string | undefined): void;
 }
 
 export class LegendButtons {
@@ -31,17 +32,17 @@ export class LegendButtons {
     for (const item of layout.legend?.items ?? []) {
       const s = model.series.find((o) => o.id === item.seriesId);
       if (!s) continue;
-      seen.add(s.id);
-      let b = this.buttons.get(s.id);
+      seen.add(item.key);
+      let b = this.buttons.get(item.key);
       if (!b) {
-        b = this.make(s.id);
-        this.buttons.set(s.id, b);
+        b = this.make(item.key);
+        this.buttons.set(item.key, b);
       }
       // The item's box, as laid out, a little larger (the target bigger than what is drawn).
       const { box } = item;
       for (const [k, v] of Object.entries({ x: box.x - PAD, y: box.y - PAD, width: box.width + 2 * PAD, height: box.height + 2 * PAD })) b.setAttribute(k, String(v));
-      b.setAttribute('aria-label', seriesName(s, text));
-      b.setAttribute('aria-pressed', String(isShown(s, view)));
+      b.setAttribute('aria-label', item.point ? item.name : seriesName(s, text));
+      b.setAttribute('aria-pressed', String(item.point ? !item.hidden : isShown(s, view)));
       if (b !== cursor) this.group.insertBefore(b, cursor);
       cursor = b.nextSibling;
     }

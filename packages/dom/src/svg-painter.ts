@@ -4,7 +4,7 @@
  * draws every group in SVG, those the scene gives to Canvas included (the Canvas painter comes in Phase 3).
  */
 import type { Group, Scene } from '@dzgraph/core';
-import { clipId, clipIndex, clipsOf, svgOf, type SvgOptions } from '@dzgraph/core/internal';
+import { clipId, clipIndex, clipsOf, drawnItems, svgOf, type SvgOptions } from '@dzgraph/core/internal';
 import type { Painter } from './painter.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -70,7 +70,8 @@ export class SvgPainter implements Painter {
         groupCursor = g.nextSibling;
 
         let cursor: ChildNode | null = g.firstChild;
-        for (const p of group.items) {
+        // A batch as one element per point that may show (ADR 0008).
+        for (const p of drawnItems(group.items, group.clip)) {
           const spec = svgOf(p, opts);
           seen.add(p.sceneId);
           let el = this.elements.get(p.sceneId);

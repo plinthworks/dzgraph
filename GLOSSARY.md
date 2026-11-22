@@ -22,6 +22,11 @@ La façon de dessiner une série : ligne, aire, colonnes, barres, nuage, secteur
 types ; l'utilisateur le change série par série.
 _Avoid_: chart type, kind
 
+**Feature** (fonction) :
+Une capacité du graphique qu'une app choisit d'embarquer ou non : les axes de temps, le zoom, le navigateur, le
+dessin en Canvas. Sans elle, l'option qui la demande est signalée ; le reste du graphique ne change pas.
+_Avoid_: plugin, extension, add-on
+
 **Point** (point) :
 Un enregistrement d'une série : sa position (x, y ou valeur), sa clé, et ce que l'app y attache.
 _Avoid_: datum, data point, row, sample
@@ -43,6 +48,24 @@ _Avoid_: projection (réservé aux cartes), frame
 Le sens d'un graphique en x/y : vertical (colonnes qui montent) ou horizontal (barres couchées) ; une seule par
 graphique.
 _Avoid_: inverted, rotated
+
+**Stack** (pile) :
+Des séries posées les unes sur les autres, qui s'additionnent à chaque x ; les valeurs négatives forment leur propre
+pile sous zéro.
+_Avoid_: group (des colonnes côte à côte ne sont pas une pile), layer
+
+**Share** (part) :
+Ce qu'une valeur représente de son tout, en pourcentage : d'une pile, ou de la somme d'un secteur.
+_Avoid_: ratio, proportion
+
+**Others** (« Autres ») :
+Le secteur qui regroupe les plus petites parts d'un graphique en secteurs ; le tableau de données liste toujours ces
+parts une par une.
+_Avoid_: rest, misc
+
+**Threshold** (seuil) :
+Une tranche nommée de l'échelle d'une jauge (« Élevé » de 80 à 100), dessinée autour de l'arc.
+_Avoid_: band (réservé à la bande d'une catégorie), zone (réservé aux fuseaux), plot band
 
 **Axis** (axe) :
 La règle graduée le long d'un bord de la zone de tracé, avec ses graduations et son titre.

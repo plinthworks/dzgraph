@@ -2,6 +2,7 @@
 
 Phase 3. ADR 0004 (ticks on the zone's wall clock, Intl only); spike S4 (correct on Paris, Los Angeles, Auckland,
 Lord Howe, Havana; under 1 ms a layout). Owner 2026-11-21: two-tier labels.
+Comes with the `timeAxis` module (ADR 0006); `scale: 'time'` without it is reported `missing-module` and drawn linear.
 
 ## What the user does
 Looks at values over time: hours, days, years; in a zone where the clock changes; across a long series.

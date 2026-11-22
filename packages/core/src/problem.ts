@@ -37,10 +37,15 @@ export interface ProblemCodes {
   /** An app callback (a formatter…) threw or returned the wrong kind: its default is used instead. */
   'callback-failed': true;
   /**
-   * Something this version accepts but does not draw yet (a log or time scale before its phase, a type whose
-   * coordinate system has no layout yet): drawn the closest way, or left out; the detail names it.
+   * Something this version accepts but does not draw yet (a type whose coordinate system has no layout yet, range
+   * buttons off a time axis): drawn the closest way, or left out; the detail names it.
    */
   'not-available': true;
+  /**
+   * An option whose feature the app did not pass to `chart()` (ADR 0006): a time axis drawn linear, a navigator or
+   * range buttons left out. The detail names the module to import (`timeAxis`, `navigatorStrip`).
+   */
+  'missing-module': true;
 }
 
 export type ProblemCode = keyof ProblemCodes;

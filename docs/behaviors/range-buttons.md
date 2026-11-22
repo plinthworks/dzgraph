@@ -1,6 +1,7 @@
 # Range buttons
 
 Phase 3. D.12; shown with the navigator, or alone with `rangeButtons: true`.
+Comes with the `navigatorStrip` module (ADR 0006); `rangeButtons: true` without it is reported `missing-module`.
 
 ## What the user does
 Picks a usual span of time in one click.

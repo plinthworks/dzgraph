@@ -6,6 +6,8 @@ import { rangeOf, withZero } from './shared.js';
 
 export interface AreaSeriesOptions extends SeriesBase<'area'> {
   readonly marker?: boolean | undefined;
+  /** Stacks the area on the other areas of the same stack (stacking.md 1); `true`: the stack `default`. */
+  readonly stack?: boolean | string | undefined;
 }
 
 declare module '../options.js' {
@@ -20,7 +22,8 @@ export const area: SeriesType<AreaSeriesOptions, 'cartesian'> = {
   zeroBased: true,
   sign: 'square',
   sortedX: true,
-  optionNames: { marker: true },
+  stackable: true,
+  optionNames: { marker: true, stack: true },
   check: (o, path) => (o['marker'] === undefined || typeof o['marker'] === 'boolean' ? [] : [{ code: 'invalid-option', path: `${path}.marker` }]),
   // Zero is on the axis (axes.md 1): the fill reaches it.
   bounds: (s) => ({ x: rangeOf(s.columns.x), y: withZero(rangeOf(s.columns.y)) }),
