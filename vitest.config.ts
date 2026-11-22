@@ -2,6 +2,7 @@ import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import angular from '@analogjs/vite-plugin-angular';
 import { fileURLToPath } from 'node:url';
+import type { BrowserCommand } from 'vitest/node';
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const alias = {
@@ -26,6 +27,11 @@ const instances = () =>
     provider: playwright(browser === 'chromium' ? { launchOptions: { channel: 'chrome' } } : {}),
   }));
 
+/** The page as printed, or back on screen (print.md 3): the theme's print rules, tested where they apply. */
+const printMedia: BrowserCommand<[on: boolean]> = async (ctx, on) => {
+  await ctx.page.emulateMedia({ media: on ? 'print' : null });
+};
+
 export default defineConfig({
   test: {
     globals: true,
@@ -39,7 +45,7 @@ export default defineConfig({
           globals: true,
           include: ['packages/core/test/**/*.test.ts', 'packages/dom/test/**/*.test.ts'],
           fileParallelism: false,
-          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia } },
         },
       },
       // Angular components compiled for the tests (not stubbed: only a rendered template catches a binding that fails),
@@ -53,7 +59,7 @@ export default defineConfig({
           include: ['packages/angular/test/**/*.test.ts'],
           setupFiles: ['packages/angular/test/setup.ts'],
           fileParallelism: false,
-          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia } },
         },
       },
       { test: { name: 'theme', globals: true, environment: 'node', passWithNoTests: true, include: ['packages/theme/test/**/*.test.ts'] } },

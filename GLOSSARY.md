@@ -232,6 +232,16 @@ _Avoid_: bin, class, period
 Des graphiques qui partagent leur viseur, leur plage visible, leur niveau ou leur sélection.
 _Avoid_: sync, dashboard, linked charts (dans le code)
 
+## Sorties
+
+**Export** (export) :
+Le graphique emporté hors de la page : une image (PNG, SVG) de la vue, sans les commandes, ou ses données (CSV).
+_Avoid_: snapshot, screenshot, download (le téléchargement n'est qu'une façon de remettre l'export)
+
+**Print** (impression) :
+Le graphique sur papier : l'image de l'export, en clair, seule ou avec la page.
+_Avoid_: hard copy
+
 ## Qualité des entrées
 
 **Problem** (problème) :

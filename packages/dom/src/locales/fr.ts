@@ -53,6 +53,7 @@ export const fr: Messages = {
     log: 'Logarithmique',
     compares: { value: 'Écart', percent: 'Pourcentage', index: 'Base 100' },
   },
+  exporting: { download: 'Télécharger', print: 'Imprimer', png: 'Image PNG', svg: 'Image SVG', csv: 'Données CSV', filename: 'graphique' },
   drill: { breadcrumb: 'Niveaux', root: 'Tout', loading: 'Chargement…', failed: 'Le détail n’a pas pu être chargé.', retry: 'Réessayer' },
   pointsIn: (n) => `${n} ${n === '1' ? 'point' : 'points'}`,
   shapes: { rectangle: 'Rectangle', range: 'Plage', lasso: 'Lasso' },

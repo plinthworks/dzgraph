@@ -53,6 +53,7 @@ export const en: Messages = {
     log: 'Logarithmic',
     compares: { value: 'Difference', percent: 'Percent', index: 'Base 100' },
   },
+  exporting: { download: 'Download', print: 'Print', png: 'PNG image', svg: 'SVG image', csv: 'CSV data', filename: 'chart' },
   drill: { breadcrumb: 'Levels', root: 'All', loading: 'Loading…', failed: 'The detail could not be loaded.', retry: 'Try again' },
   pointsIn: (n) => `${n} ${n === '1' ? 'point' : 'points'}`,
   shapes: { rectangle: 'Rectangle', range: 'Range', lasso: 'Lasso' },

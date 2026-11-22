@@ -41,3 +41,6 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [drilldown.md](drilldown.md) — detail by click, breadcrumb, loading | 5b |
 | [menu.md](menu.md) — the chart menu: type, aggregation, scale, comparison | 5b |
 | [linked-charts.md](linked-charts.md) — crosshair, zoom, selection and drill shared | 5b |
+| [export.md](export.md) — the chart as a picture: PNG, SVG | 6 |
+| [csv.md](csv.md) — the data as CSV | 6 |
+| [print.md](print.md) — printing the chart, printing the page | 6 |

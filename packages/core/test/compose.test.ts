@@ -108,6 +108,12 @@ describe('sceneToSvg', () => {
     expect(svg).toContain('fill="[background]"');
     expect(svg).toContain('style="font:{title}"');
   });
+
+  it('a colour as written made a plain one (export.md 6)', () => {
+    const svg = sceneToSvg(tiny, { color: (css) => `[${css}]` });
+    expect(svg).toContain('fill="[var(--dzgraph-background)]"');
+    expect(svg).toContain('stroke="[var(--dzgraph-series-1)]"');
+  });
 });
 
 describe('Canvas and SVG keep one order on screen and in the export (ADR 0002, Phase 3 close)', () => {

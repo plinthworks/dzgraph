@@ -19,8 +19,21 @@ export interface SvgElementSpec {
 export interface SvgOptions {
   /** Colours: the theme's value of a token. Absent: `var(--dzgraph-<token>)`, for a page that has the theme. */
   readonly resolve?: ResolveColor;
+  /** A colour as written (`var()`, `color-mix()`) made a plain one, for a reader without the theme (export.md 6). */
+  readonly color?: (css: string) => string;
   /** Fonts: the CSS `font` of a role. Absent: a class `dzgraph-font-<role>` the theme styles. */
   readonly font?: (role: FontRole) => string;
+}
+
+/** A standalone document's own parts (export.md 6). */
+export interface SvgDocument {
+  /** Keeps ids unique when several charts share a page. */
+  readonly prefix?: string;
+  /** The picture's name (`<title>`) and description (`<desc>`): with either, it is `role="img"`. */
+  readonly title?: string;
+  readonly desc?: string;
+  /** Its language. */
+  readonly lang?: string;
 }
 
 /** Numbers in attributes: two decimals at most, no `-0`. */
@@ -43,9 +56,13 @@ export function pathString(p: PathData): string {
 }
 
 function paintAttrs(paint: Paint, opts: SvgOptions): Record<string, string> {
-  const a: Record<string, string> = { fill: paint.fill ? cssColor(paint.fill, opts.resolve) : 'none' };
+  const colour = (ref: NonNullable<Paint['fill']>) => {
+    const css = cssColor(ref, opts.resolve);
+    return opts.color ? opts.color(css) : css;
+  };
+  const a: Record<string, string> = { fill: paint.fill ? colour(paint.fill) : 'none' };
   if (paint.stroke) {
-    a['stroke'] = cssColor(paint.stroke, opts.resolve);
+    a['stroke'] = colour(paint.stroke);
     a['stroke-width'] = num(paint.strokeWidth ?? 1);
   }
   if (paint.dash?.length) a['stroke-dasharray'] = paint.dash.map(num).join(' ');
@@ -140,10 +157,18 @@ export const clipId = (prefix: string, i: number) => `${prefix}-clip-${i}`;
  * The scene as a standalone SVG document: every group, whatever its painter (an export is vector), layers back to
  * front. `prefix` keeps clip ids unique when several charts share a page.
  */
-export function sceneToSvg(scene: Scene, opts: SvgOptions & { readonly prefix?: string } = {}): string {
+export function sceneToSvg(scene: Scene, opts: SvgOptions & SvgDocument = {}): string {
   const prefix = opts.prefix ?? 'dzgraph';
   const clips = clipsOf(scene);
-  let out = `<svg xmlns="http://www.w3.org/2000/svg" width="${num(scene.width)}" height="${num(scene.height)}" viewBox="0 0 ${num(scene.width)} ${num(scene.height)}" direction="${scene.dir}">`;
+  let out = `<svg xmlns="http://www.w3.org/2000/svg" width="${num(scene.width)}" height="${num(scene.height)}" viewBox="0 0 ${num(scene.width)} ${num(scene.height)}" direction="${scene.dir}"`;
+  // An exported picture says what it is (export.md 6): an image, named by its title, described by the summary.
+  if (opts.title !== undefined || opts.desc !== undefined) out += ' role="img"';
+  if (opts.lang) out += ` lang="${escape(opts.lang)}"`;
+  if (opts.title !== undefined) out += ` aria-labelledby="${prefix}-title"`;
+  if (opts.desc !== undefined) out += ` aria-describedby="${prefix}-desc"`;
+  out += '>';
+  if (opts.title !== undefined) out += `<title id="${prefix}-title">${escape(opts.title)}</title>`;
+  if (opts.desc !== undefined) out += `<desc id="${prefix}-desc">${escape(opts.desc)}</desc>`;
   if (clips.length) {
     out += '<defs>';
     clips.forEach((r, i) => (out += `<clipPath id="${clipId(prefix, i)}"><rect x="${num(r.x)}" y="${num(r.y)}" width="${num(r.width)}" height="${num(r.height)}"/></clipPath>`));

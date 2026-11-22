@@ -23,7 +23,7 @@ import { NO_KIT, type Kit, type TimeKit } from './kit.js';
 const PALETTE_SIZE = 8;
 const DEFAULT_ASPECT = 16 / 9;
 
-const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable', 'navigator', 'rangeButtons', 'crosshair', 'selection', 'drilldown', 'menu']);
+const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable', 'navigator', 'rangeButtons', 'crosshair', 'selection', 'drilldown', 'menu', 'exporting']);
 const SERIES_KEYS = new Set(['type', 'id', 'name', 'data', 'xAxis', 'yAxis', 'color', 'initiallyHidden', 'aggregate', 'drilldown']);
 const AXIS_BASE_KEYS = ['id', 'title', 'opposite', 'reversed', 'scale'];
 const AXIS_KEYS: Record<ScaleKind, ReadonlySet<string>> = {
@@ -64,6 +64,7 @@ const EMPTY_MODEL: ChartModel = {
   selection: null,
   drill: null,
   menu: null,
+  exporting: { filename: null, theme: null, csvLocale: false },
   rangeButtons: null,
   kit: NO_KIT,
 };
@@ -255,6 +256,7 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZo
     selection: readSelection(options['selection'], kit, report),
     drill: readDrill(options['drilldown'], xAxes[0]?.scale === 'time', report),
     menu: readMenu(options['menu'], report),
+    exporting: readExporting(options['exporting'], report),
     kit,
   };
   return { model, problems };
@@ -649,8 +651,31 @@ function readAggregateFn(v: unknown, type: string, path: string, seriesId: strin
   return type === 'column' || type === 'bar' ? 'sum' : 'mean';
 }
 
-export type MenuItem = 'type' | 'aggregation' | 'scale' | 'compare';
-const MENU_ITEMS: readonly MenuItem[] = ['type', 'aggregation', 'scale', 'compare'];
+export type MenuItem = 'type' | 'aggregation' | 'scale' | 'compare' | 'export' | 'print';
+const MENU_ITEMS: readonly MenuItem[] = ['type', 'aggregation', 'scale', 'compare', 'export', 'print'];
+
+/** The exports' defaults, as read (export.md 3, 8; csv.md 7). */
+export interface ExportingOptions {
+  readonly filename: string | null;
+  readonly theme: 'light' | 'dark' | null;
+  readonly csvLocale: boolean;
+}
+
+function readExporting(v: unknown, report: (p: Problem) => void): ExportingOptions {
+  const out = { filename: null as string | null, theme: null as 'light' | 'dark' | null, csvLocale: false };
+  if (v === undefined) return out;
+  if (!isRecord(v)) {
+    report({ code: 'invalid-option', path: 'exporting' });
+    return out;
+  }
+  for (const [k, x] of Object.entries(v)) {
+    if (k === 'filename' && typeof x === 'string' && x.trim()) out.filename = x;
+    else if (k === 'theme' && (x === 'light' || x === 'dark')) out.theme = x;
+    else if (k === 'csv' && isRecord(x) && Object.keys(x).every((c) => c === 'locale') && (x['locale'] === undefined || typeof x['locale'] === 'boolean')) out.csvLocale = x['locale'] === true;
+    else if (x !== undefined) report({ code: 'invalid-option', path: `exporting.${k}` });
+  }
+  return out;
+}
 
 /** `menu: true | { items }` (menu.md): what the chart menu may offer. */
 function readMenu(v: unknown, report: (p: Problem) => void): { items: MenuItem[] } | null {

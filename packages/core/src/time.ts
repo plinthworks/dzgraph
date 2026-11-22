@@ -33,7 +33,7 @@ const wallFormats = new Map<string, Intl.DateTimeFormat>();
 function wallFormat(zone: string): Intl.DateTimeFormat {
   let f = wallFormats.get(zone);
   if (!f) {
-    f = new Intl.DateTimeFormat('en-US', { timeZone: zone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
+    f = new Intl.DateTimeFormat('en-US', { timeZone: zone, hourCycle: 'h23', era: 'short', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
     wallFormats.set(zone, f);
   }
   return f;
@@ -42,15 +42,18 @@ function wallFormat(zone: string): Intl.DateTimeFormat {
 /** The wall clock of an instant in a zone. */
 export function wallOf(ms: number, zone: string): Wall {
   let y = 0, mo = 0, d = 0, h = 0, mi = 0, s = 0;
+  let bc = false;
   for (const p of wallFormat(zone).formatToParts(ms)) {
-    if (p.type === 'year') y = Number(p.value);
+    if (p.type === 'era') bc = p.value === 'BC';
+    else if (p.type === 'year') y = Number(p.value);
     else if (p.type === 'month') mo = Number(p.value);
     else if (p.type === 'day') d = Number(p.value);
     else if (p.type === 'hour') h = Number(p.value);
     else if (p.type === 'minute') mi = Number(p.value);
     else if (p.type === 'second') s = Number(p.value);
   }
-  return { y, mo, d, h, mi, s, ms: ((ms % 1000) + 1000) % 1000 };
+  // The year of the era made astronomical (1 BC is year 0: the civil-days formula's); whole milliseconds only.
+  return { y: bc ? 1 - y : y, mo, d, h, mi, s, ms: Math.floor(((ms % 1000) + 1000) % 1000) };
 }
 
 /** Days since 1970-01-01 of a proleptic Gregorian date (the civil-days formula, public domain). */

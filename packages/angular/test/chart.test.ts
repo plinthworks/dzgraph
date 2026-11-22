@@ -1,5 +1,5 @@
 // <dz-chart> (angular.md), compiled and run in a real browser. Step 2.7.
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import type { ChartOptions, PointRef } from '@dzgraph/core';
@@ -20,6 +20,7 @@ class Host {
   readonly toggled: { seriesId: string; shown: boolean }[] = [];
   readonly clicked: PointRef[] = [];
   readonly views: (readonly string[])[] = [];
+  readonly chart = viewChild.required(DzChart);
 }
 
 const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
@@ -71,6 +72,13 @@ describe('<dz-chart> (angular.md)', () => {
     expect(f.componentInstance.toggled).toEqual([{ seriesId: 'a', shown: false }]);
     // The Phase 5 events too (view-state.md 4): hiding a series changes the view.
     expect(f.componentInstance.views).toEqual([['hidden']]);
+    f.destroy();
+  });
+
+  it('the chart\'s methods through `chart`: an export (7, Phase 6)', async () => {
+    const f = await mount();
+    await frame();
+    expect(f.componentInstance.chart().chart?.exportCsv()).toBe('\uFEFFX value,Apples,Pears\r\n0,1,3\r\n1,2,2\r\n2,3,1\r\n');
     f.destroy();
   });
 

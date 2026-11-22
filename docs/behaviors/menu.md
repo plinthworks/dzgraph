@@ -1,7 +1,7 @@
 # Chart menu
 
 Phase 5b. D.16 (« un peu »), ARCHITECTURE §14. The `menu` module; option `menu: true` or
-`{ items: ('type' | 'aggregation' | 'scale' | 'compare')[] }` — what the app offers.
+`{ items: ('type' | 'aggregation' | 'scale' | 'compare' | 'export' | 'print')[] }` — what the app offers (Phase 6: export, print).
 
 ## What the user does
 Changes, from a small menu, how the chart shows the data: the type of a series, the aggregation, the scale, the
@@ -19,3 +19,5 @@ comparison. Not a chart editor.
    Space chooses; Escape closes and gives the focus back to the button; submenus open with → and close with ←.
 7. A choice applies at once (animated) and is part of the view (view-state.md): saved and given back with it.
 8. Without the module, nothing is shown; with `menu` but none of its items making sense, the button is not shown.
+9. Phase 6: « Télécharger » opens a submenu of PNG, SVG and CSV (export.md, csv.md); « Imprimer » prints at once
+   (print.md). Both only with the `exporting` module, and only when the app lists them (`menu: true` lists them).

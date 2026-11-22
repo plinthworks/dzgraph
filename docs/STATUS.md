@@ -135,6 +135,15 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
 - Next: the owner's commits (Phase 3 staged; Phase 4 and 3 bis unstaged), review of ADR 0007, ADR 0008 and the WebGL
   threshold; then Phase 5 (exploration).
 
+## 2026-11-22 — Phase 6 (export and printing), plan `docs/phase-6-steps/plan.md`
+
+- Owner's decisions: the picture is the view without the controls; colours as on screen (printing always light);
+  CSV universal by default, `exporting: { csv: { locale: true } }` for `;` and a decimal comma; menu entries and API.
+- **Built and closed.** Module `exporting`: `exportSvg`, `exportPng`, `exportCsv`, `download`, `print`; core
+  `exportScene`, `tableOf`, `csvOf`; theme print rules; `<dz-chart>`'s `chart`. Code review: 9 findings fixed (list
+  in the plan). Budgets raised (core 11 340, dom 33 950, everything 80 480, theme 2 000). Next: Phase 7 (Angular
+  complete, sparklines, DzTooltip and DzGrid bridges).
+
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure

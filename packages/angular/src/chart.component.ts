@@ -41,6 +41,14 @@ export class DzChart {
   readonly selectionChange = output<ChartEvents['selectionChange']>();
 
   private instance: Chart | null = null;
+
+  /**
+   * The chart, for its methods (angular.md 7): `exportPng()`, `print()`, `getView()`… Null before it is drawn (in the
+   * browser, after the first render) and on the server.
+   */
+  get chart(): Chart | null {
+    return this.instance;
+  }
   /** The options last given, to tell the chart which top-level fields went away (review 7). */
   private given: ChartOptions | null = null;
 

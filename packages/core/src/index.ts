@@ -72,5 +72,5 @@ import { gauge as gaugeType } from './series/gauge.js';
 export const allTypes = [lineType, areaType, columnType, barType, scatterType, pieType, donutType, gaugeType] as const;
 
 // A scene as a standalone SVG document (exports, node).
-export { sceneToSvg, type SvgOptions } from './svg.js';
+export { sceneToSvg, type SvgDocument, type SvgOptions } from './svg.js';
 export type { ChartView } from './view-json.js';

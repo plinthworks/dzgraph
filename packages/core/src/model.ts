@@ -2,7 +2,7 @@
  * The chart's model: the options checked and completed, every default applied, the data read into columns. Independent
  * of the chart's size (ARCHITECTURE §3): layout turns it into a scene. Internal.
  */
-import type { MenuItem } from './normalize.js';
+import type { ExportingOptions, MenuItem } from './normalize.js';
 import type { AggregateSpec } from './aggregation.js';
 import type { SelectShape } from './selection.js';
 import type { CompareMode } from './compare.js';
@@ -63,6 +63,8 @@ export interface ChartModel {
   readonly crosshair: { readonly horizontal: boolean } | null;
   /** The chart menu's items the app offers (menu.md); null: no menu. */
   readonly menu: { readonly items: readonly MenuItem[] } | null;
+  /** The exports' defaults (export.md 3, 8; csv.md 7). */
+  readonly exporting: ExportingOptions;
   /** Automatic drilldown on a time axis (drilldown.md 6); null: none. */
   readonly drill: 'time' | null;
   /** The selection's shapes the app offers (selection.md 1), null when off or its module missing. */

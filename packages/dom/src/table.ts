@@ -11,6 +11,13 @@ export function hideVisually(el: HTMLElement): void {
   Object.assign(el.style, { position: 'absolute', inlineSize: '1px', blockSize: '1px', overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' });
 }
 
+/** The x column's header: the axis's title, else a word for what x is (review 10); the CSV's too (csv.md 3). */
+export function xHeaderOf(model: ChartModel, messages: Messages): string {
+  const xa = model.xAxes[0];
+  // A polar chart's rows are its named points (slices): categories, whatever its unused x axis says.
+  return model.system === 'polar' ? messages.category : (xa?.title ?? (xa?.scale === 'category' ? messages.category : messages.xValue));
+}
+
 export function writeTable(box: HTMLElement, model: ChartModel, layout: ChartLayout, view: View, locale: string, messages: Messages, which: 'visible' | 'all' = 'visible', toggle?: () => void): void {
   const t = dataTable(model, layout, view, locale, messages, which);
   const table = document.createElement('table');
@@ -19,10 +26,7 @@ export function writeTable(box: HTMLElement, model: ChartModel, layout: ChartLay
   const name = model.title?.text ?? messages.tableCaption;
   // Zoomed, the caption says which part it shows (data-table.md 5).
   caption.textContent = t.range ? `${name} (${messages.tableRange(t.range.from, t.range.to)})` : name;
-  // The x column's header: the axis's title, else a word for what x is (review 10).
-  const xa = model.xAxes[0];
-  // A polar chart's rows are its named points (slices): categories, whatever its unused x axis says.
-  const xHeader = model.system === 'polar' ? messages.category : (xa?.title ?? (xa?.scale === 'category' ? messages.category : messages.xValue));
+  const xHeader = xHeaderOf(model, messages);
   const head = document.createElement('thead');
   const hr = document.createElement('tr');
   for (const name of [xHeader, ...t.columns]) {

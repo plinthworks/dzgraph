@@ -17,6 +17,7 @@ import { SvgPainter } from './svg-painter.js';
 import type { GestureFrame } from './gestures.js';
 import { resolveFeatures, type Feature } from './features.js';
 import type { Mode } from './modes.js';
+import type { ExportFormat, ExportOptions, ExportState, PngOptions } from './exporting.js';
 import type { Painter } from './painter.js';
 import { Hover } from './hover.js';
 import { LegendButtons } from './legend.js';
@@ -108,6 +109,19 @@ export interface Chart {
   selectBy(by: 'key' | 'x', values: readonly (string | number)[]): void;
   /** What a drag across the plot does (modes.md): a mode the chart has (its modules), else nothing changes. */
   setMode(mode: Mode): void;
+  /**
+   * The view as a standalone SVG document, without the controls (export.md); null without the `exporting` module
+   * (reported `missing-module`).
+   */
+  exportSvg(options?: ExportOptions): string | null;
+  /** The view as a PNG (export.md 5); null without the `exporting` module, or when the browser cannot draw it. */
+  exportPng(options?: PngOptions): Promise<Blob | null>;
+  /** The data as CSV, the rows the table shows (csv.md); `locale`: the language's separators. Null without the module. */
+  exportCsv(options?: { readonly locale?: boolean }): string | null;
+  /** Gives the browser the export as a file to save, named after the title (export.md 8). */
+  download(format: ExportFormat, options?: PngOptions): Promise<void>;
+  /** Prints the chart alone, in light colours; `table`: its data table under it (print.md). */
+  print(options?: { readonly table?: boolean }): void;
   readonly mode: Mode;
   /** What is wrong with the current options and data, if anything. */
   readonly problems: readonly Problem[];
@@ -478,8 +492,7 @@ export const chart: CreateChart = (element, initial, setup) => {
       const writeAids = () => {
         aidsTimer = 0;
         if (destroyed || !model || !laid) return;
-        const sum = words.messages.summary(summary(model, laid, view, words.locale, words.messages));
-        described.textContent = model.description ? `${sum} ${model.description}` : sum;
+        described.textContent = describe(model, laid);
         items.update({ model, layout: laid, view, locale: words.locale, messages: words.messages });
         writeTable(tableBox, model, laid, view, words.locale, words.messages, tableMode(), toggleTable);
         // Back on the points after a level chosen from the breadcrumb (drilldown.md 4, review 5).
@@ -695,6 +708,15 @@ export const chart: CreateChart = (element, initial, setup) => {
     if (!items.hasFocus && upKey(e) && drillPart?.up()) e.preventDefault();
   };
   root.addEventListener('keydown', onRootKey);
+  // Printed, marks drawn on Canvas or WebGL2 are painted again in the print colours (print.md 3): their pixels do not
+  // follow the theme by themselves, as SVG does.
+  const printing = typeof matchMedia === 'function' ? matchMedia('print') : null;
+  const onPrint = () => {
+    if (destroyed || !model || !(canvasPainter || webglPainter)) return;
+    if (frame) cancelAnimationFrame(frame);
+    render();
+  };
+  printing?.addEventListener('change', onPrint);
   /** The modes this chart has (modes.md 1): from its modules, and selection when the app asked for it on a chart with axes. */
   const modesOf = (): Mode[] => [...(zoomPart ? (['zoom'] as const) : []), ...(selectPart && model?.selection && model.system === 'cartesian' ? (['selection'] as const) : []), ...(features.measure ? (['measure'] as const) : [])];
   /** Sets the selection in the view (empty: none). */
@@ -765,9 +787,12 @@ export const chart: CreateChart = (element, initial, setup) => {
   // ---- The chart menu (menu.md). ----
   const menuPart =
     features.menu?.(root, {
-      state: () => ({ model, source, words: words.messages, typeNames: setup.types.map((t) => t.name as string), compares: features.compares, aggregates: features.aggregates, chosen: { types: typeChoice, scale: scaleChoice, aggregation: aggChoice !== undefined ? aggChoice : source?.drill === 'time' ? { period: 'year' } : undefined, compare: compareChoice } }),
+      state: () => ({ model, source, words: words.messages, typeNames: setup.types.map((t) => t.name as string), compares: features.compares, aggregates: features.aggregates, exports: features.exporting !== null, chosen: { types: typeChoice, scale: scaleChoice, aggregation: aggChoice !== undefined ? aggChoice : source?.drill === 'time' ? { period: 'year' } : undefined, compare: compareChoice } }),
       choose: (c) => {
         const w = c.kind;
+        // Outputs leave the view as it is (menu.md 9).
+        if (w === 'export') return void api.download(c.value as ExportFormat);
+        if (w === 'print') return api.print();
         if (w === 'type' && c.seriesId) typeChoice = { ...typeChoice, [c.seriesId]: c.value! };
         else if (w === 'scale') scaleChoice = c.value as 'linear' | 'log';
         else if (w === 'aggregation') aggChoice = c.value ? { period: c.value as 'month' } : null;
@@ -828,6 +853,23 @@ export const chart: CreateChart = (element, initial, setup) => {
   });
   // ---- The table's range (data-table.md 5): the visible range, or all the data. ----
   /** The user's choice, once they made one; until then the app's (`dataTable.rows`). */
+  /** What screen readers hear about the chart (screen-reader.md); an exported picture's description too (export.md 6). */
+  const describe = (m: ChartModel, l: ChartLayout) => {
+    const sum = words.messages.summary(summary(m, l, view, words.locale, words.messages));
+    return m.description ? `${sum} ${m.description}` : sum;
+  };
+  /** The chart as an export reads it now; null before its first drawing. */
+  const exportState = (): ExportState | null => {
+    if (!model || !laid || !measured) return null;
+    return { model, types: setup.types, layout: laid, view, locale: words.locale, messages: words.messages, width: measured.width, height: measured.height, dir: laid.dir, measureText: measurer.measureText, font: (r) => measurer.font(r), host: root, summary: describe(model, laid), rows: tableMode() };
+  };
+  /** An export asked without its module (ADR 0006): reported with the next drawing, nothing done. */
+  const exportKit = () => {
+    if (features.exporting) return features.exporting;
+    callProblem = { code: 'missing-module', path: 'exporting', detail: 'exporting' };
+    schedule();
+    return null;
+  };
   let tableWhich: 'visible' | 'all' | null = null;
   const tableMode = () => tableWhich ?? model?.dataTableRows ?? 'visible';
   const toggleTable = () => {
@@ -847,7 +889,7 @@ export const chart: CreateChart = (element, initial, setup) => {
   resize.observe(element);
   drawn();
 
-  return {
+  const api: Chart = {
     update(changes) {
       // Plain JavaScript may pass anything: what is not an object changes nothing; a bad field is reported by the
       // core like any option (review 12).
@@ -931,6 +973,31 @@ export const chart: CreateChart = (element, initial, setup) => {
       applySelection(next);
       viewChanged(['selection'], 'app');
       schedule('immediate');
+    },
+    exportSvg(options) {
+      const kit = exportKit();
+      const st = exportState();
+      return kit && st ? kit.svg(st, options) : null;
+    },
+    async exportPng(options) {
+      const kit = exportKit();
+      const st = exportState();
+      return kit && st ? kit.png(st, options) : null;
+    },
+    exportCsv(options) {
+      const kit = exportKit();
+      const st = exportState();
+      return kit && st ? kit.csv(st, options) : null;
+    },
+    async download(format, options) {
+      const kit = exportKit();
+      const st = exportState();
+      if (kit && st && (format === 'png' || format === 'svg' || format === 'csv')) await kit.download(st, format, options);
+    },
+    print(options) {
+      const kit = exportKit();
+      const st = exportState();
+      if (kit && st) kit.print(st, options);
     },
     get mode() {
       return modeNow();
@@ -1038,6 +1105,7 @@ export const chart: CreateChart = (element, initial, setup) => {
       selectPart?.destroy();
       modeBar?.destroy();
       root.removeEventListener('keydown', onRootKey);
+      printing?.removeEventListener('change', onPrint);
       zoomPart?.destroy();
       canvasPainter?.destroy();
       webglPainter?.destroy();
@@ -1051,4 +1119,5 @@ export const chart: CreateChart = (element, initial, setup) => {
       scene = null;
     },
   };
+  return api;
 };

@@ -369,25 +369,43 @@ export interface TableText extends Pick<LayoutText, 'seriesName'> {
   readonly meter?: { readonly min: string; readonly max: string; readonly threshold: string };
 }
 
-/** The table as text, from `dataRows`; with `stackTotal`, each pile's total after its last series (stacking.md 17). */
-export function dataTable(model: ChartModel, layout: ChartLayout, view: View | undefined, locale: string | undefined, text: TableText, which: 'visible' | 'all' = 'visible'): DataTable {
-  const raw = dataRows(model, layout, view, which, MAX_ROWS);
+/** A column of the table after the x column, by what its cells hold: the screen writes them, the CSV keeps them raw. */
+export interface TableColumn {
+  readonly name: string;
+  /** `value`: a value or a pile's total; `compared`: a compared value (its `mode`); `share`: a fraction of the whole;
+   * `selected`: 1 for a selected row; `text`: words (a gauge's threshold). */
+  readonly kind: 'value' | 'compared' | 'share' | 'selected' | 'text';
+  readonly mode?: CompareMode;
+}
+
+/** The table as numbers (data-table.md, csv.md): the columns after x, and each row's point, x and cells. */
+export interface RawTable {
+  readonly columns: readonly TableColumn[];
+  readonly rows: readonly { readonly from: PointRef; readonly x: number; readonly cells: readonly (number | string | null)[] }[];
+  /** Rows left out past the limit. */
+  readonly omitted: number;
+  /** The first x axis's visible range the rows keep to; null: all the data. */
+  readonly range: { readonly min: number; readonly max: number } | null;
+}
+
+/** The table's columns and cells as numbers, the first `limit` rows; with `stackTotal`, each pile's total after its last series (stacking.md 17). */
+export function tableOf(model: ChartModel, layout: ChartLayout, view: View | undefined, text: TableText, which: 'visible' | 'all' = 'visible', limit = Infinity): RawTable {
+  const raw = dataRows(model, layout, view, which, limit);
   const axisId = model.xAxes[0]?.id;
-  const r = which === 'visible' && axisId !== undefined ? view?.range?.[axisId] : undefined;
-  const range = r ? { from: xValueLabel(model, axisId!, r.min, locale), to: xValueLabel(model, axisId!, r.max, locale) } : null;
+  const range = (which === 'visible' && axisId !== undefined ? view?.range?.[axisId] : undefined) ?? null;
   const byId = new Map(model.series.map((s) => [s.id, s]));
   // The columns: each series, and after a pile's last series its total, summing that pile's columns.
-  const cols: { readonly name: string; readonly of: readonly number[]; readonly compared?: SeriesCompare }[] = [];
+  const cols: { readonly column: TableColumn; readonly of: readonly number[]; readonly compared?: SeriesCompare }[] = [];
   const piles = new Map<string, number[]>();
   const axisOf = valueAxisOf(model, view);
   raw.series.forEach((id, k) => {
     const s = byId.get(id)!;
     const axis = axisOf(s)?.title;
     const name = axis && text.seriesOnAxis ? text.seriesOnAxis(seriesName(s, text), axis) : seriesName(s, text);
-    cols.push({ name, of: [k] });
+    cols.push({ column: { name, kind: 'value' }, of: [k] });
     // A compared series: its raw values, then its compared ones (compare.md 5).
     const compared = layout.compare.series.get(id);
-    if (compared && text.compared && model.kit.compare) cols.push({ name: text.compared(name), of: [k], compared });
+    if (compared && text.compared && model.kit.compare) cols.push({ column: { name: text.compared(name), kind: 'compared', mode: compared.mode }, of: [k], compared });
     if (!text.stackTotal || !layout.stacks.has(id)) return;
     const key = JSON.stringify([s.type, s.xAxis, s.yAxis, s.stack]);
     const members = piles.get(key) ?? [];
@@ -396,41 +414,62 @@ export function dataTable(model: ChartModel, layout: ChartLayout, view: View | u
       const t = byId.get(o)!;
       return layout.stacks.has(o) && JSON.stringify([t.type, t.xAxis, t.yAxis, t.stack]) === key;
     });
-    if (last === k) cols.push({ name: text.stackTotal(s.stack === 'default' ? null : s.stack), of: [...members, k] });
+    if (last === k) cols.push({ column: { name: text.stackTotal(s.stack === 'default' ? null : s.stack), kind: 'value' }, of: [...members, k] });
   });
-  const cell = (values: readonly (number | null)[], of: readonly number[], compared?: SeriesCompare) => {
+  const cell = (values: readonly (number | null)[], of: readonly number[], compared?: SeriesCompare): number | null => {
     if (compared) {
       const v = values[of[0]!]!;
-      return v === null ? '' : model.kit.compare!.format(compared.a * v + compared.c, compared.mode, locale);
+      return v === null ? null : compared.a * v + compared.c;
     }
     let sum: number | null = null;
     for (const k of of) if (values[k] !== null) sum = (sum ?? 0) + values[k]!;
-    return sum === null ? '' : formatValue(sum, locale);
+    return sum;
   };
-  // A polar point is named by its placement (« Part 3 » when it has no name of its own, review 3).
-  const rowName = (r: { from: PointRef }) => layout.placements.get(r.from.seriesId)?.name(r.from.index) ?? xLabel(model, byId.get(r.from.seriesId)!, r.from.index, locale);
-  const rows = raw.rows.slice(0, MAX_ROWS).map((r) => [rowName(r), ...cols.map((c) => cell(r.values, c.of, c.compared))]);
+  const rows = raw.rows.map((r) => ({ from: r.from, x: r.x, cells: cols.map((c) => cell(r.values, c.of, c.compared)) }));
+  const columns = cols.map((c) => c.column);
+  const omitted = raw.total - raw.rows.length;
   // A pie's slices with their shares of the whole (pie-donut.md 15): each real slice, never « Autres ».
   const polar = raw.series.length === 1 ? layout.placements.get(raw.series[0]!) : undefined;
   // A gauge: one row, its value, bounds and threshold (gauge.md 10).
   if (polar?.meter && text.meter) {
     const m = polar.meter;
-    const value = Number.isNaN(m.value) ? '' : formatValue(m.value, locale);
-    return { columns: [cols[0]!.name, text.meter.min, text.meter.max, text.meter.threshold], rows: [[polar.name(0), value, formatValue(m.min, locale), formatValue(m.max, locale), m.threshold ?? '']], omitted: 0, range: null };
+    const v = (name: string): TableColumn => ({ name, kind: 'value' });
+    const row = { from: { seriesId: raw.series[0]!, index: 0 }, x: 0, cells: [Number.isNaN(m.value) ? null : m.value, m.min, m.max, m.threshold ?? null] };
+    return { columns: [columns[0]!, v(text.meter.min), v(text.meter.max), { name: text.meter.threshold, kind: 'text' }], rows: [row], omitted: 0, range: null };
   }
   if (polar && text.share) {
     const s = byId.get(raw.series[0]!)!;
     const whole = s.columns.y.reduce((a, v, i) => (v > 0 && isPointShown(s.id, i, view) ? a + v : a), 0);
-    const shares = raw.rows.slice(0, MAX_ROWS).map((r) => {
-      const v = s.columns.y[r.from.index]!;
-      return whole > 0 && v > 0 && isPointShown(s.id, r.from.index, view) ? formatShare(v / whole, locale) : '';
-    });
-    return { columns: [...cols.map((c) => c.name), text.share], rows: rows.map((r, k) => [...r, shares[k]!]), omitted: raw.total - raw.rows.length, range };
+    const share = (i: number) => {
+      const v = s.columns.y[i]!;
+      return whole > 0 && v > 0 && isPointShown(s.id, i, view) ? v / whole : null;
+    };
+    return { columns: [...columns, { name: text.share, kind: 'share' }], rows: rows.map((r) => ({ ...r, cells: [...r.cells, share(r.from.index)] })), omitted, range };
   }
   // Selected rows marked, while there is a selection (selection.md 7).
   if (text.selectedColumn && selectedCount(view?.selection) > 0) {
-    const marks = raw.rows.slice(0, MAX_ROWS).map((r) => (isSelected(view?.selection, r.from.seriesId, r.from.index) ? '✓' : ''));
-    return { columns: [...cols.map((c) => c.name), text.selectedColumn], rows: rows.map((r, k) => [...r, marks[k]!]), omitted: raw.total - raw.rows.length, range };
+    const mark = (r: { from: PointRef }) => (isSelected(view?.selection, r.from.seriesId, r.from.index) ? 1 : null);
+    return { columns: [...columns, { name: text.selectedColumn, kind: 'selected' }], rows: rows.map((r) => ({ ...r, cells: [...r.cells, mark(r)] })), omitted, range };
   }
-  return { columns: cols.map((c) => c.name), rows, omitted: raw.total - raw.rows.length, range };
+  return { columns, rows, omitted, range };
+}
+
+/** The table as text (data-table.md), from `tableOf`: x as read, values as the tooltip writes them. */
+export function dataTable(model: ChartModel, layout: ChartLayout, view: View | undefined, locale: string | undefined, text: TableText, which: 'visible' | 'all' = 'visible'): DataTable {
+  const t = tableOf(model, layout, view, text, which, MAX_ROWS);
+  const axisId = model.xAxes[0]?.id;
+  const range = t.range && axisId !== undefined ? { from: xValueLabel(model, axisId, t.range.min, locale), to: xValueLabel(model, axisId, t.range.max, locale) } : null;
+  const byId = new Map(model.series.map((s) => [s.id, s]));
+  // A polar point is named by its placement (« Part 3 » when it has no name of its own, review 3).
+  const rowName = (r: { from: PointRef }) => layout.placements.get(r.from.seriesId)?.name(r.from.index) ?? xLabel(model, byId.get(r.from.seriesId)!, r.from.index, locale);
+  const write = (v: number | string | null, c: TableColumn): string => {
+    if (v === null) return '';
+    if (typeof v === 'string') return v;
+    if (c.kind === 'compared') return model.kit.compare!.format(v, c.mode!, locale);
+    if (c.kind === 'share') return formatShare(v, locale);
+    if (c.kind === 'selected') return '✓';
+    return formatValue(v, locale);
+  };
+  const rows = t.rows.map((r) => [rowName(r), ...r.cells.map((v, k) => write(v, t.columns[k]!))]);
+  return { columns: t.columns.map((c) => c.name), rows, omitted: t.omitted, range };
 }

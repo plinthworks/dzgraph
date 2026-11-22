@@ -78,6 +78,8 @@ export interface Messages {
     readonly log: string;
     readonly compares: { readonly value: string; readonly percent: string; readonly index: string };
   };
+  /** Export and printing (export.md, print.md, menu.md 9): the menu's entries, and a file's name without a title. */
+  readonly exporting: { readonly download: string; readonly print: string; readonly png: string; readonly svg: string; readonly csv: string; readonly filename: string };
   /** Drilldown (drilldown.md 3, 4): the breadcrumb's name, its root without a title, loading and its failure. */
   readonly drill: { readonly breadcrumb: string; readonly root: string; readonly loading: string; readonly failed: string; readonly retry: string };
   /** An aggregated point's count in the tooltip (aggregation.md 3). */

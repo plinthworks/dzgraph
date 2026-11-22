@@ -402,4 +402,29 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
       }
     }
   }
+
+  // A page printed whole (print.md 3): paper is light, the tools stay on screen, a chart is not cut between sheets.
+  @media print {
+    .dzgraph {
+      color-scheme: light;
+      break-inside: avoid;
+    }
+
+    .dzgraph-menu-button,
+    .dzgraph-menu,
+    .dzgraph-modes,
+    .dzgraph-reset,
+    .dzgraph-breadcrumb,
+    .dzgraph-range-buttons,
+    .dzgraph-tooltip,
+    .dzgraph-table-range,
+    .dzgraph-hover,
+    .dzgraph-crosshair-layer,
+    .dzgraph-focus-ring,
+    .dzgraph-measure,
+    .dzgraph-select-band,
+    .dzgraph-zoom-band {
+      display: none !important;
+    }
+  }
 }

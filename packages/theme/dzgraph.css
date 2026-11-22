@@ -297,4 +297,26 @@
       --dzgraph-series-8: CanvasText;
     }
   }
+  @media print {
+    .dzgraph {
+      color-scheme: light;
+      break-inside: avoid;
+    }
+    .dzgraph-menu-button,
+    .dzgraph-menu,
+    .dzgraph-modes,
+    .dzgraph-reset,
+    .dzgraph-breadcrumb,
+    .dzgraph-range-buttons,
+    .dzgraph-tooltip,
+    .dzgraph-table-range,
+    .dzgraph-hover,
+    .dzgraph-crosshair-layer,
+    .dzgraph-focus-ring,
+    .dzgraph-measure,
+    .dzgraph-select-band,
+    .dzgraph-zoom-band {
+      display: none !important;
+    }
+  }
 }

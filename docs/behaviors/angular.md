@@ -13,3 +13,5 @@ Writes `<dz-chart [options]="options()" [types]="types" (pointClick)="…" />` i
 4. Destroying the component destroys the chart (nothing left behind).
 5. On the server (SSR) nothing is drawn and nothing fails; the chart is drawn in the browser.
 6. Angular 19 to 22.
+7. Phase 6: the chart's methods through the component's `chart` (null before it is drawn and on the server):
+   `dzChart.chart?.exportPng()`, `print()`, `getView()`…

@@ -240,7 +240,13 @@ export interface ChartOptions {
   /** Lines through the pointer and its values on the axes (crosshair.md); needs the `crosshair` module. */
   readonly crosshair?: boolean | { readonly horizontal?: boolean | undefined } | undefined;
   /** A small menu for the user: type, aggregation, scale, comparison (menu.md); needs the `menu` module. */
-  readonly menu?: boolean | { readonly items: readonly ('type' | 'aggregation' | 'scale' | 'compare')[] } | undefined;
+  readonly menu?: boolean | { readonly items: readonly ('type' | 'aggregation' | 'scale' | 'compare' | 'export' | 'print')[] } | undefined;
+  /**
+   * The exports' defaults (export.md, csv.md); the export itself needs the `exporting` module. `filename`: the
+   * downloaded file's name, without extension (default: from the title); `theme`: the pictures' colours (default: as
+   * on screen); `csv.locale`: semicolons and a decimal comma where the language writes one.
+   */
+  readonly exporting?: { readonly filename?: string | undefined; readonly theme?: 'light' | 'dark' | undefined; readonly csv?: { readonly locale?: boolean | undefined } | undefined } | undefined;
   /** `'time'`: years, then months, then days, by click (drilldown.md 6); needs `drilldown` and `aggregation`. */
   readonly drilldown?: 'time' | undefined;
   /** Points the user can select (selection.md); needs the `selection` module. `shapes`: those offered. */

@@ -7,6 +7,7 @@ import type { AggregationKit, CompareKit, CrosshairKit, Kit, NavigatorKit, Range
 import { SelectionPart, type SelectionHooks } from './selecting.js';
 import { DrillPart, type DrillHooks } from './drilling.js';
 import { MenuPart, type MenuHooks } from './menu.js';
+import * as exportingParts from './exporting.js';
 import { aggregationKit, compareKit, crosshairKit, measureKit, navigatorKit, selectionKit, timeKit } from '@dzgraph/core/internal';
 import { CrosshairPart, type CrosshairHooks } from './crosshair.js';
 import { MeasurePart, type MeasureHooks } from './measuring.js';
@@ -36,7 +37,7 @@ export interface NavigatorControlsPart {
 }
 
 export interface Feature {
-  readonly name: 'timeAxis' | 'zoom' | 'navigatorStrip' | 'canvas' | 'webgl' | 'crosshair' | 'compare' | 'measure' | 'selection' | 'aggregation' | 'drilldown' | 'menu';
+  readonly name: 'timeAxis' | 'zoom' | 'navigatorStrip' | 'canvas' | 'webgl' | 'crosshair' | 'compare' | 'measure' | 'selection' | 'aggregation' | 'drilldown' | 'menu' | 'exporting';
   /** The features it brings with it. */
   readonly needs?: readonly Feature[];
   readonly time?: TimeKit;
@@ -51,6 +52,8 @@ export interface Feature {
   readonly drill?: (hooks: DrillHooks) => DrillPart;
   /** The chart menu (menu.md). */
   readonly menu?: (root: HTMLElement, hooks: MenuHooks) => MenuPart;
+  /** Export and printing (export.md, csv.md, print.md). */
+  readonly exporting?: ExportingKit;
   /** Measuring between two points (measure.md), a mode of the mode bar. */
   readonly measure?: (svg: SVGSVGElement, hooks: MeasureHooks) => MeasurePart;
   /** Selecting points (selection.md): the core's shapes, and the gestures. */
@@ -58,6 +61,15 @@ export interface Feature {
   /** The mode bar (modes.md), brought by the modules that add a mode. */
   readonly modeBar?: (root: HTMLElement, hooks: ModeBarHooks) => ModeBar;
   readonly crosshair?: { readonly kit: CrosshairKit; readonly part: (svg: SVGSVGElement, hooks: CrosshairHooks) => CrosshairPart };
+}
+
+/** What the exporting module gives the chart: pictures, data, a download, printing. */
+export interface ExportingKit {
+  readonly svg: typeof exportingParts.exportSvg;
+  readonly png: typeof exportingParts.exportPng;
+  readonly csv: typeof exportingParts.exportCsv;
+  readonly download: typeof exportingParts.download;
+  readonly print: typeof exportingParts.print;
 }
 
 /** What the WebGL2 module gives the chart: a painter that says whether it can draw now. */
@@ -115,7 +127,13 @@ export const drilldown: Feature = { name: 'drilldown', needs: [aggregation], dri
 export const menu: Feature = { name: 'menu', menu: (root, hooks) => new MenuPart(root, hooks) };
 
 /** Every feature, for apps that do not count bytes; importing it brings them all into the bundle. */
-export const allFeatures: readonly Feature[] = [timeAxis, zoom, navigatorStrip, canvas, webgl, crosshair, compare, measure, selection, aggregation, drilldown, menu];
+/**
+ * Export and printing (export.md, csv.md, print.md): `exportSvg`, `exportPng`, `exportCsv`, `download`, `print`, and
+ * the menu's « Download » and « Print » entries.
+ */
+export const exporting: Feature = { name: 'exporting', exporting: { svg: exportingParts.exportSvg, png: exportingParts.exportPng, csv: exportingParts.exportCsv, download: exportingParts.download, print: exportingParts.print } };
+
+export const allFeatures: readonly Feature[] = [timeAxis, zoom, navigatorStrip, canvas, webgl, crosshair, compare, measure, selection, aggregation, drilldown, menu, exporting];
 
 /** The features given and those they bring, as the chart uses them. */
 export interface Resolved {
@@ -130,6 +148,7 @@ export interface Resolved {
   readonly selection: NonNullable<Feature['selection']>['part'] | null;
   readonly drill: Feature['drill'] | null;
   readonly menu: Feature['menu'] | null;
+  readonly exporting: ExportingKit | null;
   /** Whether the comparison and the aggregation came (the menu offers only what can be done). */
   readonly compares: boolean;
   readonly aggregates: boolean;
@@ -154,6 +173,7 @@ export function resolveFeatures(given: readonly Feature[] | undefined): Resolved
   let agg: AggregationKit | null = null;
   let drill: Feature['drill'] | null = null;
   let menuPart: Feature['menu'] | null = null;
+  let exp: ExportingKit | null = null;
   let measurePart: Feature['measure'] | null = null;
   let bar: Feature['modeBar'] | null = null;
   let sel: Feature['selection'] | null = null;
@@ -165,6 +185,7 @@ export function resolveFeatures(given: readonly Feature[] | undefined): Resolved
     agg ??= f.aggregation ?? null;
     drill ??= f.drill ?? null;
     menuPart ??= f.menu ?? null;
+    exp ??= f.exporting ?? null;
     cross ??= f.crosshair ?? null;
     webglPart ??= f.webgl ?? null;
     time ??= f.time ?? null;
@@ -172,5 +193,5 @@ export function resolveFeatures(given: readonly Feature[] | undefined): Resolved
     zoomPart ??= f.zoom ?? null;
     canvasPart ??= f.canvas ?? null;
   }
-  return { kit: { time, navigator: nav?.kit ?? null, crosshair: cross?.kit ?? null, compare: cmp, selection: sel?.kit ?? null, aggregation: agg }, zoom: zoomPart, navigator: nav?.controls ?? null, canvas: canvasPart, webgl: webglPart, crosshair: cross?.part ?? null, measure: measurePart, modeBar: bar, selection: sel?.part ?? null, drill, menu: menuPart, compares: cmp !== null, aggregates: agg !== null };
+  return { kit: { time, navigator: nav?.kit ?? null, crosshair: cross?.kit ?? null, compare: cmp, selection: sel?.kit ?? null, aggregation: agg }, zoom: zoomPart, navigator: nav?.controls ?? null, canvas: canvasPart, webgl: webglPart, crosshair: cross?.part ?? null, measure: measurePart, modeBar: bar, selection: sel?.part ?? null, drill, menu: menuPart, exporting: exp, compares: cmp !== null, aggregates: agg !== null };
 }
