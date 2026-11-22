@@ -19,7 +19,10 @@ export function pointAt(model: ChartModel, layout: ChartLayout, ref: PointRef): 
   const a = xs.map(s.columns.x[ref.index]!);
   // A stacked point is where its segment ends (stacking.md).
   const pile = layout.stacks.get(s.id);
-  const b = ys.map(pile ? pile.top[ref.index]! : s.columns.y[ref.index]!);
+  // A compared point is where its compared value is (compare.md 1).
+  const cmp = layout.compare.series.get(s.id);
+  const raw = pile ? pile.top[ref.index]! : s.columns.y[ref.index]!;
+  const b = ys.map(cmp ? cmp.a * raw + cmp.c : raw);
   return model.orientation === 'vertical' ? { x: a, y: b } : { x: b, y: a };
 }
 

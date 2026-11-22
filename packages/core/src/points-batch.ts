@@ -37,12 +37,16 @@ export function pointsAt(p: PointsPrimitive, i: number): [number, number] | null
 export function markersOf(p: PointsPrimitive, clip?: Rect): MarkerPrimitive[] {
   const out: MarkerPrimitive[] = [];
   const m = p.size;
-  for (let i = 0; i < p.x.length; i++) {
+  // A selection drawn over its cloud has its own ids: the cloud's markers keep theirs.
+  const tag = p.only ? 'sel' : 'm';
+  const n = p.only ? p.only.length : p.x.length;
+  for (let k = 0; k < n; k++) {
+    const i = p.only ? p.only[k]! : k;
     const at = pointsAt(p, i);
     if (!at) continue;
     const [x, y] = at;
     if (clip && (x < clip.x - m || x > clip.x + clip.width + m || y < clip.y - m || y > clip.y + clip.height + m)) continue;
-    out.push({ kind: 'marker', sceneId: sceneId('s', p.seriesId, 'm', i), paint: p.paint, x, y, size: p.size, symbol: p.symbol, point: { seriesId: p.seriesId, index: i } });
+    out.push({ kind: 'marker', sceneId: sceneId('s', p.seriesId, tag, i), paint: p.paint, x, y, size: p.size, symbol: p.symbol, point: { seriesId: p.seriesId, index: i } });
   }
   return out;
 }

@@ -20,7 +20,7 @@ export interface HoverState {
   readonly scene: Scene;
   readonly locale: string;
   /** Series names, and the word under a pile (stacking.md 14). */
-  readonly text: Pick<LayoutText, 'seriesName'> & { readonly total: string; readonly moreSlices: (count: string) => string; readonly gaugeNote: (min: string, max: string, threshold: string | undefined) => string };
+  readonly text: Pick<LayoutText, 'seriesName'> & { readonly total: string; readonly moreSlices: (count: string) => string; readonly gaugeNote: (min: string, max: string, threshold: string | undefined) => string; readonly since: (baseline: string) => string; readonly pointsIn: (count: string) => string };
   readonly font: (role: 'legend') => string;
   /** The chart's view: a hidden series is never in the tooltip. */
   readonly view: View;
@@ -278,6 +278,20 @@ export class Hover {
       value.className = 'dzgraph-tooltip-value';
       value.textContent = r.value;
       row.append(sign, name, value);
+      // An aggregated point's count of points (aggregation.md 3).
+      if (r.count !== undefined) {
+        const count = document.createElement('span');
+        count.className = 'dzgraph-tooltip-share';
+        count.textContent = s.text.pointsIn(new Intl.NumberFormat(s.locale).format(r.count));
+        row.append(count);
+      }
+      // A compared point's raw value, after its compared one (compare.md 4).
+      if (r.raw) {
+        const raw = document.createElement('span');
+        raw.className = 'dzgraph-tooltip-share';
+        raw.textContent = r.raw;
+        row.append(raw);
+      }
       // A stacked point's share of its pile (stacking.md 14).
       if (r.share) {
         const share = document.createElement('span');
@@ -287,6 +301,13 @@ export class Hover {
       }
       return row;
     });
+    // Where a comparison starts, under the heading (compare.md 4).
+    if (t.baseline) {
+      const note = document.createElement('div');
+      note.className = 'dzgraph-tooltip-row dzgraph-tooltip-note';
+      note.textContent = s.text.since(t.baseline);
+      rows.unshift(note);
+    }
     // A gauge's scale and threshold, under its value (gauge.md 7).
     if (t.range) {
       const row = document.createElement('div');

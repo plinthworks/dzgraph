@@ -128,7 +128,7 @@ export class PointItems {
       item.setAttribute('cx', String(at.x));
       item.setAttribute('cy', String(at.y));
     }
-    const label = pointLabel(r.model, r.layout, { seriesId: s.id, index: i }, r.locale, r.messages);
+    const label = pointLabel(r.model, r.layout, { seriesId: s.id, index: i }, r.locale, r.messages, r.view);
     if (label) {
       const n = new Intl.NumberFormat(r.locale);
       item.setAttribute('aria-label', r.messages.point({ ...label, position: n.format(label.position), count: n.format(label.count) }));

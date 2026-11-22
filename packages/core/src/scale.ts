@@ -58,3 +58,17 @@ export function logScale(domain: readonly [number, number], range: readonly [num
   const k = (r1 - r0) / span;
   return { map: (v) => (v > 0 ? r0 + (Math.log10(v) - l0) * k : r0), invert: (p) => 10 ** (l0 + (p - r0) / k), bandwidth: 0, affine: { d0: l0, r0, k, log: true } };
 }
+
+/**
+ * A scale read through an affine of the value (a compared series, compare.md): `pixel = scale(a · v + c)`. Its own
+ * affine map composes, so a batch of points or a painter placing points itself reads it as any scale's.
+ */
+export function throughAffine(scale: Scale, a: number, c: number): Scale {
+  const m = scale.affine;
+  return {
+    map: (v) => scale.map(a * v + c),
+    invert: (p) => (scale.invert(p) - c) / a,
+    bandwidth: scale.bandwidth,
+    affine: { d0: (m.d0 - c) / a, r0: m.r0, k: a * m.k, log: m.log },
+  };
+}

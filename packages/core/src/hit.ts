@@ -171,6 +171,8 @@ function gridOf(scene: Scene, orientation: 'vertical' | 'horizontal'): MarkGrid 
   const batches: BatchGrid[] = [];
   for (const grp of scene.layers.find((l) => l.id === 'series')?.groups ?? [])
     for (const p of grp.items) {
+      // A selection drawn over its cloud is the same points: the cloud answers (selection.md 10).
+      if (p.kind === 'points' && p.only) continue;
       if (p.kind === 'points') {
         batches.push(batchGrid(p, order, x0, y0, cols, rows));
         order += p.x.length;

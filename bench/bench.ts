@@ -122,7 +122,7 @@ async function run() {
     c.destroy();
   }
 
-  // 3. Scatters (big-data.md 2–3, 6–8): on Canvas (without the WebGL2 module) and on WebGL2, at several sizes, to set
+  // 3. Scatters (`?quick`: the lasso only) (big-data.md 2–3, 6–8): on Canvas (without the WebGL2 module) and on WebGL2, at several sizes, to set
   // the WebGL threshold (ADR 0008). Script time only: the graphics card draws after it.
   const cloud = (n: number, seed: number) => {
     const r = prng(seed);
@@ -134,13 +134,35 @@ async function run() {
     }
     return { x, y };
   };
-  for (const [n, plane] of (quick ? [[1_000_000, 'WebGL2']] : [[20_000, 'Canvas'], [50_000, 'Canvas'], [100_000, 'Canvas'], [200_000, 'Canvas'], [200_000, 'WebGL2'], [1_000_000, 'WebGL2'], [10_000_000, 'WebGL2']]) as readonly (readonly [number, string])[]) {
+  for (const [n, plane] of (quick ? [] : [[20_000, 'Canvas'], [50_000, 'Canvas'], [100_000, 'Canvas'], [200_000, 'Canvas'], [200_000, 'WebGL2'], [1_000_000, 'WebGL2'], [10_000_000, 'WebGL2']]) as readonly (readonly [number, string])[]) {
     const { x, y } = cloud(n, 3);
     const label = `scatter ${n >= 1e6 ? `${n / 1e6}M` : `${n / 1e3}k`} (${plane})`;
     const { c, first } = await mount({ series: [{ type: 'scatter', data: { x, y } }] }, plane === 'Canvas' ? [canvas] : allFeatures);
     // Which plane drew it: the first canvas is WebGL2's when the module is there.
     const drew = [...host.querySelectorAll('canvas')].map((e) => e.style.display);
     results[label] = { first, drew, hover: hoverCost(), ...(await zoomAndPan(c, 0, 300)) };
+    c.destroy();
+  }
+
+  // 4. A live lasso over a million points (selection.md 2, D.21): each move of the pointer, its script.
+  {
+    const { x, y } = cloud(1_000_000, 4);
+    const { c } = await mount({ selection: { shapes: ['lasso'] }, series: [{ type: 'scatter', data: { x, y } }] });
+    c.setMode('selection');
+    await raf();
+    const svg = host.querySelector('svg')!;
+    const box = svg.getBoundingClientRect();
+    const at = (k: number) => ({ clientX: box.x + box.width * (0.5 + 0.3 * Math.cos(k / 10)), clientY: box.y + box.height * (0.5 + 0.3 * Math.sin(k / 10)) });
+    svg.dispatchEvent(new PointerEvent('pointerdown', { ...at(0), pointerId: 7, pointerType: 'mouse', button: 0, bubbles: true }));
+    const moves: number[] = [];
+    for (let k = 1; k <= 60; k++) {
+      const t = performance.now();
+      svg.dispatchEvent(new PointerEvent('pointermove', { ...at(k), pointerId: 7, pointerType: 'mouse', bubbles: true }));
+      moves.push(performance.now() - t);
+      await raf();
+    }
+    svg.dispatchEvent(new PointerEvent('pointerup', { ...at(60), pointerId: 7, pointerType: 'mouse', bubbles: true }));
+    results['lasso 1M (each move)'] = { first: +moves[0]!.toFixed(1), move: stats(moves.slice(1)) };
     c.destroy();
   }
 

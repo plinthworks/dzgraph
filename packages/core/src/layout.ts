@@ -6,6 +6,7 @@
  * The axes depend on each other (a y axis's width on its labels, its labels on its ticks, its ticks on the plot's
  * height, the plot's height on the x axis's labels…): the sizes are settled by a few passes until they stop changing.
  */
+import { NO_COMPARES, type CompareMode, type Compares, type SeriesCompare } from './compare.js';
 import { yWithin } from './x-buckets.js';
 import type { ColorToken, FontRole, Rect, TextMeasurer } from './scene.js';
 import type { Problem } from './problem.js';
@@ -123,6 +124,8 @@ export interface ChartLayout {
   readonly rangeBar: Rect | null;
   /** The piles of the stacked visible series (stacking.md): where each point's segment starts and ends. */
   readonly stacks: Stacks;
+  /** The comparison of each compared series (compare.md): its affine, its baseline; and those without one. */
+  readonly compare: Compares;
   /** Where each polar series placed itself (ADR 0007), by series id. */
   readonly placements: ReadonlyMap<string, Placement>;
 }
@@ -164,9 +167,10 @@ const MIN_PLOT_SHARE = 0.4;
 export function layout(input: LayoutInput): ChartLayout {
   const { width: W, height: H, dir } = input;
   const stacks = stacksOf(input.model, input.view);
+  const compares = input.model.kit.compare?.of(input.model, input.view) ?? NO_COMPARES;
   if (W < MIN_WIDTH || H < MIN_HEIGHT) {
     // Too small for axes (layout.md 5): the plot alone.
-    return { width: W, height: H, dir, plot: { x: MARGIN, y: MARGIN, width: Math.max(0, W - 2 * MARGIN), height: Math.max(0, H - 2 * MARGIN) }, title: [], subtitle: null, axes: [], legend: null, noData: null, problems: [], navigator: null, rangeBar: null, stacks, placements: new Map() };
+    return { width: W, height: H, dir, plot: { x: MARGIN, y: MARGIN, width: Math.max(0, W - 2 * MARGIN), height: Math.max(0, H - 2 * MARGIN) }, title: [], subtitle: null, axes: [], legend: null, noData: null, problems: [], navigator: null, rangeBar: null, stacks, compare: compares, placements: new Map() };
   }
   // Give way, in order, until the plot keeps its share (layout.md 4): axis titles, the legend, the title, then the
   // labels of the second axes, then every label (the ticks stay).
@@ -180,7 +184,7 @@ export function layout(input: LayoutInput): ChartLayout {
   ];
   let result: ChartLayout | null = null;
   for (const a of attempts) {
-    result = attempt(input, a, stacks);
+    result = attempt(input, a, stacks, compares);
     if (result.plot.height >= MIN_PLOT_SHARE * H && result.plot.width >= MIN_PLOT_SHARE * W) break;
   }
   return result!;
@@ -194,7 +198,7 @@ interface Options {
   readonly labels: 'all' | 'primary' | 'none';
 }
 
-function attempt(input: LayoutInput, opts: Options, stacks: Stacks): ChartLayout {
+function attempt(input: LayoutInput, opts: Options, stacks: Stacks, compares: Compares): ChartLayout {
   const { model, width: W, height: H, dir, measureText, text } = input;
   const lineHeight = (font: FontRole) => {
     const m = measureText('', font);
@@ -285,7 +289,7 @@ function attempt(input: LayoutInput, opts: Options, stacks: Stacks): ChartLayout
     // A gauge without a value still draws its track and its dash (gauge.md 5, review 4).
     const empty = !placement || (placement.order.length === 0 && !placement.meter);
     const noData = empty ? { text: text.noData, x: plot.x + plot.width / 2, y: plot.y + plot.height / 2, font: 'tick-label' as const, anchor: 'middle' as const, baseline: 'middle' as const, dir } : null;
-    return { width: W, height: H, dir, plot, title, subtitle, axes: [], legend, noData, problems: [], navigator: null, rangeBar: null, stacks, placements };
+    return { width: W, height: H, dir, plot, title, subtitle, axes: [], legend, noData, problems: [], navigator: null, rangeBar: null, stacks, compare: compares, placements };
   }
 
   // The navigator (navigator.md 1): a strip and its labels at the bottom, above a bottom legend; the range buttons'
@@ -309,7 +313,9 @@ function attempt(input: LayoutInput, opts: Options, stacks: Stacks): ChartLayout
   const problems: Problem[] = [];
   // No value to show: no series, or only gaps (axes.md 6, review 14b).
   const empty = model.series.every((s) => !s.columns.y.some((v) => !Number.isNaN(v)));
-  const axes = settleAxes(input, { top, bottom, minX, maxX }, opts, empty, problems, stacks);
+  const axes = settleAxes(input, { top, bottom, minX, maxX }, opts, empty, problems, stacks, compares);
+  // A series compared without a baseline is not drawn; said once, by series, never with a value (compare.md 6).
+  for (const s of model.series) if (compares.missing.has(s.id)) problems.push({ code: 'no-baseline', path: `series[${s.rank}]`, seriesId: s.id });
 
   const noData = empty ? { text: text.noData, x: axes.plot.x + axes.plot.width / 2, y: axes.plot.y + axes.plot.height / 2, font: 'tick-label' as const, anchor: 'middle' as const, baseline: 'middle' as const, dir } : null;
   const p = axes.plot;
@@ -317,7 +323,7 @@ function attempt(input: LayoutInput, opts: Options, stacks: Stacks): ChartLayout
   const reversed = xLayout ? xLayout.scale.map(1) < xLayout.scale.map(0) : false;
   const nav = navTop !== null && xModel && navKit ? navKit.layout(model, xModel.id, { x: p.x, y: navTop, width: p.width, height: navKit.strip }, reversed, input.locale, 'tick-label', widthOf, dir) : null;
   const rangeBar = barTop !== null ? { x: p.x, y: barTop, width: p.width, height: RANGE_BAR } : null;
-  return { width: W, height: H, dir, plot: p, title, subtitle, axes: axes.layouts, legend, noData, problems, navigator: nav, rangeBar, stacks, placements: new Map() };
+  return { width: W, height: H, dir, plot: p, title, subtitle, axes: axes.layouts, legend, noData, problems, navigator: nav, rangeBar, stacks, compare: compares, placements: new Map() };
 }
 
 /** Shortens `s` with an ellipsis to fit `max` px; `force` adds the ellipsis even if it fits (a cut list). */
@@ -478,7 +484,7 @@ interface Box {
   readonly maxX: number;
 }
 
-function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean, problems: Problem[], stacks: Stacks): { plot: Rect; layouts: AxisLayout[] } {
+function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean, problems: Problem[], stacks: Stacks, compares: Compares): { plot: Rect; layouts: AxisLayout[] } {
   const { model, dir } = input;
   const horizontal = model.orientation === 'horizontal';
   const visible = model.series.filter((s) => isShown(s, input.view));
@@ -505,7 +511,10 @@ function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean,
         // A log axis fits the positive values themselves: zero is not on it (log-scale.md 8).
         const log = a.scale === 'log';
         const zeroBased = !log && typeOf.get(s.type)?.zeroBased === true;
-        const b = pile ? pileBounds(s, pile, zoomedX ?? null) : zoomedX ? visibleY(s, zoomedX, zeroBased) : log ? rangeOf(kind === 'x' ? s.columns.x : s.columns.y) : boundsOf(s)[kind];
+        // A compared series (compare.md): its raw extent through its affine, zero kept in compared values.
+        const cmp = kind === 'y' ? compares.series.get(s.id) : undefined;
+        if (kind === 'y' && compares.missing.has(s.id)) continue;
+        const b = cmp ? comparedBounds(s, cmp, zoomedX ?? null, zeroBased) : pile ? pileBounds(s, pile, zoomedX ?? null) : zoomedX ? visibleY(s, zoomedX, zeroBased) : log ? rangeOf(kind === 'x' ? s.columns.x : s.columns.y) : boundsOf(s)[kind];
         if (b) {
           min = Math.min(min, b.min);
           max = Math.max(max, b.max);
@@ -529,7 +538,7 @@ function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean,
   for (let pass = 0; pass < 8; pass++) {
     plot = plotRect({ ...box, minX: box.minX + inset }, plans, size);
     const reported: Problem[] = [];
-    const out = layoutAxes(input, plans, plot, opts, empty, reported);
+    const out = layoutAxes(input, plans, plot, opts, empty, reported, compares);
     layouts = out.layouts;
     let changed = false;
     if (out.overhang > 0.25) {
@@ -566,7 +575,7 @@ function plotRect(box: Box, plans: readonly AxisPlan[], size: Map<AxisPlan, numb
 }
 
 /** Lays every axis out for this plot rectangle; returns the room each needs. */
-function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, opts: Options, empty: boolean, problems: Problem[]) {
+function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, opts: Options, empty: boolean, problems: Problem[], compares: Compares) {
   const titles = opts.axisTitles;
   const { model, dir, measureText, locale } = input;
   const lh = (f: FontRole) => {
@@ -645,7 +654,7 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
           t = { min: tmin, max: tmax, step: r.step, values: r.values.filter((v) => v >= tmin * (1 - 1e-9) && v <= tmax * (1 + 1e-9)) };
         }
         const span = logScale([t.min, t.max], range);
-        const texts = numberLabels(t, a, path, problems, locale);
+        const texts = numberLabels(t, a, path, problems, locale, p.dimension === 'y' ? compares.axes.get(a.id) : undefined, model);
         const fits = p.across ? acrossFits(t.values.map((v) => span.map(v)), texts, widthOf, labelFont) : uprightFits(t.values.map((v) => span.map(v)), LH);
         if (fits || target <= 2 || a.ticks.target !== null) {
           ticks = t.values.map((v, i) => ({ value: v, text: texts[i]! }));
@@ -692,7 +701,7 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
           const tmax = max ?? r.max;
           t = { min: tmin, max: tmax, step: r.step, values: r.values.filter((v) => v >= tmin - 1e-9 * r.step && v <= tmax + 1e-9 * r.step) };
         }
-        const texts = numberLabels(t, a, path, problems, locale);
+        const texts = numberLabels(t, a, path, problems, locale, p.dimension === 'y' ? compares.axes.get(a.id) : undefined, model);
         const fits = p.across ? acrossFits(t.values.map((v) => scaleAt(t, range, v)), texts, widthOf, labelFont) : uprightFits(t.values.map((v) => scaleAt(t, range, v)), LH);
         if (fits || target <= 2 || a.ticks.target !== null || (!p.primary && p.dimension === 'y')) {
           ticks = t.values.map((v, i) => ({ value: v, text: texts[i]! }));
@@ -856,8 +865,9 @@ function uprightFits(at: readonly number[], lineH: number): boolean {
 }
 
 /** An axis's number labels: the app's formatter, or the locale's (format.ts). */
-function numberLabels(t: Ticks, a: AxisModel, path: string, problems: Problem[], locale: string | undefined): string[] {
-  const defaults = a.stacking === 'percent' ? formatPercentTicks(t.values, locale) : a.scale === 'log' ? formatLogTicks(t.values, locale) : formatTicks(t.values, t.step, locale);
+function numberLabels(t: Ticks, a: AxisModel, path: string, problems: Problem[], locale: string | undefined, compared: CompareMode | undefined, model: ChartModel): string[] {
+  const cmp = compared && model.kit.compare;
+  const defaults = cmp ? cmp.ticks(t.values, compared, locale) : a.stacking === 'percent' ? formatPercentTicks(t.values, locale) : a.scale === 'log' ? formatLogTicks(t.values, locale) : formatTicks(t.values, t.step, locale);
   const format = safeFormat(a.ticks.format as Formatter<number> | Formatter<InstantMs> | null, path, problems, locale, t.step);
   if (!format) return defaults;
   return t.values.map((v, i) => format(v as number & InstantMs) ?? defaults[i]!);
@@ -900,6 +910,17 @@ function pileBounds(s: SeriesModel, pile: Stacked, r: { readonly min: number; re
     max = Math.max(max, a, b);
   }
   return { min, max };
+}
+
+/** A compared series' extent (compare.md 1): its raw one (in view when zoomed) through its affine; zero kept for zero-based types. */
+function comparedBounds(s: SeriesModel, c: SeriesCompare, zoom: { readonly min: number; readonly max: number } | null, zeroBased: boolean): { min: number; max: number } | null {
+  const raw = zoom ? visibleY(s, zoom, false) : rangeOf(s.columns.y);
+  if (!raw) return null;
+  const a = c.a * raw.min + c.c;
+  const b = c.a * raw.max + c.c;
+  const min = Math.min(a, b);
+  const max = Math.max(a, b);
+  return zeroBased ? { min: Math.min(0, min), max: Math.max(0, max) } : { min, max };
 }
 
 /**

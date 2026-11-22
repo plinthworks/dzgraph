@@ -31,3 +31,13 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [combined.md](combined.md) — several types in one chart, two value axes | 4 |
 | [pie-donut.md](pie-donut.md) — pie and donut, labels, « Autres » | 4 |
 | [gauge.md](gauge.md) — the gauge | 4 |
+| [view-state.md](view-state.md) — the view as state: getView, setView, viewChange | 5a |
+| [modes.md](modes.md) — the mode bar: zoom, selection, measure | 5a |
+| [crosshair.md](crosshair.md) — crosshair and axis tags | 5a |
+| [compare.md](compare.md) — comparison to a baseline | 5a |
+| [measure.md](measure.md) — measuring between two points | 5a |
+| [selection.md](selection.md) — rectangle, range, lasso, keyboard | 5a |
+| [aggregation.md](aggregation.md) — points grouped by period or bucket | 5b |
+| [drilldown.md](drilldown.md) — detail by click, breadcrumb, loading | 5b |
+| [menu.md](menu.md) — the chart menu: type, aggregation, scale, comparison | 5b |
+| [linked-charts.md](linked-charts.md) — crosshair, zoom, selection and drill shared | 5b |

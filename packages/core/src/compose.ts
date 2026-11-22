@@ -4,6 +4,8 @@
  * on its alphabetic baseline (the one baseline every painter draws alike); each group's painter chosen by what it
  * draws (ADR 0002).
  */
+import { selectedCount } from './selection.js';
+import { throughAffine } from './scale.js';
 import type { ChartModel } from './model.js';
 import type { ChartLayout, PlacedText } from './layout.js';
 import type { MarkSet, SeriesType } from './series-type.js';
@@ -95,6 +97,16 @@ export function composeScene(input: ComposeInput): Scene {
         ? { kind: 'line', sceneId: sceneId('grid', a.dimension, a.id, i), paint, x1: at, y1: plot.y, x2: at, y2: plot.y + plot.height }
         : { kind: 'line', sceneId: sceneId('grid', a.dimension, a.id, i), paint, x1: plot.x, y1: at, x2: plot.x + plot.width, y2: at };
     });
+    // A compared axis's reference (compare.md 3): 0, 0 % or 100, a little stronger than the grid.
+    const mode = a.dimension === 'y' ? layout.compare.axes.get(a.id) : undefined;
+    if (mode) {
+      const at = crisp(a.scale.map(mode === 'index' ? 100 : 0));
+      const paint = { stroke: 'axis-line' as const, strokeWidth: 1 };
+      // On the plot's edge too: a crisp line there sits half a pixel past it.
+      const [lo, hi] = upright ? [plot.x, plot.x + plot.width] : [plot.y, plot.y + plot.height];
+      const id = sceneId('grid', a.dimension, a.id, 'reference');
+      if (at >= lo - 1 && at <= hi + 1) items.push(upright ? { kind: 'line', sceneId: id, paint, x1: at, y1: plot.y, x2: at, y2: plot.y + plot.height } : { kind: 'line', sceneId: id, paint, x1: plot.x, y1: at, x2: plot.x + plot.width, y2: at });
+    }
     add('grid', { sceneId: sceneId('grid', a.dimension, a.id), painter: 'svg', items });
   }
 
@@ -108,7 +120,11 @@ export function composeScene(input: ComposeInput): Scene {
     const placement = layout.placements.get(s.id);
     if (type?.system === 'polar' && placement) {
       const lit = input.highlight === undefined ? null : (placement.order.find((i) => pointKey(s.id, i) === input.highlight) ?? null);
-      const sets = type.marks({ series: s, frame: { placement }, plot, slot: 0, slots: 1, stacked: null, highlight: lit, dir, measureText });
+      const marked = type.marks({ series: s, frame: { placement }, plot, slot: 0, slots: 1, stacked: null, highlight: lit, dir, measureText });
+      // Slices under a selection: the others faded, the selected ringed (selection.md 12).
+      const sel = input.view?.selection;
+      const look = model.kit.selection?.look;
+      const sets = look && sel && selectedCount(sel) > 0 ? look(model, layout, marked, s, sel) : marked;
       const faded = input.highlight !== undefined && lit === null && input.highlight !== s.id;
       sets.forEach((set, k) => add(set.layer, { sceneId: sceneId('s', s.id, k), painter: 'svg', ...(faded ? { opacity: FADED } : {}), items: set.items }));
       continue;
@@ -116,12 +132,15 @@ export function composeScene(input: ComposeInput): Scene {
     const xa = axisOf('x', s.xAxis);
     const ya = axisOf('y', s.yAxis);
     if (!type || !xa || !ya || type.system !== 'cartesian') continue;
+    // Compared without a baseline: not drawn (compare.md 6); compared: its values through its affine (compare.ts).
+    if (layout.compare.missing.has(s.id)) continue;
+    const cmp = layout.compare.series.get(s.id);
     // A pile takes one slot, in the place of its first series (stacking.md 2).
     const slotOf = (o: (typeof shown)[number]) => (o.stack !== null && layout.stacks.has(o.id) ? `stack ${o.stack}` : `series ${o.id}`);
     const slots = [...new Set(shown.filter((o) => o.type === s.type && o.xAxis === s.xAxis && o.yAxis === s.yAxis).map(slotOf))];
     const sets = type.marks({
       series: s,
-      frame: { x: xa.scale, y: ya.scale, orientation: model.orientation },
+      frame: { x: xa.scale, y: cmp ? throughAffine(ya.scale, cmp.a, cmp.c) : ya.scale, orientation: model.orientation },
       plot,
       slot: slots.indexOf(slotOf(s)),
       slots: slots.length,
@@ -131,8 +150,12 @@ export function composeScene(input: ComposeInput): Scene {
       measureText,
     });
     // One painter for the whole series (ADR 0002): its line never sits under its own markers on another plane.
-    const painter = seriesPainter(sets);
-    sets.forEach((set, k) => {
+    // Under a selection (selection.md 4): the others faded, the selected marked.
+    const sel = input.view?.selection;
+    const look = model.kit.selection?.look;
+    const looked = look && sel && selectedCount(sel) > 0 ? look(model, layout, sets, s, sel) : sets;
+    const painter = seriesPainter(looked);
+    looked.forEach((set, k) => {
       const items = set.role === 'marks' ? set.items.map(snapRect) : set.items;
       // Lines are clipped to the plot; marks to the plot grown by a marker's half, so one on the edge shows whole
       // and none strays over the axes when the axis's bounds leave it out (review 5).

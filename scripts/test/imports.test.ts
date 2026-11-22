@@ -13,8 +13,9 @@ const ALLOWED: Record<string, readonly string[]> = {
 };
 
 export function specifiers(source: string): string[] {
-  // Not a word inside a string (`k === 'from'`): the keyword is never right after a quote or a dot.
-  return [...source.matchAll(/(?<!['"`.])\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]!);
+  // Not a word inside a string (`k === 'from'`, `'measure/from'`): the keyword is never right after a quote, a dot, a
+  // slash or a hyphen.
+  return [...source.matchAll(/(?<!['"`./-])\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)].map((m) => m[1]!);
 }
 
 describe('the package graph', () => {
@@ -24,6 +25,8 @@ describe('the package graph', () => {
 
   it('ignores the words inside strings and properties', () => {
     expect(specifiers("const ok = k === 'from' || k === 'to';\nconst f = t.from < t.to;")).toEqual([]);
+    // Nor the end of a word in a string, after a slash or a hyphen (a scene id, Phase 5a).
+    expect(specifiers("const p = { sceneId: 'measure/from', paint: ring, symbol: 'circle' };\nconst q = 'data-from', r = 'x';")).toEqual([]);
   });
 
   it('every package is listed', () => {

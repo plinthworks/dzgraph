@@ -46,6 +46,10 @@ export interface ProblemCodes {
    * range buttons left out. The detail names the module to import (`timeAxis`, `navigatorStrip`).
    */
   'missing-module': true;
+  /** Something a view given to `setView()` names that does not exist, or of the wrong kind: left out (view-state.md 3). */
+  'invalid-view': true;
+  /** A series compared to a baseline it does not have (none in view, or 0 for a percent): not drawn (compare.md 6). */
+  'no-baseline': true;
 }
 
 export type ProblemCode = keyof ProblemCodes;

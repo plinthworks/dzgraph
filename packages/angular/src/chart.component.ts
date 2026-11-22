@@ -7,7 +7,7 @@ import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect
 import type { ChartOptions, PointRef, Problem } from '@dzgraph/core';
 import { allTypes } from '@dzgraph/core';
 import type { SeriesType } from '@dzgraph/core/internal';
-import { allFeatures, chart, type Chart, type ChartSetup, type Feature } from '@dzgraph/dom';
+import { allFeatures, chart, type Chart, type ChartEvents, type ChartSetup, type Feature } from '@dzgraph/dom';
 
 @Component({
   selector: 'dz-chart',
@@ -32,7 +32,13 @@ export class DzChart {
   readonly pointHover = output<PointRef | null>();
   readonly pointClick = output<PointRef>();
   readonly pointFocus = output<PointRef>();
-  readonly legendToggle = output<{ readonly seriesId: string; readonly shown: boolean }>();
+  readonly legendToggle = output<ChartEvents['legendToggle']>();
+  readonly rangeChange = output<ChartEvents['rangeChange']['range']>();
+  /** Phase 5: the view as state, the mode, a measure, the selection (view-state.md, modes.md, measure.md, selection.md). */
+  readonly viewChange = output<ChartEvents['viewChange']>();
+  readonly modeChange = output<ChartEvents['modeChange']['mode']>();
+  readonly measure = output<ChartEvents['measure']>();
+  readonly selectionChange = output<ChartEvents['selectionChange']>();
 
   private instance: Chart | null = null;
   /** The options last given, to tell the chart which top-level fields went away (review 7). */
@@ -53,6 +59,11 @@ export class DzChart {
       c.on('pointClick', (d) => this.pointClick.emit(d.point));
       c.on('pointFocus', (d) => this.pointFocus.emit(d.point));
       c.on('legendToggle', (d) => this.legendToggle.emit(d));
+      c.on('rangeChange', (d) => this.rangeChange.emit(d.range));
+      c.on('viewChange', (d) => this.viewChange.emit(d));
+      c.on('modeChange', (d) => this.modeChange.emit(d.mode));
+      c.on('measure', (d) => this.measure.emit(d));
+      c.on('selectionChange', (d) => this.selectionChange.emit(d));
       if (c.problems.length) this.problems.emit(c.problems);
     };
     // In the browser only, once the host is in the page.

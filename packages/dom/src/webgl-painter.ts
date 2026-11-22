@@ -72,6 +72,7 @@ const SYMBOLS = { circle: 0, square: 1, diamond: 2, triangle: 3, 'triangle-down'
 interface Upload {
   readonly x: Float64Array;
   readonly y: Float64Array;
+  readonly only: Int32Array | undefined;
   readonly logX: boolean;
   readonly logY: boolean;
   /** Each axis's step: a power of two, so that the largest value is under 2³⁰ steps. */
@@ -239,13 +240,17 @@ export class WebglPainter implements Painter {
   /** The batch's points on the card: sent once per column read (a new `x`, or `y`), gaps and log values ≤ 0 left out. */
   private upload(gl: WebGL2RenderingContext, prog: Programme, p: PointsPrimitive): Upload {
     const old = this.uploads.get(p.sceneId);
-    if (old && old.x === p.x && old.y === p.y && old.logX === p.mapX.log && old.logY === p.mapY.log) return old;
+    if (old && old.x === p.x && old.y === p.y && old.only === p.only && old.logX === p.mapX.log && old.logY === p.mapY.log) return old;
     if (old) this.drop(old);
-    const n = Math.min(p.x.length, p.y.length);
+    // A selection over its cloud sends its points only (selection.md 10).
+    const all = Math.min(p.x.length, p.y.length);
+    const n = p.only ? p.only.length : all;
+    const at = (k: number) => (p.only ? p.only[k]! : k);
     const value = (v: number, log: boolean) => (log ? (v > 0 ? Math.log10(v) : Number.NaN) : v);
     let maxX = 0;
     let maxY = 0;
-    for (let i = 0; i < n; i++) {
+    for (let k = 0; k < n; k++) {
+      const i = at(k);
       const x = Math.abs(value(p.x[i]!, p.mapX.log));
       const y = Math.abs(value(p.y[i]!, p.mapY.log));
       if (x > maxX && x < Infinity) maxX = x;
@@ -258,7 +263,9 @@ export class WebglPainter implements Painter {
     const ints = new Int32Array(bytes);
     const floats = new Float32Array(bytes);
     let count = 0;
-    for (let i = 0; i < n; i++) {
+    for (let k = 0; k < n; k++) {
+      const i = at(k);
+      if (i >= all) continue;
       const x = value(p.x[i]!, p.mapX.log);
       const y = value(p.y[i]!, p.mapY.log);
       if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
@@ -280,7 +287,7 @@ export class WebglPainter implements Painter {
     gl.enableVertexAttribArray(prog.rest);
     gl.vertexAttribPointer(prog.rest, 2, gl.FLOAT, false, 16, 8);
     gl.bindVertexArray(null);
-    const up = { x: p.x, y: p.y, logX: p.mapX.log, logY: p.mapY.log, stepX, stepY, buffer, vao, count };
+    const up = { x: p.x, y: p.y, only: p.only, logX: p.mapX.log, logY: p.mapY.log, stepX, stepY, buffer, vao, count };
     this.uploads.set(p.sceneId, up);
     return up;
   }

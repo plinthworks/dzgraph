@@ -11,7 +11,7 @@ import { decodePng } from '../spikes/lib/png.mjs';
 const update = process.argv.includes('--update');
 const out = fileURLToPath(new URL('../test-references/', import.meta.url));
 mkdirSync(out, { recursive: true });
-const all = ['line', 'area', 'columns', 'bars', 'scatter', 'negative', 'stacked', 'stacked-area', 'percent', 'log', 'pie', 'donut', 'gauge', 'dual', 'many', 'dense', 'crowd', 'cloud', 'time', 'navigator', 'empty', 'line~hover', 'columns~hover', 'line~focus', 'columns~hidden'];
+const all = ['line', 'area', 'columns', 'bars', 'scatter', 'negative', 'stacked', 'stacked-area', 'percent', 'log', 'pie', 'donut', 'gauge', 'dual', 'many', 'dense', 'crowd', 'cloud', 'compare', 'selected', 'aggregated', 'time', 'navigator', 'empty', 'line~hover', 'columns~hover', 'line~focus', 'columns~hidden', 'compare~hover'];
 /** Where a `~hover` case puts the pointer, as a share of the chart's box. */
 const HOVER = { x: 0.62, y: 0.45 };
 const cases = process.env.CASES ? process.env.CASES.split(',') : all;

@@ -3,6 +3,7 @@
  * by name; `chart()` receives the modules an app uses. Internal until 1.0 (`@dzgraph/core/internal`): our own
  * packages implement it wave by wave; it is published for others once it has carried several families.
  */
+import type { AggregateFn } from './aggregation.js';
 import type { Problem } from './problem.js';
 import type { SeriesBase } from './options.js';
 import type { Affine, ColorToken, LayerId, Primitive, Rect, TextMeasurer } from './scene.js';
@@ -26,6 +27,8 @@ export interface SeriesModel<O extends SeriesBase<string, unknown> = SeriesBase<
   readonly stack: string | null;
   /** Read once, when the series first appears (GLOSSARY: Hidden series). */
   readonly initiallyHidden: boolean;
+  /** Its function when aggregated (aggregation.md 1): its own, else a sum for columns and bars, a mean otherwise. */
+  readonly aggregate: AggregateFn;
   /** Every column the type reads, same length: `x` and `y` for most types, `open`/`high`/`low`/`close`, `z`… NaN is a gap. */
   readonly columns: { readonly x: Float64Array; readonly y: Float64Array } & { readonly [name: string]: Float64Array };
   /** Point keys, when the app gave them (GLOSSARY: Key); null for a point without one or with a duplicate. */

@@ -125,7 +125,10 @@ export class CanvasPainter implements Painter {
     const m = p.size;
     const [x0, x1, y0, y1] = clip ? [clip.x - m, clip.x + clip.width + m, clip.y - m, clip.y + clip.height + m] : [-Infinity, Infinity, -Infinity, Infinity];
     const shape = p.symbol === 'circle' ? null : markerPolygon(p.symbol, 0, 0, p.size);
-    for (let i = 0; i < p.x.length; i++) {
+    // A selection over its cloud draws its points only (selection.md 10).
+    const n = p.only ? p.only.length : p.x.length;
+    for (let k = 0; k < n; k++) {
+      const i = p.only ? p.only[k]! : k;
       const a = place(p.mapX, p.x[i]!);
       const b = place(p.mapY, p.y[i]!);
       const x = p.swapped ? b : a;

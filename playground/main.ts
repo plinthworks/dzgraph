@@ -24,7 +24,9 @@ for (const [name, c] of Object.entries(cases)) {
   box.className = 'chart';
   figure.append(caption, box);
   host.appendChild(figure);
-  const made = chart(box, c.options(rtl), { types, features: allFeatures });
+  // Every module but measure, whose mode bar would sit on every chart; the exploration cases take them all.
+  const features = c.exploration ? allFeatures : allFeatures.filter((f) => f.name !== 'measure');
+  const made = chart(box, c.options(rtl), { types, features });
   c.after?.(made);
 }
 document.body.dataset['ready'] = 'true';

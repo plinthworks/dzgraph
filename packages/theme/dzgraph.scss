@@ -184,6 +184,117 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     pointer-events: none;
   }
 
+  // The chart menu (menu.md): its button, its menus raised like the tooltip, the focused item in the focus colour.
+  .dzgraph-menu-button {
+    display: grid;
+    place-items: center;
+    inline-size: 28px;
+    block-size: 24px;
+    padding: 0;
+    color: var(--tz-fg-muted);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 4px;
+    cursor: pointer;
+
+    // `hidden` wins over the display above (a review: the button showed on every chart).
+    &[hidden] {
+      display: none;
+    }
+
+    &[aria-expanded='true'],
+    &:hover {
+      color: var(--tz-fg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--dzgraph-focus);
+      outline-offset: 1px;
+    }
+  }
+
+  .dzgraph-menu {
+    min-inline-size: 160px;
+    padding: 4px 0;
+    font: var(--dzgraph-font-legend);
+    color: var(--tz-fg);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px color-mix(in oklab, var(--tz-fg) 14%, transparent);
+
+    [role='menuitem'],
+    [role='menuitemradio'] {
+      padding: 4px 12px;
+      cursor: pointer;
+      outline: none;
+
+      &:focus,
+      &:hover {
+        background: color-mix(in oklab, var(--dzgraph-focus) 14%, var(--tz-bg));
+      }
+    }
+
+    [role='menuitemradio'][aria-checked='true'] {
+      font-weight: 600;
+    }
+  }
+
+  .dzgraph-submenu {
+    margin: 4px 8px;
+  }
+
+  .dzgraph-menu-group {
+    padding: 4px 12px 0;
+    color: var(--tz-fg-muted);
+  }
+
+  // The breadcrumb above a drilled chart (drilldown.md 4): its levels in a row, the shown one in plain text.
+  .dzgraph-breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0 0 4px;
+    padding: 0;
+    list-style: none;
+    font: var(--dzgraph-font-legend);
+    color: var(--tz-fg);
+  }
+
+  .dzgraph-breadcrumb li + li::before {
+    content: '›';
+    margin-inline-end: 6px;
+    color: var(--tz-fg-muted);
+  }
+
+  .dzgraph-breadcrumb button {
+    padding: 0;
+    font: inherit;
+    color: var(--dzgraph-focus);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--dzgraph-focus);
+      outline-offset: 1px;
+    }
+  }
+
+  .dzgraph-drill-failed {
+    color: var(--tz-fg-muted);
+  }
+
+  // A selection being drawn (selection.md 2): its rectangle, range or lasso.
+  .dzgraph-select-band {
+    fill: var(--dzgraph-focus);
+    fill-opacity: 0.1;
+    stroke: var(--dzgraph-focus);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+  }
+
   // The navigator's handles take the keyboard (navigator.md 4): invisible, a ring when focused.
   .dzgraph-nav-handle {
     fill: none;
@@ -195,8 +306,9 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     }
   }
 
-  // The range buttons (range-buttons.md): the pressed one stands out; a disabled one is muted.
-  .dzgraph-range-buttons button {
+  // The range buttons (range-buttons.md) and the mode bar (modes.md): the pressed one stands out; a disabled one is muted.
+  .dzgraph-range-buttons button,
+  .dzgraph-modes button {
     padding: 2px 8px;
     font: var(--dzgraph-font-legend);
     color: var(--tz-fg);

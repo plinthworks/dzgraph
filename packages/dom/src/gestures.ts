@@ -32,6 +32,10 @@ export interface GestureHooks {
   frame(): GestureFrame | null;
   /** A new range (`null`: the whole). `animate`: the end of a gesture, eased; else at once (wheel, pinch, pan). */
   setRange(range: Range | null, how: 'animate' | 'now', from: 'pointer' | 'keyboard'): void;
+  /** Whether a plain drag zooms (the zoom mode, modes.md); Shift + drag pans in every mode. Absent: always. */
+  dragZooms?(): boolean;
+  /** Whether Shift + drag pans (not in selection mode, where Shift adds, modes.md 4). Absent: always. */
+  dragPans?(): boolean;
 }
 
 type Drag =
@@ -149,7 +153,8 @@ export class Gestures {
       return;
     }
     if (e.button !== 0 || !this.inPlot(e, f)) return;
-    const pan = e.shiftKey && f.zoomed;
+    const pan = e.shiftKey && f.zoomed && this.hooks.dragPans?.() !== false;
+    if (!pan && this.hooks.dragZooms && !this.hooks.dragZooms()) return;
     this.drag = pan ? { kind: 'pan', id: e.pointerId, start: this.along(e, f), frame: f, moved: false } : { kind: 'zoom', id: e.pointerId, start: this.along(e, f), frame: f, moved: false, band: null };
     // No text selection, no native drag while the pointer draws a band.
     e.preventDefault();

@@ -6,7 +6,7 @@ import type { ChartModel } from './model.js';
 import type { ChartLayout, LayoutText } from './layout.js';
 import type { ColorToken, MarkerSymbol, PointRef } from './scene.js';
 import type { SeriesModel } from './series-type.js';
-import { formatShare, formatValue } from './format.js';
+import { formatShare, formatValue, formatValueRange } from './format.js';
 import { symbolOf } from './series/shared.js';
 
 export interface TooltipRow {
@@ -17,6 +17,10 @@ export interface TooltipRow {
   readonly symbol: MarkerSymbol;
   /** A stacked point's share of its pile (stacking.md 14). */
   readonly share?: string;
+  /** A compared point's raw value, after its compared one in `value` (compare.md 4). */
+  readonly raw?: string;
+  /** An aggregated point: how many points of the app it holds (aggregation.md 3). */
+  readonly count?: number;
 }
 
 export interface Tooltip {
@@ -29,6 +33,8 @@ export interface Tooltip {
   /** A gauge's scale and the threshold it falls in, written by the DOM's words (gauge.md 7, review 7). */
   readonly range?: { readonly min: string; readonly max: string };
   readonly threshold?: string;
+  /** Where the comparison starts: its baseline's x, as x reads (compare.md 4); the DOM's words say « since ». */
+  readonly baseline?: string;
 }
 
 /** « Autres » lists its largest slices, up to this many (pie-donut.md 8). */
@@ -44,6 +50,10 @@ export function xLabel(model: ChartModel, s: SeriesModel, index: number, locale:
 /** How a value on an x axis reads: a category's name, a date in the axis's zone, or a number (zoom-pan.md 8). */
 export function xValueLabel(model: ChartModel, axisId: string, x: number, locale: string | undefined): string {
   const axis = model.xAxes.find((a) => a.id === axisId);
+  // An aggregated point stands for its group (aggregation.md 3): a period of dates, or a bucket of numbers.
+  const period = axis?.period;
+  if (period && 'period' in period && model.kit.time) return model.kit.time.formatPeriod(x, period.period, locale, axis!.zone ?? 'UTC');
+  if (period && 'step' in period) return formatValueRange(x, x + period.step, locale);
   if (axis?.scale === 'category') return axis.categories?.[Math.round(x)] ?? String(x);
   const time = model.kit.time;
   if (axis?.scale === 'time' && time) return time.format(x, locale, axis.zone ?? 'UTC');
@@ -58,6 +68,7 @@ export function tooltipOf(model: ChartModel, layout: ChartLayout, hit: { readonl
   // The one pile every row belongs to, if any: its total closes the tooltip.
   let pileOf: string | null | undefined;
   let total = Number.NaN;
+  let baseline: string | undefined;
   for (const p of hit.points) {
     const s = model.series.find((o) => o.id === p.seriesId);
     if (!s) continue;
@@ -82,7 +93,12 @@ export function tooltipOf(model: ChartModel, layout: ChartLayout, hit: { readonl
     const key = pile ? JSON.stringify([s.type, s.xAxis, s.yAxis, s.stack]) : null;
     pileOf = pileOf === undefined || pileOf === key ? key : null;
     if (pile) total = pile.total[p.index]!;
-    rows.push({ seriesId: s.id, name: seriesName(s, text), value: formatValue(s.columns.y[p.index]!, locale), color: s.color, symbol: symbolOf(s.rank), ...(share !== undefined && !Number.isNaN(share) ? { share: formatShare(share, locale) } : {}) });
+    const y = s.columns.y[p.index]!;
+    const cmp = layout.compare.series.get(s.id);
+    const kit = model.kit.compare;
+    if (cmp && kit) baseline ??= xLabel(model, s, cmp.baseIndex, locale);
+    const value = cmp && kit ? kit.format(cmp.a * y + cmp.c, cmp.mode, locale) : formatValue(y, locale);
+    rows.push({ seriesId: s.id, name: seriesName(s, text), value, color: s.color, symbol: symbolOf(s.rank), ...(share !== undefined && !Number.isNaN(share) ? { share: formatShare(share, locale) } : {}), ...(cmp && kit ? { raw: formatValue(y, locale) } : {}), ...(s.columns['count'] ? { count: s.columns['count'][p.index]! } : {}) });
   }
   // One pile: its segments from its far end down (review 8: by where each ends, negatives below), then its total.
   if (pileOf) {
@@ -92,5 +108,5 @@ export function tooltipOf(model: ChartModel, layout: ChartLayout, hit: { readonl
     };
     return { heading, rows: [...rows].sort((a, b) => end(b) - end(a)), total: formatValue(total, locale) };
   }
-  return { heading, rows };
+  return { heading, rows, ...(baseline !== undefined ? { baseline } : {}) };
 }

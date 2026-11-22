@@ -314,4 +314,71 @@ export function yearStart(ms: number, zone: string): number {
 }
 
 /** The time axis's part of the core (ADR 0006): what `timeAxis` lends it. */
-export const timeKit: TimeKit = { parse: parseInstant, ticks: timeTicks, labels: timeLabels, format: formatInstant, monthsBefore, yearStart };
+/** The periods of the calendar an aggregation groups by (aggregation.md 1, GLOSSARY: Period). */
+export type Period = 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year';
+
+/** The start of the period holding an instant, on the zone's calendar; a week starts on Monday (ISO). */
+export function periodStart(ms: number, period: Period, zone: string): number {
+  const w = wallOf(ms, zone);
+  switch (period) {
+    case 'hour': {
+      const at = instantsOf({ ...w, mi: 0, s: 0, ms: 0 }, zone);
+      // The hour as the wall clock shows it; a repeated hour: the one this instant is in.
+      return at.filter((t) => t <= ms).at(-1) ?? at[0] ?? ms - (ms % 3_600_000);
+    }
+    case 'day':
+      return dayStart(w.y, w.mo, w.d, zone);
+    case 'week': {
+      const days = daysFromCivil(w.y, w.mo, w.d);
+      // 1970-01-01 was a Thursday: Monday is 3 days before a day whose count is 0 mod 7.
+      const monday = days - ((days + 3) % 7 + 7) % 7;
+      const c = civilFromDays(monday);
+      return dayStart(c.y, c.mo, c.d, zone);
+    }
+    case 'month':
+      return dayStart(w.y, w.mo, 1, zone);
+    case 'quarter':
+      return dayStart(w.y, w.mo - ((w.mo - 1) % 3), 1, zone);
+    case 'year':
+      return dayStart(w.y, 1, 1, zone);
+  }
+}
+
+/** The start of the period after the one starting at `start`. */
+export function periodAfter(start: number, period: Period, zone: string): number {
+  const w = wallOf(start, zone);
+  switch (period) {
+    case 'hour':
+      return periodStart(start + 3_600_000 + 1, 'hour', zone);
+    case 'day':
+    case 'week': {
+      const c = civilFromDays(daysFromCivil(w.y, w.mo, w.d) + (period === 'day' ? 1 : 7));
+      return dayStart(c.y, c.mo, c.d, zone);
+    }
+    case 'month':
+    case 'quarter': {
+      const m = w.mo - 1 + (period === 'month' ? 1 : 3);
+      return dayStart(w.y + Math.floor(m / 12), (m % 12) + 1, 1, zone);
+    }
+    case 'year':
+      return dayStart(w.y + 1, 1, 1, zone);
+  }
+}
+
+const PERIOD_PARTS: Record<Period, Intl.DateTimeFormatOptions> = {
+  hour: { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' },
+  day: { day: 'numeric', month: 'short', year: 'numeric' },
+  week: { day: 'numeric', month: 'short', year: 'numeric' },
+  month: { month: 'long', year: 'numeric' },
+  quarter: { month: 'short', year: 'numeric' },
+  year: { year: 'numeric' },
+};
+
+/** A period as a range of dates in the locale (« Jan – Mar 2026 », « 2 – 8 Mar 2026 »): Intl's words, none of ours. */
+export function formatPeriod(start: number, period: Period, locale: string | undefined, zone: string): string {
+  const f = new Intl.DateTimeFormat(locale, { ...PERIOD_PARTS[period], timeZone: zone });
+  if (period === 'week' || period === 'quarter') return f.formatRange(start, periodAfter(start, period, zone) - 1);
+  return f.format(start);
+}
+
+export const timeKit: TimeKit = { parse: parseInstant, ticks: timeTicks, labels: timeLabels, format: formatInstant, monthsBefore, yearStart, periodStart, periodAfter, formatPeriod };

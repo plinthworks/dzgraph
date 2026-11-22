@@ -169,6 +169,11 @@ _Avoid_: brush, selection (la sélection est autre chose)
 Un raccourci qui règle la plage visible sur une durée (1 mois, 1 an, tout).
 _Avoid_: preset, period selector
 
+**Mode** (mode) :
+Ce que fait un glissement sur la zone de tracé : zoomer, sélectionner ou mesurer ; un seul à la fois, choisi dans la
+barre de modes. Il ne fait pas partie de la vue.
+_Avoid_: tool, state
+
 **Crosshair** (viseur) :
 Les lignes qui suivent le pointeur ou le focus et lisent la valeur sur chaque axe.
 _Avoid_: cursor, guide, tracker

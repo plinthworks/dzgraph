@@ -9,6 +9,7 @@
  * Series types are open (ADR 0005): each type module adds its options to `SeriesOptionsByType` by declaration
  * merging, so `SeriesOptions` is a union discriminated by `type` that grows wave by wave without a breaking change.
  */
+import type { PointRef } from './scene.js';
 import type { InstantMs, ZoneName } from './time.js';
 
 /** The value of a point along x: a number, or a string (a category, an ISO date-time with offset, a Day). */
@@ -75,6 +76,13 @@ export interface SeriesBase<T extends string, D = DataInput> {
    * (GLOSSARY: Hidden series), so options rebuilt by a signal never undo what the user did.
    */
   readonly initiallyHidden?: boolean | undefined;
+  /**
+   * Each point's detail (drilldown.md), by the point's key, or loaded by the app; needs the `drilldown` module. The
+   * series given replace the chart's while the detail is shown.
+   */
+  readonly drilldown?: { readonly details: Readonly<Record<string, readonly SeriesOptions[]>> } | { readonly load: (point: PointRef) => Promise<readonly SeriesOptions[]> } | undefined;
+  /** Its function when the x axis aggregates (aggregation.md 1). Default: sum for columns and bars, mean otherwise. */
+  readonly aggregate?: 'sum' | 'mean' | 'min' | 'max' | 'count' | undefined;
 }
 
 /**
@@ -140,6 +148,12 @@ export interface LinearAxisOptions extends AxisBase {
   readonly ticks?: TicksOptions<number> | undefined;
   /** On a y axis: its piles drawn as shares of their totals, from 0 to 100 % (stacking.md 9). */
   readonly stacking?: 'percent' | undefined;
+  /** On a y axis: each series shown against a baseline (compare.md); needs the `compare` module. */
+  readonly compare?: 'value' | 'percent' | 'index' | undefined;
+  /** The baseline's x (a number, or an ISO date-time on a time x axis); default: the first point in view. */
+  readonly compareTo?: number | string | undefined;
+  /** On an x axis: one point per bucket of this step (aggregation.md); needs the `aggregation` module. */
+  readonly aggregate?: { readonly step: number } | undefined;
 }
 
 export interface LogAxisOptions extends AxisBase {
@@ -166,6 +180,8 @@ export interface TimeAxisOptions extends AxisBase {
   readonly min?: number | string | undefined;
   readonly max?: number | string | undefined;
   readonly ticks?: TicksOptions<InstantMs> | undefined;
+  /** One point per period of the zone's calendar, or per bucket (aggregation.md); needs the `aggregation` module. */
+  readonly aggregate?: 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year' | { readonly step: number } | undefined;
 }
 
 /** How an axis turns values into positions (GLOSSARY: Scale). */
@@ -221,6 +237,14 @@ export interface ChartOptions {
   readonly navigator?: boolean | undefined;
   /** Buttons for usual time spans (range-buttons.md). Default: shown with the navigator on a time axis. */
   readonly rangeButtons?: boolean | undefined;
+  /** Lines through the pointer and its values on the axes (crosshair.md); needs the `crosshair` module. */
+  readonly crosshair?: boolean | { readonly horizontal?: boolean | undefined } | undefined;
+  /** A small menu for the user: type, aggregation, scale, comparison (menu.md); needs the `menu` module. */
+  readonly menu?: boolean | { readonly items: readonly ('type' | 'aggregation' | 'scale' | 'compare')[] } | undefined;
+  /** `'time'`: years, then months, then days, by click (drilldown.md 6); needs `drilldown` and `aggregation`. */
+  readonly drilldown?: 'time' | undefined;
+  /** Points the user can select (selection.md); needs the `selection` module. `shapes`: those offered. */
+  readonly selection?: boolean | { readonly shapes?: readonly ('rectangle' | 'range' | 'lasso')[] | undefined } | undefined;
 }
 
 /**

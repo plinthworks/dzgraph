@@ -160,3 +160,14 @@ the owner asks. On GitHub since 2026-11-21 (`git@github.com:plinthworks/dzgraph.
 - Plan validated by the owner: a mode bar (Zoom, Selection, Measure), aggregation by type (sum for columns, mean for
   lines), polar charts select by click only, two halves 5a (view, crosshair, compare, measure, selection) and 5b
   (aggregation, drilldown, menu, linked charts).
+- **5a steps 1–6 built (2026-11-22).** The view as JSON (`getView`, `setView`, `viewChange`; `invalid-view`), modules
+  `crosshair`, `compare` (an affine per series composed with its axis's scale), `measure`, `selection` (rectangle,
+  range, exact live lasso — 1 M points at 5.4 ms a move), the mode bar. Gate green (881), three browsers green
+  (1 464), 224 reference images. Budgets raised (line app 45 000).
+- **Phase 5a closed.** Code review: 8 findings fixed (list in the plan); `<dz-chart>` outputs for the new events.
+  Gate green (894), three browsers green (1 488), 224 images. Next: Phase 5b (aggregation, drilldown, menu, links).
+- **Phase 5b built and closed (2026-11-22).** Modules `aggregation` (periods on the zone's calendar, steps; selection
+  both ways), `drilldown` (details by key or loaded, breadcrumb, Backspace, automatic year → month → day), `menu`
+  (WAI-ARIA menu button: type, aggregation, scale, comparison), `linkCharts` (crosshair, range, selection, drill).
+  Code review: 10 findings fixed (list in the plan). Gate green (937), three browsers green (1 554 → 1 587), 232
+  images. Budgets raised (line app 48 800). Phase 5 closed; nothing of it committed yet. Next: Phase 6 (exports).

@@ -2,6 +2,9 @@
  * What screen readers and the data table are given (screen-reader.md, data-table.md), as data: the DOM layer puts the
  * words around it in the reader's language.
  */
+import { isSelected, selectedCount } from './selection.js';
+import type { CompareMode, SeriesCompare } from './compare.js';
+import type { AggregateFn, AggregateSpec } from './aggregation.js';
 import type { SeriesModel } from './series-type.js';
 import { rangeOf } from './series/shared.js';
 import type { ChartModel } from './model.js';
@@ -26,6 +29,12 @@ export interface Summary {
   readonly largest?: { readonly name: string; readonly share: string };
   /** A gauge (gauge.md 9): its name, value, bounds and threshold, written. */
   readonly meter?: { readonly name: string; readonly value: string; readonly min: string; readonly max: string; readonly threshold?: string };
+  /** A comparison (compare.md 9): how, and its fixed baseline as x reads (null: the first point in view). */
+  readonly compare?: { readonly mode: CompareMode; readonly baseline: string | null };
+  /** How many points are selected, when some are (selection.md 6). */
+  readonly selected?: number;
+  /** An aggregation (aggregation.md 8): by what, and the shown series' functions, each once. */
+  readonly aggregation?: { readonly by: AggregateSpec; readonly fns: readonly AggregateFn[] };
 }
 
 export function summary(model: ChartModel, layout: ChartLayout, view: View | undefined, locale: string | undefined, text: Pick<LayoutText, 'seriesName'>): Summary {
@@ -74,7 +83,18 @@ export function summary(model: ChartModel, layout: ChartLayout, view: View | und
     const largest = top === undefined ? {} : { largest: { name: polar.name(top), share: formatShare(polar.share(top), locale) } };
     return { types, series, x: null, stacked: false, slices: polar.order.length, ...largest };
   }
-  return { types, series, x, stacked: layout.stacks.size > 0 };
+  // A comparison: its mode, and its fixed baseline when there is one (compare.md 9).
+  const compared = [...layout.compare.axes][0];
+  let compare: Summary['compare'];
+  if (compared) {
+    const chosen = view?.compare !== undefined ? view.compare : model.yAxes.find((a) => a.id === compared[0])?.compare;
+    const xId = model.xAxes[0]?.id;
+    compare = { mode: compared[1], baseline: chosen?.to != null && xId !== undefined ? xValueLabel(model, xId, chosen.to, locale) : null };
+  }
+  const selected = selectedCount(view?.selection);
+  const by = model.xAxes[0]?.period;
+  const aggregation = by ? { by, fns: [...new Set(shown.map((s) => s.aggregate))] } : undefined;
+  return { types, series, x, stacked: layout.stacks.size > 0, ...(compare ? { compare } : {}), ...(selected ? { selected } : {}), ...(aggregation ? { aggregation } : {}) };
 }
 
 /** A series' value axis, when two or more are in use by visible series (combined.md 9–10); else nothing to say. */
@@ -95,6 +115,12 @@ export interface PointLabel {
   /** A stacked point's share of its pile, and the pile's total (stacking.md 16). */
   readonly share?: string;
   readonly total?: string;
+  /** A compared point's raw value; `y` is then the compared one (compare.md 9). */
+  readonly raw?: string;
+  /** A selected point (selection.md 6). */
+  readonly selected?: true;
+  /** A point with a detail to show (drilldown.md 1). */
+  readonly detail?: true;
   /** A gauge, read as a meter (gauge.md 9): its bounds and threshold as text, and as numbers. */
   readonly meter?: { readonly min: string; readonly max: string; readonly threshold?: string; readonly now: number; readonly low: number; readonly high: number };
   /** From 1. */
@@ -103,7 +129,13 @@ export interface PointLabel {
 }
 
 /** A point's label; its position and the count are among the points with a value (gaps are not points, review 6). */
-export function pointLabel(model: ChartModel, layout: ChartLayout, ref: PointRef, locale: string | undefined, text: Pick<LayoutText, 'seriesName'>): PointLabel | null {
+export function pointLabel(model: ChartModel, layout: ChartLayout, ref: PointRef, locale: string | undefined, text: Pick<LayoutText, 'seriesName'>, view?: View): PointLabel | null {
+  const label = pointLabelOf(model, layout, ref, locale, text);
+  if (!label) return null;
+  return { ...label, ...(isSelected(view?.selection, ref.seriesId, ref.index) ? { selected: true as const } : {}), ...(hasDetail(model, ref) ? { detail: true as const } : {}) };
+}
+
+function pointLabelOf(model: ChartModel, layout: ChartLayout, ref: PointRef, locale: string | undefined, text: Pick<LayoutText, 'seriesName'>): PointLabel | null {
   const s = model.series.find((o) => o.id === ref.seriesId);
   // A polar point may be « Autres », one past the data (ADR 0007, review 2): the placement answers first.
   const placed = s ? layout.placements.get(s.id) : undefined;
@@ -132,7 +164,25 @@ export function pointLabel(model: ChartModel, layout: ChartLayout, ref: PointRef
     const value = placement.members(ref.index) ? '' : Number.isNaN(v) ? '' : formatValue(v, locale);
     return { series: seriesName(s, text), x: placement.name(ref.index), y: value, ...(Number.isNaN(ps) ? {} : { share: formatShare(ps, locale) }), position: at + 1, count: placement.order.length };
   }
+  const cmp = layout.compare.series.get(s.id);
+  const kit = model.kit.compare;
+  if (cmp && kit && !Number.isNaN(v)) return { series: seriesName(s, text), x: xLabel(model, s, ref.index, locale), y: kit.format(cmp.a * v + cmp.c, cmp.mode, locale), raw: formatValue(v, locale), position, count };
   return { series: seriesName(s, text), x: xLabel(model, s, ref.index, locale), y: Number.isNaN(v) ? '' : formatValue(v, locale), ...stacked, position, count };
+}
+
+/**
+ * Whether a point has a detail (drilldown.md 1): its series' `details` hold its key, or the app loads details; or a
+ * year or a month of an automatic time drill.
+ */
+export function hasDetail(model: ChartModel, ref: PointRef): boolean {
+  const s = model.series.find((o) => o.id === ref.seriesId);
+  if (!s || ref.index >= s.columns.x.length) return false;
+  const d = (s.options as { readonly drilldown?: unknown }).drilldown as { readonly details?: Readonly<Record<string, unknown>>; readonly load?: unknown } | undefined;
+  if (d?.load) return true;
+  const key = s.keys?.[ref.index];
+  if (d?.details && key != null && Object.hasOwn(d.details, key)) return true;
+  const by = model.xAxes.find((a) => a.id === s.xAxis)?.period;
+  return model.drill === 'time' && !!by && 'period' in by && (by.period === 'year' || by.period === 'month');
 }
 
 /** The table's rows as values (data-table.md 1): numbers and gaps, for the screen and for the CSV of Phase 6. */
@@ -311,6 +361,10 @@ export interface TableText extends Pick<LayoutText, 'seriesName'> {
   readonly seriesOnAxis?: (name: string, axis: string) => string;
   /** The header of a polar chart's share column (pie-donut.md 15); absent: no such column. */
   readonly share?: string;
+  /** The header of the column marking selected rows (selection.md 7); absent: no such column. */
+  readonly selectedColumn?: string;
+  /** The header of a compared series' column of compared values (compare.md 5); absent: no such column. */
+  readonly compared?: (name: string) => string;
   /** A gauge's columns after its value (gauge.md 10); absent: no such columns. */
   readonly meter?: { readonly min: string; readonly max: string; readonly threshold: string };
 }
@@ -323,13 +377,17 @@ export function dataTable(model: ChartModel, layout: ChartLayout, view: View | u
   const range = r ? { from: xValueLabel(model, axisId!, r.min, locale), to: xValueLabel(model, axisId!, r.max, locale) } : null;
   const byId = new Map(model.series.map((s) => [s.id, s]));
   // The columns: each series, and after a pile's last series its total, summing that pile's columns.
-  const cols: { readonly name: string; readonly of: readonly number[] }[] = [];
+  const cols: { readonly name: string; readonly of: readonly number[]; readonly compared?: SeriesCompare }[] = [];
   const piles = new Map<string, number[]>();
   const axisOf = valueAxisOf(model, view);
   raw.series.forEach((id, k) => {
     const s = byId.get(id)!;
     const axis = axisOf(s)?.title;
-    cols.push({ name: axis && text.seriesOnAxis ? text.seriesOnAxis(seriesName(s, text), axis) : seriesName(s, text), of: [k] });
+    const name = axis && text.seriesOnAxis ? text.seriesOnAxis(seriesName(s, text), axis) : seriesName(s, text);
+    cols.push({ name, of: [k] });
+    // A compared series: its raw values, then its compared ones (compare.md 5).
+    const compared = layout.compare.series.get(id);
+    if (compared && text.compared && model.kit.compare) cols.push({ name: text.compared(name), of: [k], compared });
     if (!text.stackTotal || !layout.stacks.has(id)) return;
     const key = JSON.stringify([s.type, s.xAxis, s.yAxis, s.stack]);
     const members = piles.get(key) ?? [];
@@ -340,14 +398,18 @@ export function dataTable(model: ChartModel, layout: ChartLayout, view: View | u
     });
     if (last === k) cols.push({ name: text.stackTotal(s.stack === 'default' ? null : s.stack), of: [...members, k] });
   });
-  const cell = (values: readonly (number | null)[], of: readonly number[]) => {
+  const cell = (values: readonly (number | null)[], of: readonly number[], compared?: SeriesCompare) => {
+    if (compared) {
+      const v = values[of[0]!]!;
+      return v === null ? '' : model.kit.compare!.format(compared.a * v + compared.c, compared.mode, locale);
+    }
     let sum: number | null = null;
     for (const k of of) if (values[k] !== null) sum = (sum ?? 0) + values[k]!;
     return sum === null ? '' : formatValue(sum, locale);
   };
   // A polar point is named by its placement (« Part 3 » when it has no name of its own, review 3).
   const rowName = (r: { from: PointRef }) => layout.placements.get(r.from.seriesId)?.name(r.from.index) ?? xLabel(model, byId.get(r.from.seriesId)!, r.from.index, locale);
-  const rows = raw.rows.slice(0, MAX_ROWS).map((r) => [rowName(r), ...cols.map((c) => cell(r.values, c.of))]);
+  const rows = raw.rows.slice(0, MAX_ROWS).map((r) => [rowName(r), ...cols.map((c) => cell(r.values, c.of, c.compared))]);
   // A pie's slices with their shares of the whole (pie-donut.md 15): each real slice, never « Autres ».
   const polar = raw.series.length === 1 ? layout.placements.get(raw.series[0]!) : undefined;
   // A gauge: one row, its value, bounds and threshold (gauge.md 10).
@@ -364,6 +426,11 @@ export function dataTable(model: ChartModel, layout: ChartLayout, view: View | u
       return whole > 0 && v > 0 && isPointShown(s.id, r.from.index, view) ? formatShare(v / whole, locale) : '';
     });
     return { columns: [...cols.map((c) => c.name), text.share], rows: rows.map((r, k) => [...r, shares[k]!]), omitted: raw.total - raw.rows.length, range };
+  }
+  // Selected rows marked, while there is a selection (selection.md 7).
+  if (text.selectedColumn && selectedCount(view?.selection) > 0) {
+    const marks = raw.rows.slice(0, MAX_ROWS).map((r) => (isSelected(view?.selection, r.from.seriesId, r.from.index) ? '✓' : ''));
+    return { columns: [...cols.map((c) => c.name), text.selectedColumn], rows: rows.map((r, k) => [...r, marks[k]!]), omitted: raw.total - raw.rows.length, range };
   }
   return { columns: cols.map((c) => c.name), rows, omitted: raw.total - raw.rows.length, range };
 }

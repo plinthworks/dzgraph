@@ -79,3 +79,20 @@ export function formatLogTicks(values: readonly number[], locale: string | undef
   const notation: Notation = maxAbs >= 1e15 || (maxAbs > 0 && maxAbs < 1e-6) ? 'scientific' : maxAbs >= 10_000 ? 'compact' : 'standard';
   return values.map((v) => numberFormat(locale, decimalsNeeded([v], locale, notation), notation).format(v));
 }
+
+/** A value read at a place (a crosshair's tag): to `decimals` at most, no trailing zeros. */
+export function formatReading(v: number, decimals: number, locale: string | undefined): string {
+  const d = Math.max(0, Math.min(20, decimals));
+  return cached(locale, `reading|${d}`, { maximumFractionDigits: d }).format(v === 0 ? 0 : v);
+}
+
+/** A cached Intl number format, for the modules lent to the core (compare.ts). */
+export const cachedFormat = (locale: string | undefined, key: string, options: Intl.NumberFormatOptions): Intl.NumberFormat => cached(locale, key, options);
+
+/** The decimals tick values need to be written exactly, in the standard notation. */
+export const decimalsOf = (values: readonly number[], locale: string | undefined): number => decimalsNeeded(values, locale, 'standard');
+
+/** Two values as a range (a bucket, aggregation.md 3), as the locale writes a range of numbers. */
+export function formatValueRange(a: number, b: number, locale: string | undefined): string {
+  return cached(locale, 'value', { maximumSignificantDigits: 6, maximumFractionDigits: 2, roundingPriority: 'morePrecision' }).formatRange(a, b);
+}

@@ -7,7 +7,7 @@ import { DzChart } from '@dzgraph/angular';
 
 @Component({
   imports: [DzChart],
-  template: `<dz-chart style="block-size: 300px" [options]="options()" (legendToggle)="toggled.push($event)" (pointClick)="clicked.push($event)" />`,
+  template: `<dz-chart style="block-size: 300px" [options]="options()" (legendToggle)="toggled.push($event)" (pointClick)="clicked.push($event)" (viewChange)="views.push($event.changed)" />`,
 })
 class Host {
   readonly options = signal<ChartOptions>({
@@ -19,6 +19,7 @@ class Host {
   });
   readonly toggled: { seriesId: string; shown: boolean }[] = [];
   readonly clicked: PointRef[] = [];
+  readonly views: (readonly string[])[] = [];
 }
 
 const frame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
@@ -68,6 +69,8 @@ describe('<dz-chart> (angular.md)', () => {
     const f = await mount();
     f.nativeElement.querySelector('.dzgraph-legend-button')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(f.componentInstance.toggled).toEqual([{ seriesId: 'a', shown: false }]);
+    // The Phase 5 events too (view-state.md 4): hiding a series changes the view.
+    expect(f.componentInstance.views).toEqual([['hidden']]);
     f.destroy();
   });
 

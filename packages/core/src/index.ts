@@ -73,3 +73,4 @@ export const allTypes = [lineType, areaType, columnType, barType, scatterType, p
 
 // A scene as a standalone SVG document (exports, node).
 export { sceneToSvg, type SvgOptions } from './svg.js';
+export type { ChartView } from './view-json.js';

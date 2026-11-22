@@ -2,7 +2,7 @@
  * The words a chart writes (CLAUDE.md: sentences belong to the DOM layer's translated messages). English and French
  * ship; an app gives others, or overrides some, through `chart()`'s setup.
  */
-import type { Summary } from '@dzgraph/core/internal';
+import type { MeasureReading, Summary } from '@dzgraph/core/internal';
 import { en } from './locales/en.js';
 import { fr } from './locales/fr.js';
 
@@ -16,6 +16,11 @@ export interface PointWords {
   readonly total?: string;
   /** A gauge's bounds and threshold, written (gauge.md 9). */
   readonly meter?: { readonly min: string; readonly max: string; readonly threshold?: string };
+  /** A compared point's raw value; `y` is then the compared one (compare.md 9). */
+  readonly raw?: string;
+  /** A selected point (selection.md 6); a point with a detail (drilldown.md 1). */
+  readonly selected?: true;
+  readonly detail?: true;
   readonly position: string;
   readonly count: string;
 }
@@ -56,6 +61,37 @@ export interface Messages {
   readonly gaugeNote: (min: string, max: string, threshold: string | undefined) => string;
   /** A gauge's columns in the data table (gauge.md 10). */
   readonly meter: { readonly min: string; readonly max: string; readonly threshold: string };
+  /** A comparison (compare.md 4, 5): the tooltip's note under its heading, the table's compared column. */
+  readonly since: (baseline: string) => string;
+  readonly compared: (name: string) => string;
+  /** The chart menu (menu.md): its button, its items, their choices. */
+  readonly menu: {
+    readonly button: string;
+    readonly type: string;
+    readonly aggregation: string;
+    readonly scale: string;
+    readonly compare: string;
+    readonly types: Readonly<Record<string, string>>;
+    readonly none: string;
+    readonly periods: { readonly hour: string; readonly day: string; readonly week: string; readonly month: string; readonly quarter: string; readonly year: string };
+    readonly linear: string;
+    readonly log: string;
+    readonly compares: { readonly value: string; readonly percent: string; readonly index: string };
+  };
+  /** Drilldown (drilldown.md 3, 4): the breadcrumb's name, its root without a title, loading and its failure. */
+  readonly drill: { readonly breadcrumb: string; readonly root: string; readonly loading: string; readonly failed: string; readonly retry: string };
+  /** An aggregated point's count in the tooltip (aggregation.md 3). */
+  readonly pointsIn: (count: string) => string;
+  /** Selection (selection.md 1, 6, 7): its shapes' names, the count read after a change, the table's column. */
+  readonly shapes: { readonly rectangle: string; readonly range: string; readonly lasso: string };
+  readonly selectedCount: (count: string) => string;
+  readonly selectedColumn: string;
+  /** The mode bar (modes.md): its name and its modes'. */
+  readonly modeBar: string;
+  readonly modes: { readonly zoom: string; readonly selection: string; readonly measure: string };
+  /** A measure (measure.md 2, 5): its tag on the chart, and the sentence the live region reads. */
+  readonly measureTag: (r: MeasureReading) => string;
+  readonly measured: (r: MeasureReading) => string;
   /** The data table's caption when the chart has no title, and its last row past 1 000 (data-table.md 1, 4). */
   readonly tableCaption: string;
   readonly rowsOmitted: (count: string) => string;

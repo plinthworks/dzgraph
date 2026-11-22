@@ -148,6 +148,8 @@ export interface PointsPrimitive extends PrimitiveBase {
   readonly swapped: boolean;
   readonly size: number;
   readonly symbol: MarkerSymbol;
+  /** Only these points (a selection drawn over its faded cloud, selection.md 10); absent: all. */
+  readonly only?: Int32Array;
 }
 
 export interface TextPrimitive extends PrimitiveBase {

@@ -21,6 +21,8 @@ export interface Case {
   readonly options: (rtl: boolean) => ChartOptions;
   /** What to do once drawn (zoom, for the navigator's case). */
   readonly after?: (chart: Chart) => void;
+  /** A case of exploration (Phase 5): every module, the mode bar with them. */
+  readonly exploration?: boolean;
 }
 
 export const cases: Record<string, Case> = {
@@ -175,6 +177,48 @@ export const cases: Record<string, Case> = {
       };
       // The first on WebGL2 (past 100 000 points), the second on Canvas, above it (ADR 0008).
       return { title: 'Calibre des fruits au tri, toute la saison (fictif)', series: [{ type: 'scatter', name: 'Pommes', data: cloud(80, 160, 200_000) }, { type: 'scatter', name: 'Poires', data: cloud(65, 190, 3_000) }], xAxis: { title: 'Diamètre (mm)' }, yAxis: { title: 'Poids (g)' } };
+    },
+  },
+  compare: {
+    exploration: true,
+    title: 'Comparaison en pourcentage, viseur',
+    options: (rtl) => {
+      const r = prng(17);
+      let a = 40;
+      let b = 25;
+      const apples = months.map(() => (a += (r() - 0.4) * 6));
+      const pears = months.map(() => (b += (r() - 0.5) * 5));
+      return {
+        title: 'Prix fictifs au marché, depuis janvier',
+        crosshair: { horizontal: true },
+        xAxis: { scale: 'category', categories: rtl ? monthsAr : months },
+        yAxis: { compare: 'percent' },
+        series: [{ type: 'line', name: 'Pommes', data: apples }, { type: 'line', name: 'Poires', data: pears }],
+      };
+    },
+  },
+  selected: {
+    exploration: true,
+    title: 'Sélection',
+    options: () => {
+      const r = prng(19);
+      const data = Array.from({ length: 300 }, () => [40 + (r() + r() + r() - 1.5) * 30, 160 + (r() + r() + r() - 1.5) * 40] as [number, number]);
+      return { title: 'Fruits retenus pour le concours (fictif)', selection: { shapes: ['rectangle', 'lasso'] }, xAxis: { title: 'Diamètre (mm)' }, yAxis: { title: 'Poids (g)' }, series: [{ type: 'scatter', name: 'Pommes', data }, { type: 'column', name: 'Lot', data: [[20, 60], [30, 80], [50, 70]] }] };
+    },
+    after: (c) => {
+      c.setMode('selection');
+      c.setView({ selection: { '#1': Array.from({ length: 300 }, (_, i) => i).filter((i) => i % 7 === 0), '#2': [1] } });
+    },
+  },
+  aggregated: {
+    exploration: true,
+    title: 'Agrégation par semaine, menu',
+    options: () => {
+      const r = prng(23);
+      const day = 86_400_000;
+      const start = Date.UTC(2026, 0, 5, 11);
+      const data = Array.from({ length: 84 }, (_, i) => [start + i * day, Math.round(20 + r() * 30)] as [number, number]);
+      return { title: 'Cagettes livrées par jour, regroupées par semaine (fictif)', menu: true, xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'week' }, series: [{ type: 'column', name: 'Cagettes', data }] };
     },
   },
   time: {

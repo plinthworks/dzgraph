@@ -4,6 +4,10 @@
  * that throws) gives an empty chart and one Problem. Problems carry option paths and option names, never the data's
  * values (CLAUDE.md).
  */
+import type { AggregateFn, AggregateSpec } from './aggregation.js';
+import type { Period } from './time.js';
+import type { SelectShape } from './selection.js';
+import type { CompareMode } from './compare.js';
 import type { Problem } from './problem.js';
 import type { ScaleKind } from './options.js';
 import type { ColorToken } from './scene.js';
@@ -19,14 +23,14 @@ import { NO_KIT, type Kit, type TimeKit } from './kit.js';
 const PALETTE_SIZE = 8;
 const DEFAULT_ASPECT = 16 / 9;
 
-const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable', 'navigator', 'rangeButtons']);
-const SERIES_KEYS = new Set(['type', 'id', 'name', 'data', 'xAxis', 'yAxis', 'color', 'initiallyHidden']);
+const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable', 'navigator', 'rangeButtons', 'crosshair', 'selection', 'drilldown', 'menu']);
+const SERIES_KEYS = new Set(['type', 'id', 'name', 'data', 'xAxis', 'yAxis', 'color', 'initiallyHidden', 'aggregate', 'drilldown']);
 const AXIS_BASE_KEYS = ['id', 'title', 'opposite', 'reversed', 'scale'];
 const AXIS_KEYS: Record<ScaleKind, ReadonlySet<string>> = {
-  linear: new Set([...AXIS_BASE_KEYS, 'min', 'max', 'ticks', 'stacking']),
-  log: new Set([...AXIS_BASE_KEYS, 'min', 'max', 'ticks', 'stacking']),
+  linear: new Set([...AXIS_BASE_KEYS, 'min', 'max', 'ticks', 'stacking', 'compare', 'compareTo', 'aggregate']),
+  log: new Set([...AXIS_BASE_KEYS, 'min', 'max', 'ticks', 'stacking', 'compare', 'compareTo']),
   category: new Set([...AXIS_BASE_KEYS, 'categories', 'ticks']),
-  time: new Set([...AXIS_BASE_KEYS, 'zone', 'min', 'max', 'ticks']),
+  time: new Set([...AXIS_BASE_KEYS, 'zone', 'min', 'max', 'ticks', 'aggregate']),
 };
 const TICKS_KEYS = new Set(['target', 'format', 'grid']);
 const SCALES = new Set<ScaleKind>(['linear', 'log', 'category', 'time']);
@@ -56,12 +60,16 @@ const EMPTY_MODEL: ChartModel = {
   dataTable: false,
   dataTableRows: 'visible',
   navigator: false,
+  crosshair: null,
+  selection: null,
+  drill: null,
+  menu: null,
   rangeButtons: null,
   kit: NO_KIT,
 };
 
 function defaultAxis(id: string, scale: ScaleKind = 'linear'): AxisModel {
-  return { id, scale, title: null, opposite: false, reversed: false, min: null, max: null, categories: scale === 'category' ? [] : null, ticks: { target: null, format: null, grid: null }, zone: null, stacking: null };
+  return { id, scale, title: null, opposite: false, reversed: false, min: null, max: null, categories: scale === 'category' ? [] : null, ticks: { target: null, format: null, grid: null }, zone: null, stacking: null, compare: null, aggregate: null };
 }
 
 /** What the reading needs from where the chart is shown: the page's zone, the default of a time axis (time-axis.md 2). */
@@ -91,8 +99,8 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZo
   const title = readTitle(options['title'], report);
   // Axis ids are one namespace for x and y: a series names its axes by id (review 2).
   const axisIds = new Set<string>();
-  const xIn = readAxes(options['xAxis'], 'xAxis', 'x', report, axisIds, pageZone, kit.time);
-  const yIn = readAxes(options['yAxis'], 'yAxis', 'y', report, axisIds, pageZone, kit.time);
+  const xIn = readAxes(options['xAxis'], 'xAxis', 'x', report, axisIds, pageZone, kit);
+  const yIn = readAxes(options['yAxis'], 'yAxis', 'y', report, axisIds, pageZone, kit);
 
   // Series: checked one by one; those that can be drawn keep their place in `drawn`.
   const byName = new Map(types.map((t) => [t.name as string, t]));
@@ -165,6 +173,21 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZo
     }
   });
 
+  // A comparison (compare.md 7): with its module, not on an axis with piles; a fixed baseline read on the x axis.
+  yIn.forEach((a, i) => {
+    if (!a.compare) return;
+    const path = `yAxis[${i}]`;
+    let compare: AxisModel['compare'] = null;
+    const x = xIn[0];
+    const to = a.compare.to;
+    const at = typeof to === 'number' || to === null ? to : x?.scale === 'time' && kit.time ? kit.time.parse(to, x.zone ?? pageZone) : 'invalid';
+    if (!kit.compare) report({ code: 'missing-module', path: `${path}.compare`, detail: 'compare' });
+    else if (a.stacking || entries.some((e) => e.stack !== null && e.yAxis === a.id)) report({ code: 'invalid-option', path: `${path}.compare` });
+    else if (typeof at !== 'number' && at !== null) report({ code: 'invalid-option', path: `${path}.compareTo` });
+    else compare = { mode: a.compare.mode, to: at };
+    yIn[i] = { ...a, compare };
+  });
+
   // Axes complete: a category x axis gathers its categories from every series on it, in order.
   const xAxes = xIn.map((a) => finishAxis(a, entries.filter((e) => e.xAxis === a.id).some((e) => e.raw.x.kind === 'values' && e.raw.x.texts !== null), pageZone));
   const categoriesOf = new Map<string, string[]>();
@@ -187,6 +210,7 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZo
     // Gaps get the x of the point before them (after them, at the start): x stays ordered for binary search and
     // decimation, and a gap still has no value (review 4).
     if (sorted) fillGapX(x);
+    checkSeriesDrill(e.s['drilldown'], `${path}.drilldown`, e.id, report);
     return {
       id: e.id,
       type: e.type.name,
@@ -197,6 +221,7 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZo
       yAxis: e.yAxis,
       stack: e.stack,
       initiallyHidden: e.s['initiallyHidden'] === true,
+      aggregate: readAggregateFn(e.s['aggregate'], e.type.name, `${path}.aggregate`, e.id, report),
       columns: { ...e.raw.extra, x, y },
       keys: e.raw.keys,
       names: e.raw.names,
@@ -226,6 +251,10 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZo
     ...readDataTable(options['dataTable'], report),
     navigator: needsNavigator(readBool(options['navigator'], 'navigator', report) ?? false, 'navigator', kit, report),
     rangeButtons: readRangeButtons(options['rangeButtons'], xAxes[0]?.scale === 'time', kit, report),
+    crosshair: readCrosshair(options['crosshair'], kit, report),
+    selection: readSelection(options['selection'], kit, report),
+    drill: readDrill(options['drilldown'], xAxes[0]?.scale === 'time', report),
+    menu: readMenu(options['menu'], report),
     kit,
   };
   return { model, problems };
@@ -305,11 +334,15 @@ interface AxisIn {
   readonly ticks: AxisModel['ticks'];
   readonly zone: string | null;
   readonly stacking: 'percent' | null;
+  /** A y axis's comparison (compare.md), its baseline's x as the app wrote it until the x axis is known. */
+  readonly compare: { readonly mode: CompareMode; readonly to: number | string | null } | null;
+  readonly aggregate: AggregateSpec | null;
 }
 
 function finishAxis(a: AxisIn, hasTexts: boolean, pageZone: string): AxisModel {
   const scale = a.scale ?? (hasTexts ? 'category' : 'linear');
-  return { ...a, scale, categories: scale === 'category' ? (a.categories ?? []) : null, zone: scale === 'time' ? (a.zone ?? pageZone) : null };
+  // Read on the x axis already (the post pass), or none: only numbers stay.
+  return { ...a, compare: a.compare && typeof a.compare.to !== 'string' ? { mode: a.compare.mode, to: a.compare.to } : null, scale, categories: scale === 'category' ? (a.categories ?? []) : null, zone: scale === 'time' ? (a.zone ?? pageZone) : null };
 }
 
 /**
@@ -346,7 +379,8 @@ function resolveTime(raw: RawXY, zone: string, time: TimeKit, path: string, seri
   return { x, y };
 }
 
-function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (p: Problem) => void, ids: Set<string>, pageZone: string, time: TimeKit | null): AxisIn[] {
+function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (p: Problem) => void, ids: Set<string>, pageZone: string, kit: Kit): AxisIn[] {
+  const time = kit.time;
   const list: unknown[] = v === undefined ? [{}] : Array.isArray(v) ? (v.length ? v : [{}]) : [v];
   return list.map((a, i) => {
     const path = `${key}[${i}]`;
@@ -404,6 +438,25 @@ function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (
       if (a['stacking'] === 'percent' && key === 'yAxis' && scale !== 'log') stacking = 'percent';
       else report({ code: 'invalid-option', path: `${path}.stacking` });
     }
+    // An x axis's aggregation (aggregation.md): a period on a time axis, a step on a numeric one; its module checked.
+    let aggregate: AggregateSpec | null = null;
+    const ag = a['aggregate'];
+    if (allowed.has('aggregate') && ag !== undefined) {
+      const period = typeof ag === 'string' && PERIODS.has(ag) && scale === 'time' ? (ag as Period) : null;
+      const step = isRecord(ag) && Object.keys(ag).every((k) => k === 'step') && typeof ag['step'] === 'number' && ag['step'] > 0 && Number.isFinite(ag['step']) && scale !== 'time' ? ag['step'] : null;
+      if (key !== 'xAxis' || (period === null && step === null)) report({ code: 'invalid-option', path: `${path}.aggregate` });
+      else if (!kit.aggregation) report({ code: 'missing-module', path: `${path}.aggregate`, detail: 'aggregation' });
+      else aggregate = period ? { period } : { step: step! };
+    }
+    // A comparison on a y axis (compare.md): its mode, and its baseline's x if the app fixed one.
+    let compare: AxisIn['compare'] = null;
+    if (allowed.has('compare') && (a['compare'] !== undefined || a['compareTo'] !== undefined)) {
+      const mode = a['compare'];
+      const to = a['compareTo'];
+      if (key !== 'yAxis' || (mode !== 'value' && mode !== 'percent' && mode !== 'index') || scale === 'log') report({ code: 'invalid-option', path: `${path}.compare` });
+      else if (to !== undefined && !(typeof to === 'string' || (typeof to === 'number' && Number.isFinite(to)))) report({ code: 'invalid-option', path: `${path}.compareTo` });
+      else compare = { mode, to: (to as number | string | undefined) ?? null };
+    }
     let zone: string | null = null;
     if (allowed.has('zone') && a['zone'] !== undefined) {
       if (typeof a['zone'] === 'string' && isZone(a['zone'])) zone = a['zone'];
@@ -421,6 +474,8 @@ function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (
       ticks: readTicks(a['ticks'], `${path}.ticks`, report),
       zone,
       stacking,
+      compare,
+      aggregate,
     };
   });
 }
@@ -583,6 +638,79 @@ function readRangeButtons(v: unknown, onTime: boolean, kit: Kit, report: (p: Pro
     return false;
   }
   return b;
+}
+
+const PERIODS = new Set(['hour', 'day', 'week', 'month', 'quarter', 'year']);
+
+/** A series' function when aggregated (aggregation.md 1): its own, else a sum for columns and bars, a mean otherwise. */
+function readAggregateFn(v: unknown, type: string, path: string, seriesId: string, report: (p: Problem) => void): AggregateFn {
+  if (v === 'sum' || v === 'mean' || v === 'min' || v === 'max' || v === 'count') return v;
+  if (v !== undefined) report({ code: 'invalid-option', path, seriesId });
+  return type === 'column' || type === 'bar' ? 'sum' : 'mean';
+}
+
+export type MenuItem = 'type' | 'aggregation' | 'scale' | 'compare';
+const MENU_ITEMS: readonly MenuItem[] = ['type', 'aggregation', 'scale', 'compare'];
+
+/** `menu: true | { items }` (menu.md): what the chart menu may offer. */
+function readMenu(v: unknown, report: (p: Problem) => void): { items: MenuItem[] } | null {
+  if (v === undefined || v === false) return null;
+  if (v === true) return { items: [...MENU_ITEMS] };
+  const list = isRecord(v) && Object.keys(v).every((k) => k === 'items') ? v['items'] : undefined;
+  if (Array.isArray(list) && list.length && list.every((x) => MENU_ITEMS.includes(x as MenuItem))) return { items: MENU_ITEMS.filter((x) => list.includes(x)) };
+  report({ code: 'invalid-option', path: 'menu' });
+  return null;
+}
+
+/** `drilldown: 'time'` (drilldown.md 6): years, then months, then days, on a time x axis. */
+function readDrill(v: unknown, onTime: boolean, report: (p: Problem) => void): 'time' | null {
+  if (v === undefined || v === false) return null;
+  if (v === 'time' && onTime) return 'time';
+  report({ code: 'invalid-option', path: 'drilldown' });
+  return null;
+}
+
+/** A series' `drilldown` (drilldown.md): `{ details: { [key]: series[] } }` or `{ load: (point) => Promise }`. */
+function checkSeriesDrill(v: unknown, path: string, seriesId: string, report: (p: Problem) => void): void {
+  if (v === undefined) return;
+  const o = isRecord(v) ? v : null;
+  const details = o?.['details'];
+  const ok = o !== null && Object.keys(o).length === 1 && (typeof o['load'] === 'function' || (isRecord(details) && Object.values(details).every(Array.isArray)));
+  if (!ok) report({ code: 'invalid-option', path, seriesId });
+}
+
+/** `selection: true | { shapes }` (selection.md 1), with the `selection` module (ADR 0006). */
+function readSelection(v: unknown, kit: Kit, report: (p: Problem) => void): { shapes: SelectShape[] } | null {
+  if (v === undefined || v === false) return null;
+  const all: SelectShape[] = ['rectangle', 'range', 'lasso'];
+  const o = typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+  const list = o?.['shapes'];
+  const ok = v === true || (o !== null && Object.keys(o).every((k) => k === 'shapes') && (list === undefined || (Array.isArray(list) && list.length > 0 && list.every((x) => all.includes(x as SelectShape)))));
+  if (!ok) {
+    report({ code: 'invalid-option', path: 'selection' });
+    return null;
+  }
+  if (!kit.selection) {
+    report({ code: 'missing-module', path: 'selection', detail: 'selection' });
+    return null;
+  }
+  return { shapes: Array.isArray(list) ? [...new Set(list as SelectShape[])] : ['rectangle', 'range'] };
+}
+
+/** `crosshair: true | { horizontal }` (crosshair.md), with the `crosshair` module (ADR 0006). */
+function readCrosshair(v: unknown, kit: Kit, report: (p: Problem) => void): { horizontal: boolean } | null {
+  if (v === undefined || v === false) return null;
+  const o = typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+  const okObject = o !== null && Object.keys(o).every((k) => k === 'horizontal') && (o['horizontal'] === undefined || typeof o['horizontal'] === 'boolean');
+  if (v !== true && !okObject) {
+    report({ code: 'invalid-option', path: 'crosshair' });
+    return null;
+  }
+  if (!kit.crosshair) {
+    report({ code: 'missing-module', path: 'crosshair', detail: 'crosshair' });
+    return null;
+  }
+  return { horizontal: o?.['horizontal'] === true };
 }
 
 /** The navigator and the range buttons come with `navigatorStrip` (ADR 0006): asked without it, reported and left out. */
