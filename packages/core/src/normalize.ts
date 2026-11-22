@@ -10,6 +10,7 @@ import type { ColorToken } from './scene.js';
 import type { SeriesModel, SeriesType } from './series-type.js';
 import type { AxisModel, ChartModel } from './model.js';
 import { isSorted, readXYData, type RawXY } from './data.js';
+import { parseInstant } from './time.js';
 
 /**
  * The theme's categorical palette has eight colours (`--dzgraph-series-1` … `-8`, validated for colour-blind
@@ -18,7 +19,7 @@ import { isSorted, readXYData, type RawXY } from './data.js';
 const PALETTE_SIZE = 8;
 const DEFAULT_ASPECT = 16 / 9;
 
-const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable']);
+const TOP_KEYS = new Set(['title', 'series', 'xAxis', 'yAxis', 'legend', 'locale', 'dir', 'mirror', 'aspectRatio', 'description', 'highlight', 'animation', 'dataTable', 'navigator', 'rangeButtons']);
 const SERIES_KEYS = new Set(['type', 'id', 'name', 'data', 'xAxis', 'yAxis', 'color', 'initiallyHidden']);
 const AXIS_BASE_KEYS = ['id', 'title', 'opposite', 'reversed', 'scale'];
 const AXIS_KEYS: Record<ScaleKind, ReadonlySet<string>> = {
@@ -30,7 +31,7 @@ const AXIS_KEYS: Record<ScaleKind, ReadonlySet<string>> = {
 const TICKS_KEYS = new Set(['target', 'format', 'grid']);
 const SCALES = new Set<ScaleKind>(['linear', 'log', 'category', 'time']);
 /** The scales this version draws; the others are accepted, reported and drawn linear. */
-const DRAWN_SCALES = new Set<ScaleKind>(['linear', 'category']);
+const DRAWN_SCALES = new Set<ScaleKind>(['linear', 'category', 'time']);
 /** The coordinate systems this version lays out; a type of another is left out and reported. */
 const LAID_OUT_SYSTEMS = new Set<string>(['cartesian']);
 /** A name usable in a CSS custom property: `--dzgraph-color-<name>`. */
@@ -54,22 +55,31 @@ const EMPTY_MODEL: ChartModel = {
   highlight: true,
   animation: true,
   dataTable: false,
+  dataTableRows: 'visible',
+  navigator: false,
+  rangeButtons: null,
 };
 
 function defaultAxis(id: string, scale: ScaleKind = 'linear'): AxisModel {
   return { id, scale, title: null, opposite: false, reversed: false, min: null, max: null, categories: scale === 'category' ? [] : null, ticks: { target: null, format: null, grid: null }, zone: null };
 }
 
-export function normalize(options: unknown, types: readonly SeriesType[]): { readonly model: ChartModel; readonly problems: readonly Problem[] } {
+/** What the reading needs from where the chart is shown: the page's zone, the default of a time axis (time-axis.md 2). */
+export interface ReadContext {
+  /** An IANA zone; absent, UTC — the core never reads the host's zone, so a scene does not depend on the machine. */
+  readonly zone?: string;
+}
+
+export function normalize(options: unknown, types: readonly SeriesType[], context: ReadContext = {}): { readonly model: ChartModel; readonly problems: readonly Problem[] } {
   try {
-    return normalizeOrThrow(options, types);
+    return normalizeOrThrow(options, types, context.zone !== undefined && isZone(context.zone) ? context.zone : 'UTC');
   } catch {
     // Only an app's getter or proxy can throw while being read.
     return { model: EMPTY_MODEL, problems: [{ code: 'invalid-option', path: '' }] };
   }
 }
 
-function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
+function normalizeOrThrow(options: unknown, types: readonly SeriesType[], pageZone: string) {
   const problems: Problem[] = [];
   if (!isRecord(options)) return { model: EMPTY_MODEL, problems: [{ code: 'invalid-option', path: '' } as const] };
   const report = (p: Problem) => problems.push(p);
@@ -79,8 +89,8 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
   const title = readTitle(options['title'], report);
   // Axis ids are one namespace for x and y: a series names its axes by id (review 2).
   const axisIds = new Set<string>();
-  const xIn = readAxes(options['xAxis'], 'xAxis', 'x', report, axisIds);
-  const yIn = readAxes(options['yAxis'], 'yAxis', 'y', report, axisIds);
+  const xIn = readAxes(options['xAxis'], 'xAxis', 'x', report, axisIds, pageZone);
+  const yIn = readAxes(options['yAxis'], 'yAxis', 'y', report, axisIds, pageZone);
 
   // Series: checked one by one; those that can be drawn keep their place in `drawn`.
   const byName = new Map(types.map((t) => [t.name as string, t]));
@@ -134,7 +144,7 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
   }
 
   // Axes complete: a category x axis gathers its categories from every series on it, in order.
-  const xAxes = xIn.map((a) => finishAxis(a, entries.filter((e) => e.xAxis === a.id).some((e) => e.raw.x.kind === 'values' && e.raw.x.texts !== null)));
+  const xAxes = xIn.map((a) => finishAxis(a, entries.filter((e) => e.xAxis === a.id).some((e) => e.raw.x.kind === 'values' && e.raw.x.texts !== null), pageZone));
   const categoriesOf = new Map<string, string[]>();
   for (const a of xAxes) if (a.scale === 'category') categoriesOf.set(a.id, [...(a.categories ?? [])]);
 
@@ -142,7 +152,8 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
     const path = `series[${e.i}]`;
     const cats = categoriesOf.get(e.xAxis) ?? null;
     const listed = cats ? xIn.find((a) => a.id === e.xAxis)!.categories?.length ?? 0 : 0;
-    const { x, y } = resolveX(e.raw, cats, listed, `${path}.data`, e.id, report);
+    const xa = xAxes.find((a) => a.id === e.xAxis);
+    const { x, y } = xa?.scale === 'time' ? resolveTime(e.raw, xa.zone ?? pageZone, `${path}.data`, e.id, report) : resolveX(e.raw, cats, listed, `${path}.data`, e.id, report);
     for (const p of e.raw.problems) report(p);
     const sorted = isSorted(x);
     if (e.type.sortedX && !sorted) report({ code: 'unsorted-x', path: `${path}.data`, seriesId: e.id });
@@ -172,7 +183,7 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
   const model: ChartModel = {
     series,
     xAxes: finalX,
-    yAxes: yIn.map((a) => finishAxis(a, false)),
+    yAxes: yIn.map((a) => finishAxis(a, false, pageZone)),
     title,
     legend: readLegend(options['legend'], series.length, report),
     locale: readLocale(options['locale'], report),
@@ -183,7 +194,9 @@ function normalizeOrThrow(options: unknown, types: readonly SeriesType[]) {
     orientation: orientation ?? 'vertical',
     highlight: readBool(options['highlight'], 'highlight', report) ?? true,
     animation: readBool(options['animation'], 'animation', report) ?? true,
-    dataTable: readBool(options['dataTable'], 'dataTable', report) ?? false,
+    ...readDataTable(options['dataTable'], report),
+    navigator: readBool(options['navigator'], 'navigator', report) ?? false,
+    rangeButtons: readRangeButtons(options['rangeButtons'], xAxes[0]?.scale === 'time', report),
   };
   return { model, problems };
 }
@@ -263,12 +276,46 @@ interface AxisIn {
   readonly zone: string | null;
 }
 
-function finishAxis(a: AxisIn, hasTexts: boolean): AxisModel {
+function finishAxis(a: AxisIn, hasTexts: boolean, pageZone: string): AxisModel {
   const scale = a.scale ?? (hasTexts ? 'category' : 'linear');
-  return { ...a, scale, categories: scale === 'category' ? (a.categories ?? []) : null };
+  return { ...a, scale, categories: scale === 'category' ? (a.categories ?? []) : null, zone: scale === 'time' ? (a.zone ?? pageZone) : null };
 }
 
-function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (p: Problem) => void, ids: Set<string>): AxisIn[] {
+/**
+ * x on a time axis (time-axis.md 1): numbers are instants; ISO strings with an offset are read; a calendar day stands
+ * at its local midnight in the axis's zone; a date-time without an offset is a gap, reported `ambiguous-instant`.
+ */
+function resolveTime(raw: RawXY, zone: string, path: string, seriesId: string, report: (p: Problem) => void): { x: Float64Array; y: Float64Array } {
+  const n = raw.count;
+  if (raw.x.kind === 'index') return { x: Float64Array.from({ length: n }, (_, i) => i), y: raw.y };
+  const { numbers, texts } = raw.x;
+  if (!texts) return { x: numbers, y: raw.y };
+  const x = new Float64Array(n);
+  let y = raw.y;
+  const tallies = { ambiguous: { first: '', count: 0 }, invalid: { first: '', count: 0 } };
+  for (let i = 0; i < n; i++) {
+    const t = texts[i];
+    if (t === null || t === undefined) {
+      x[i] = numbers[i]!;
+      continue;
+    }
+    const v = parseInstant(t, zone);
+    if (typeof v === 'number') {
+      x[i] = v;
+      continue;
+    }
+    x[i] = Number.NaN;
+    if (y === raw.y) y = y.slice();
+    y[i] = Number.NaN;
+    const tally = tallies[v];
+    if (tally.count++ === 0) tally.first = `${path}[${i}]`;
+  }
+  if (tallies.ambiguous.count) report({ code: 'ambiguous-instant', path: tallies.ambiguous.first, seriesId, detail: `count=${tallies.ambiguous.count}` });
+  if (tallies.invalid.count) report({ code: 'invalid-data', path: tallies.invalid.first, seriesId, detail: `count=${tallies.invalid.count}` });
+  return { x, y };
+}
+
+function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (p: Problem) => void, ids: Set<string>, pageZone: string): AxisIn[] {
   const list: unknown[] = v === undefined ? [{}] : Array.isArray(v) ? (v.length ? v : [{}]) : [v];
   return list.map((a, i) => {
     const path = `${key}[${i}]`;
@@ -296,8 +343,11 @@ function readAxes(v: unknown, key: 'xAxis' | 'yAxis', base: 'x' | 'y', report: (
     const allowed = scale ? AXIS_KEYS[scale] : AXIS_KEYS.linear;
     for (const k of Object.keys(a)) if (!allowed.has(k)) report({ code: 'unknown-option', path: `${path}.${k}` });
 
-    let min = allowed.has('min') ? readNumber(a['min'], `${path}.min`, report) : null;
-    let max = allowed.has('max') ? readNumber(a['max'], `${path}.max`, report) : null;
+    // A time axis's bounds may be ISO date-times or days, read in its zone (TimeAxisOptions).
+    const zoneFor = typeof a['zone'] === 'string' && isZone(a['zone']) ? a['zone'] : pageZone;
+    const bound = (v: unknown, at: string) => (scale === 'time' && typeof v === 'string' ? readInstant(v, zoneFor, at, report) : readNumber(v, at, report));
+    let min = allowed.has('min') ? bound(a['min'], `${path}.min`) : null;
+    let max = allowed.has('max') ? bound(a['max'], `${path}.max`) : null;
     if (min !== null && max !== null && min >= max) {
       report({ code: 'invalid-option', path: `${path}.min` });
       min = max = null;
@@ -425,10 +475,38 @@ function readString(v: unknown, path: string, report: (p: Problem) => void): str
   return null;
 }
 
+/** `dataTable`: a boolean, or `{ show, rows }` (data-table.md 2, 5). */
+function readDataTable(v: unknown, report: (p: Problem) => void): { dataTable: boolean; dataTableRows: 'visible' | 'all' } {
+  if (v === undefined || typeof v === 'boolean') return { dataTable: v ?? false, dataTableRows: 'visible' };
+  if (!isRecord(v)) {
+    report({ code: 'invalid-option', path: 'dataTable' });
+    return { dataTable: false, dataTableRows: 'visible' };
+  }
+  for (const k of Object.keys(v)) if (k !== 'show' && k !== 'rows') report({ code: 'unknown-option', path: `dataTable.${k}` });
+  return { dataTable: readBool(v['show'], 'dataTable.show', report) ?? false, dataTableRows: oneOf(v['rows'], ['visible', 'all'] as const, 'dataTable.rows', report) ?? 'visible' };
+}
+
+/** `rangeButtons` (range-buttons.md): spans of time, so only on a time axis; asked elsewhere, reported and left out. */
+function readRangeButtons(v: unknown, onTime: boolean, report: (p: Problem) => void): boolean | null {
+  const b = readBool(v, 'rangeButtons', report);
+  if (b && !onTime) {
+    report({ code: 'not-available', path: 'rangeButtons', detail: 'not-time' });
+    return false;
+  }
+  return b;
+}
+
 function readBool(v: unknown, path: string, report: (p: Problem) => void): boolean | null {
   if (v === undefined) return null;
   if (typeof v === 'boolean') return v;
   report({ code: 'invalid-option', path });
+  return null;
+}
+
+function readInstant(v: string, zone: string, path: string, report: (p: Problem) => void): number | null {
+  const t = parseInstant(v, zone);
+  if (typeof t === 'number') return t;
+  report({ code: t === 'ambiguous' ? 'ambiguous-instant' : 'invalid-option', path });
   return null;
 }
 

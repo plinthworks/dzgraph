@@ -2,6 +2,7 @@
  * What the series types share: scene ids that no app id can break, the marker symbol of each series, path building,
  * the visible window along x, and the bounds of a column of numbers.
  */
+import { columnCache } from '../column-cache.js';
 import type { Bounds, MarkContext, SeriesModel } from '../series-type.js';
 import type { MarkerSymbol, PathData } from '../scene.js';
 import { PathCommand } from '../scene.js';
@@ -12,7 +13,14 @@ import type { SeriesBase } from '../options.js';
  * series `a`'s marker 1 (scene.ts: ids are opaque and never parsed).
  */
 export function sceneId(...parts: readonly (string | number)[]): string {
-  return parts.map((p) => String(p).replace(/[\\/]/g, (c) => `\\${c}`)).join('/');
+  let out = '';
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i]!;
+    // Numbers and plain words need no escape: a dense series makes one id per point.
+    const s = typeof p === 'number' ? String(p) : p.includes('/') || p.includes('\\') ? p.replace(/[\\/]/g, (c) => `\\${c}`) : p;
+    out = i ? `${out}/${s}` : s;
+  }
+  return out;
 }
 
 /** Each series its own symbol, by rank (line-area.md 4): series are told apart without colour. */
@@ -42,8 +50,18 @@ export class PathBuilder {
   }
 }
 
-/** The smallest and largest numbers of a column (gaps skipped), or null. */
+const ranges = columnCache<Bounds | null>();
+
+/** The smallest and largest numbers of a column (gaps skipped), or null; kept with the column (column-cache.ts). */
 export function rangeOf(a: Float64Array): Bounds | null {
+  const known = ranges.get(a);
+  if (known !== undefined) return known;
+  const b = scanRange(a);
+  ranges.set(a, b);
+  return b;
+}
+
+function scanRange(a: Float64Array): Bounds | null {
   let min = Infinity;
   let max = -Infinity;
   for (let i = 0; i < a.length; i++) {

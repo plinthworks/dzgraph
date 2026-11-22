@@ -1,0 +1,80 @@
+{
+  "at": "2026-11-21T21:40:37.848Z",
+  "node": "v24.22.1",
+  "browser": "chrome",
+  "budgetMs": 16.7,
+  "result": {
+    "line 10M": {
+      "first": 354.6,
+      "zoom": {
+        "median": 2.1,
+        "p95": 7.1,
+        "max": 152.7,
+        "over16": 1,
+        "frames": 60
+      },
+      "pan": {
+        "median": 2.1,
+        "p95": 4.3,
+        "max": 11.6,
+        "over16": 0,
+        "frames": 60
+      },
+      "hover": {
+        "median": 0.1,
+        "p95": 0.2,
+        "max": 2,
+        "over16": 0,
+        "frames": 100
+      }
+    },
+    "time 1M, navigator": {
+      "first": 83.6,
+      "zoom": {
+        "median": 8.9,
+        "p95": 12.8,
+        "max": 47.9,
+        "over16": 1,
+        "frames": 60
+      },
+      "pan": {
+        "median": 8.6,
+        "p95": 12.1,
+        "max": 15.1,
+        "over16": 0,
+        "frames": 60
+      },
+      "hover": {
+        "median": 0.1,
+        "p95": 0.2,
+        "max": 0.5,
+        "over16": 0,
+        "frames": 100
+      }
+    },
+    "scatter 100k (Canvas)": {
+      "first": 91.2,
+      "hover": {
+        "median": 0.3,
+        "p95": 0.6,
+        "max": 24,
+        "over16": 1,
+        "frames": 100
+      },
+      "zoom": {
+        "median": 19.2,
+        "p95": 24.9,
+        "max": 28.1,
+        "over16": 51,
+        "frames": 60
+      },
+      "pan": {
+        "median": 18,
+        "p95": 21.5,
+        "max": 27.4,
+        "over16": 59,
+        "frames": 60
+      }
+    }
+  }
+}

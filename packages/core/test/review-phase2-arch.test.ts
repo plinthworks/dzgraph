@@ -67,6 +67,6 @@ describe('navigate (keyboard.md 2–3), in the core', () => {
 describe('dataRows: the table\'s raw values (for the CSV of Phase 6)', () => {
   it('numbers, not text; a gap is null', () => {
     const { model, l } = build({ series: [{ type: 'line', id: 'a', name: 'A', data: [1.5, null] }] });
-    expect(dataRows(model, l, undefined)).toEqual({ series: ['a'], rows: [{ x: 0, from: { seriesId: 'a', index: 0 }, values: [1.5] }, { x: 1, from: { seriesId: 'a', index: 1 }, values: [null] }] });
+    expect(dataRows(model, l, undefined)).toEqual({ series: ['a'], rows: [{ x: 0, from: { seriesId: 'a', index: 0 }, values: [1.5] }, { x: 1, from: { seriesId: 'a', index: 1 }, values: [null] }], total: 2 });
   });
 });

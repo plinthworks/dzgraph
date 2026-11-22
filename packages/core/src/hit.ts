@@ -6,7 +6,7 @@
  */
 import type { ChartModel } from './model.js';
 import type { ChartLayout } from './layout.js';
-import type { PointRef, Scene } from './scene.js';
+import type { MarkerPrimitive, PointRef, RectPrimitive, Scene } from './scene.js';
 import type { SeriesModel } from './series-type.js';
 import { isShown, type View } from './view.js';
 import { pointAt } from './points.js';
@@ -89,29 +89,101 @@ export function hitShared(model: ChartModel, layout: ChartLayout, view: View | u
   return { x: chosen.x, points };
 }
 
+/** A mark the pointer can find, in scene order (ties go to the earlier, as a scan would). */
+interface Hittable {
+  readonly order: number;
+  readonly prim: RectPrimitive | MarkerPrimitive;
+  readonly ref: PointRef;
+}
+
+/** The series layer's marks in a grid of POINT_REACH cells (spike S8): each mark in every cell its reach touches. */
+interface MarkGrid {
+  readonly x0: number;
+  readonly y0: number;
+  readonly cols: number;
+  readonly rows: number;
+  readonly cells: Map<number, Hittable[]>;
+}
+
+const grids = new WeakMap<Scene, Map<string, MarkGrid>>();
+
+function gridOf(scene: Scene, orientation: 'vertical' | 'horizontal'): MarkGrid {
+  let byOrientation = grids.get(scene);
+  if (!byOrientation) grids.set(scene, (byOrientation = new Map()));
+  let g = byOrientation.get(orientation);
+  if (g) return g;
+  const plot = scene.areas.plot;
+  const x0 = plot.x;
+  const y0 = plot.y;
+  const cols = Math.max(1, Math.ceil(plot.width / POINT_REACH) + 1);
+  const rows = Math.max(1, Math.ceil(plot.height / POINT_REACH) + 1);
+  const cells = new Map<number, Hittable[]>();
+  const add = (h: Hittable, ax: number, ay: number, bx: number, by: number) => {
+    // Clamped to the plot: the pointer is never looked up outside it.
+    const c0 = Math.max(0, Math.floor((ax - x0) / POINT_REACH));
+    const c1 = Math.min(cols - 1, Math.floor((bx - x0) / POINT_REACH));
+    const r0 = Math.max(0, Math.floor((ay - y0) / POINT_REACH));
+    const r1 = Math.min(rows - 1, Math.floor((by - y0) / POINT_REACH));
+    for (let r = r0; r <= r1; r++)
+      for (let c = c0; c <= c1; c++) {
+        const k = r * cols + c;
+        const list = cells.get(k);
+        if (list) list.push(h);
+        else cells.set(k, [h]);
+      }
+  };
+  let order = 0;
+  for (const grp of scene.layers.find((l) => l.id === 'series')?.groups ?? [])
+    for (const p of grp.items) {
+      if (!p.point || (p.kind !== 'rect' && p.kind !== 'marker')) continue;
+      const h: Hittable = { order: order++, prim: p, ref: p.point };
+      if (p.kind === 'marker') add(h, p.x - POINT_REACH, p.y - POINT_REACH, p.x + POINT_REACH, p.y + POINT_REACH);
+      else if (orientation === 'vertical') {
+        const reach = p.width * 0.75;
+        add(h, p.x - reach, p.y, p.x + p.width + reach, p.y + p.height);
+      } else {
+        const reach = p.height * 0.75;
+        add(h, p.x, p.y - reach, p.x + p.width, p.y + p.height + reach);
+      }
+    }
+  g = { x0, y0, cols, rows, cells };
+  byOrientation.set(orientation, g);
+  return g;
+}
+
 /**
  * The mark pointed at: a column under the pointer or the nearest in its band, else a scatter point within 24 px.
- * `ofSeries` keeps the series whose tooltip is per mark (a line's markers belong to its shared tooltip).
+ * `ofSeries` keeps the series whose tooltip is per mark (a line's markers belong to its shared tooltip). The marks
+ * are looked up in a grid built once per scene (spike S8): a move reads one cell, not the whole scene.
  */
 export function hitMark(scene: Scene, px: number, py: number, orientation: 'vertical' | 'horizontal' = 'vertical', ofSeries: (seriesId: string) => boolean = () => true): PointRef | null {
   if (!inside(scene.areas.plot, px, py)) return null;
-  const series = scene.layers.find((l) => l.id === 'series');
-  if (!series) return null;
-  let band: { ref: PointRef; d: number } | null = null;
-  let dot: { ref: PointRef; d: number } | null = null;
-  for (const g of series.groups)
-    for (const p of g.items) {
-      if (!p.point || !ofSeries(p.point.seriesId)) continue;
-      if (p.kind === 'rect') {
-        if (inside(p, px, py)) return p.point;
-        // Across the band: the distance along the categories only.
-        const d = orientation === 'vertical' ? Math.max(0, p.x - px, px - (p.x + p.width)) : Math.max(0, p.y - py, py - (p.y + p.height));
-        const reach = (orientation === 'vertical' ? p.width : p.height) * 0.75;
-        if (d <= reach && (!band || d < band.d)) band = { ref: p.point, d };
-      } else if (p.kind === 'marker') {
-        const d = Math.hypot(p.x - px, p.y - py);
-        if (d <= POINT_REACH && (!dot || d < dot.d)) dot = { ref: p.point, d };
+  const g = gridOf(scene, orientation);
+  const c = Math.min(g.cols - 1, Math.floor((px - g.x0) / POINT_REACH));
+  const r = Math.min(g.rows - 1, Math.floor((py - g.y0) / POINT_REACH));
+  const list = g.cells.get(r * g.cols + c);
+  if (!list) return null;
+  let under: Hittable | null = null;
+  let band: { h: Hittable; d: number } | null = null;
+  let dot: { h: Hittable; d: number } | null = null;
+  // Each cell's list is in scene order: the first rect under the pointer, and the first of equal distances, win.
+  for (const h of list) {
+    const p = h.prim;
+    if (!ofSeries(h.ref.seriesId)) continue;
+    if (p.kind === 'rect') {
+      if (inside(p, px, py)) {
+        under = h;
+        break;
       }
+      const d = orientation === 'vertical' ? Math.max(0, p.x - px, px - (p.x + p.width)) : Math.max(0, p.y - py, py - (p.y + p.height));
+      const reach = (orientation === 'vertical' ? p.width : p.height) * 0.75;
+      if (d <= reach && (!band || d < band.d)) band = { h, d };
+    } else {
+      const d = Math.hypot(p.x - px, p.y - py);
+      if (d <= POINT_REACH && (!dot || d < dot.d)) dot = { h, d };
     }
-  return dot?.ref ?? band?.ref ?? null;
+  }
+  // A rect under the pointer wins over any marker, as in the scan: every rect under the pointer is in its cell.
+  if (under) return under.ref;
+  return dot?.h.ref ?? band?.h.ref ?? null;
 }

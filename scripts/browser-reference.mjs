@@ -11,7 +11,7 @@ import { decodePng } from '../spikes/lib/png.mjs';
 const update = process.argv.includes('--update');
 const out = fileURLToPath(new URL('../test-references/', import.meta.url));
 mkdirSync(out, { recursive: true });
-const all = ['line', 'area', 'columns', 'bars', 'scatter', 'negative', 'dual', 'many', 'dense', 'empty', 'line~hover', 'columns~hover', 'line~focus', 'columns~hidden'];
+const all = ['line', 'area', 'columns', 'bars', 'scatter', 'negative', 'dual', 'many', 'dense', 'crowd', 'time', 'navigator', 'empty', 'line~hover', 'columns~hover', 'line~focus', 'columns~hidden'];
 /** Where a `~hover` case puts the pointer, as a share of the chart's box. */
 const HOVER = { x: 0.62, y: 0.45 };
 const cases = process.env.CASES ? process.env.CASES.split(',') : all;
@@ -42,7 +42,7 @@ try {
           await page.waitForSelector('body[data-ready] svg');
           await page.evaluate(() => document.fonts.ready.then(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))));
           if (state === 'hover') {
-            const box = await page.locator('.case svg').boundingBox();
+            const box = await page.locator('.case .dzgraph').boundingBox();
             await page.mouse.move(box.x + box.width * HOVER.x, box.y + box.height * HOVER.y);
             await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
           } else await page.mouse.move(0, 0);

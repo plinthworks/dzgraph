@@ -17,6 +17,7 @@ declare module '../options.js' {
 export const area: SeriesType<AreaSeriesOptions, 'cartesian'> = {
   name: 'area',
   system: 'cartesian',
+  zeroBased: true,
   sign: 'square',
   sortedX: true,
   optionNames: { marker: true },

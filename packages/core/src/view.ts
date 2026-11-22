@@ -8,6 +8,8 @@ import type { SeriesModel } from './series-type.js';
 export interface View {
   /** The series hidden from the view, by id; absent: each series' `initiallyHidden` decides. */
   readonly hidden?: ReadonlySet<string>;
+  /** The visible range of each zoomed x axis, by axis id (GLOSSARY: Visible range); absent: the whole data. */
+  readonly range?: Readonly<Record<string, { readonly min: number; readonly max: number }>>;
 }
 
 export function isShown(series: Pick<SeriesModel, 'id' | 'initiallyHidden'>, view: View | undefined): boolean {

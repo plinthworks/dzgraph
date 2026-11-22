@@ -102,24 +102,28 @@ options + données ──normalize──▶ Model ──layout(size, measure)─
 |---|---|
 | `problem.ts` | `Problem { code, path, seriesId?, detail? }` ; codes ouverts (`ProblemCodes`, fusion de déclarations) ; jamais de données de l'app dedans. |
 | `options.ts` | types publics des options ; les types de série s'y ajoutent par `SeriesOptionsByType`. |
-| `normalize.ts` | `normalize(options, types) → { model, problems }` : options vérifiées et complétées, données lues, catégories, orientation. |
+| `normalize.ts` | `normalize(options, types, { zone }) → { model, problems }` : options vérifiées et complétées, données lues, catégories, orientation ; le fuseau de la page vient du DOM (UTC sans lui : le cœur ne lit jamais l'hôte). |
 | `model.ts` | le modèle (`ChartModel`, `AxisModel`), indépendant de la taille. |
 | `data.ts` | lecture des quatre formes x/y en colonnes (`y` typé lu sans copie, `x` toujours recopié) ; trous, clés. |
-| `time.ts` | `InstantMs`, `Day`, `ZoneName` (le calcul des fuseaux arrive en Phase 3, spike S4). |
-| `scale.ts` | échelles linéaire et catégories (`log`, `time` : Phases 4 et 3 ; signalées `not-available` d'ici là). |
+| `time.ts` | `InstantMs`, `Day`, `ZoneName` ; l'horloge murale d'un fuseau par `Intl` (`wallOf`, `instantsOf`, `dayStart`), lecture ISO (`parseInstant`), graduations sur l'horloge murale et étiquettes en deux étages (`timeTicks`, `timeLabels`), `formatInstant` (Phase 3, spike S4). |
+| `scale.ts` | échelles linéaire (aussi pour le temps, en millisecondes) et catégories, ces dernières zoomables par catégories entières (`log` : Phase 4, signalée `not-available`). |
 | `ticks.ts` | graduations : pas ronds, nombre proche de la cible, axe au plus 2,5 × les données, second axe aligné. |
 | `format.ts` | étiquettes par `Intl` : décimales exactes dans la notation de la langue, formes courtes, scientifique. |
 | `layout.ts` | titre, légende, axes (passes jusqu'à stabilité), zone de tracé ; côtés logiques. |
-| `view.ts` | la vue (séries masquées ; plages en Phase 3, le reste en Phase 5) ; `isShown`. |
+| `view.ts` | la vue (séries masquées, plage visible de chaque axe x zoomé ; le reste en Phase 5) ; `isShown`. |
+| `zoom.ts` | la plage visible en données pures : `extentOf` (l'étendue, gardée par modèle), `clampRange`, `zoomAround`, `panBy`. |
+| `navigator.ts` | le navigateur (place de la bande, dessin, fenêtre, poignées) et les intervalles des boutons de plage (`rangeButtonSpan`, sur le calendrier du fuseau). |
+| `column-cache.ts` | ce qui est calculé d'une colonne (pyramide, bornes, ordre) gardé avec elle, oublié quand une colonne de l'app est relue. |
+| `geometry.ts` | les formes que tous les peintres dessinent pareil (contour d'un marqueur, bout arrondi d'une colonne). |
 | `series-type.ts` | le contrat d'un type de série et des repères (`FramesBySystem`, `MarkSet`). |
 | `series/` | `line`, `area`, `column` (+ `bar`), `scatter`, et ce qu'ils partagent (`shared.ts`). |
-| `decimate.ts` | M4 exact sur pyramide min/max (blocs de 16 points). |
-| `compose.ts` | la scène : calques, traits sur les centres de pixels, textes sur leur ligne de base alphabétique, peintre choisi par lot de marques. |
+| `decimate.ts` | M4 exact sur pyramide min/max (blocs de 16 points) ; `rangeMinMax` d'une plage d'indices en O(log n). |
+| `compose.ts` | la scène : calques, traits sur les centres de pixels, textes sur leur ligne de base alphabétique ; un peintre par série (Canvas dès qu'un lot de marques dépasse le seuil), les groupes Canvas en tête de chaque calque (ADR 0002). |
 | `scene.ts` | les types de la scène (primitives, jetons de couleur, `PathData`). |
 | `svg.ts` | `svgOf` (une primitive → un élément, partagé avec le peintre du DOM) et `sceneToSvg(scene, { resolve, font, prefix })`. |
 | `paint.ts` | le seul module qui écrit une couleur en CSS (`var()`, `color-mix()` de variables). |
 | `dir.ts` | le seul module qui sait quel côté physique est le début. |
-| `hit.ts` | le point visé : partagé par x (recherche dichotomique), par marque (colonne, bande, point à 24 px) — Phase 2. |
+| `hit.ts` | le point visé : partagé par x (recherche dichotomique), par marque (colonne, bande, point à 24 px) dans une grille de cases construite une fois par scène (spike S8). |
 | `points.ts` | `pointAt` (la position d'un point, une seule réponse pour le survol, le clavier, les tests de visée) et `withKey`. |
 | `navigate.ts` | la navigation au clavier (flèches selon l'écran, Début/Fin, pages) et l'ordre des points valués. |
 | `tooltip.ts` | le contenu de l'infobulle, en données. |
@@ -133,8 +137,8 @@ La pureté est imposée par un test (`purity.test.ts`, repris de DzGrid) qui se 
 
 - **`chart(el, options) → Chart`** : monte un conteneur, observe sa taille (`ResizeObserver`). **La hauteur vient du
   conteneur**, comme pour DzGrid (repli `aspectRatio` si le conteneur n'a pas de hauteur, D.11).
-- **Peintres** : `svg.ts` (éléments réutilisés par clé de scène) et `canvas.ts` (DPR pris en compte, variables CSS
-  résolues une fois par thème). **Hybride** : une série passe en Canvas au-delà du seuil (S1) ; le Canvas se place
+- **Peintres** : `svg-painter.ts` (éléments réutilisés par clé de scène) et `canvas-painter.ts` (DPR pris en compte,
+  variables CSS résolues à chaque dessin par un élément sonde). **Hybride** : une série passe en Canvas au-delà du seuil (S1) ; le Canvas se place
   sous les calques SVG (axes, étiquettes, survol, focus) qui restent nets et accessibles.
 - **Interactions** : survol (point le plus proche, infobulle partagée sur la verticale), légende (clic, clavier),
   zoom à la sélection (x, y ou xy), molette, pincement, déplacement, bouton « réinitialiser », navigateur temporel
@@ -149,16 +153,23 @@ La pureté est imposée par un test (`purity.test.ts`, repris de DzGrid) qui se 
 - **Export** : `exportSvg()` (scène → `sceneToSvg`, variables résolues), `exportPng({ scale })` (scène peinte sur un
   Canvas hors écran), `exportCsv()` (modèle → `csv.ts`), `print()`. Ni serveur ni dépendance.
 - **API du `Chart`** : `update(partiel)`, `setData(id, data)`, `addPoints(id, points, { shift })` (direct),
-  `zoomTo(range)`, `resetZoom()`, `setSeriesVisible(id, on)`, `problems`, `destroy()` ; événements `pointClick`,
-  `pointFocus`, `legendToggle`, `rangeChange`, `problem`.
+  `setRange(range | null)` (bornes en nombres, ou ISO sur un axe de temps), `setSeriesVisible(id, on)`, `problems`,
+  `destroy()` ; événements `pointHover`, `pointClick`, `pointFocus`, `legendToggle`, `rangeChange`, `problems`.
 - **Sparkline** (`@dzgraph/dom/sparkline`) : ligne, aire, colonnes, gagnant/perdant ; SVG seul, sans axes ni
   interactions, pour des milliers de cellules ; budget de taille propre.
 
 *Fichiers réels après la Phase 2 (2026-11-21) :* `chart.ts` (les étapes : lecture, mise en page, scène, aides),
-`svg-painter.ts` derrière l'interface `painter.ts` (Canvas et WebGL2 en Phase 3), `hover.ts` (survol, viseur,
+`svg-painter.ts` derrière l'interface `painter.ts` (WebGL2 en Phase 3 bis), `hover.ts` (survol, viseur,
 infobulle, affichage du focus), `keyboard.ts` (`PointItems` : les éléments des points pour le clavier et les lecteurs
 d'écran), `legend.ts` (les boutons de légende), `table.ts` (le tableau de données), `animator.ts`, `measure.ts`,
 `messages.ts` et `locales/`. `Chart` a `setSeriesVisible(id, visible)` ; les événements portent la clé du point.
+
+*Ajouts de la Phase 3 (2026-11-21) :* trois plans empilés dans la racine — un SVG du fond et de la grille, le
+Canvas (`canvas-painter.ts`) des séries de plus de 2 000 marques, le SVG principal (premier dans le document,
+`z-index: 1`) pour le reste, le survol et les aides ; `gestures.ts` (glisser, Maj + glisser, Ctrl/⌘ + molette,
+pincer, touches + − 0 et Maj + flèches), `navigator.ts` (poignées, fenêtre, curseurs clavier), le bouton de
+réinitialisation, les boutons de plage, le bouton du tableau (plage visible ou tout) ; les aides lourdes (résumé,
+points, tableau) attendent la fin d'un geste (200 ms).
 
 ## 6. Thème (`@dzgraph/theme`)
 

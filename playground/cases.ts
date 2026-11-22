@@ -1,5 +1,6 @@
 // The playground's charts. Made-up data only (a fictional orchard), visibly so.
 import type { ChartOptions } from '@dzgraph/core';
+import type { Chart } from '@dzgraph/dom';
 
 const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -18,6 +19,8 @@ function prng(seed: number): () => number {
 export interface Case {
   readonly title: string;
   readonly options: (rtl: boolean) => ChartOptions;
+  /** What to do once drawn (zoom, for the navigator's case). */
+  readonly after?: (chart: Chart) => void;
 }
 
 export const cases: Record<string, Case> = {
@@ -89,6 +92,35 @@ export const cases: Record<string, Case> = {
       for (let i = 0; i < y.length; i++) y[i] = v += (r() - 0.5) * 2;
       return { title: 'Capteur d’humidité (fictif), une mesure par minute', series: [{ type: 'line', name: 'Humidité', data: { y } }] };
     },
+  },
+  crowd: {
+    title: 'Nuage de 5 000 points (Canvas)',
+    options: () => {
+      const r = prng(11);
+      const cloud = (cx: number, cy: number, n: number) => Array.from({ length: n }, () => [cx + (r() + r() + r() - 1.5) * 30, cy + (r() + r() + r() - 1.5) * 20] as [number, number]);
+      return { title: 'Calibre des fruits au tri (fictif)', series: [{ type: 'scatter', name: 'Pommes', data: cloud(80, 160, 2_500) }, { type: 'scatter', name: 'Poires', data: cloud(65, 190, 2_500) }], xAxis: { title: 'Diamètre (mm)' }, yAxis: { title: 'Poids (g)' } };
+    },
+  },
+  time: {
+    title: 'Axe de temps',
+    options: () => {
+      const r = prng(5);
+      let v = 12;
+      // One reading a day at noon, Paris, from 1 March to 30 April 2026: the clock changes on 29 March.
+      const data = Array.from({ length: 61 }, (_, i) => [Date.UTC(2026, 2, 1 + i, 11), (v += (r() - 0.45) * 2)] as [number, number]);
+      return { title: 'Température de la serre à midi (fictif)', xAxis: { scale: 'time', zone: 'Europe/Paris' }, yAxis: { title: '°C' }, series: [{ type: 'line', name: 'Serre', data }] };
+    },
+  },
+  navigator: {
+    title: 'Navigateur et boutons de plage',
+    options: () => {
+      const r = prng(9);
+      let v = 40;
+      // A reading every six hours over a year (2025), Paris.
+      const data = Array.from({ length: 1460 }, (_, i) => [Date.UTC(2025, 0, 1) + i * 21_600_000, (v += (r() - 0.5) * 3)] as [number, number]);
+      return { title: 'Niveau du réservoir (fictif)', navigator: true, xAxis: { scale: 'time', zone: 'Europe/Paris' }, yAxis: { title: 'cm' }, series: [{ type: 'area', name: 'Réservoir', data }] };
+    },
+    after: (c) => c.setRange({ min: Date.UTC(2025, 5, 1), max: Date.UTC(2025, 7, 1) }),
   },
   empty: {
     title: 'Sans données',

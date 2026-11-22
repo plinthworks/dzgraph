@@ -13,5 +13,5 @@ Needs the numbers behind the chart: a screen-reader user, someone who cannot tel
 4. At most 1 000 rows; beyond, its last row says how many were left out (the CSV export of Phase 6 gives them all).
 5. Zoomed (Phase 3), the table shows the visible range by default — zooming is showing a part — and says so in its
    caption (« de 3 mars à 9 mars »); a button under it switches to all the data and back, so both can be seen
-   (owner 2026-11-21, D.23). The app may choose the start (`dataTable: { range: 'visible' | 'all' }`). The CSV export
+   (owner 2026-11-21, D.23). The app may choose the start (`dataTable: { show, rows: 'visible' | 'all' }`). The CSV export
    follows the same choice.

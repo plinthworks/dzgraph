@@ -44,7 +44,7 @@
     background: var(--dzgraph-background);
   }
   .dzgraph-tooltip {
-    z-index: 1;
+    z-index: 2;
     padding: 6px 10px;
     color: var(--tz-fg);
     background: var(--tz-bg);
@@ -73,9 +73,67 @@
   .dzgraph-point {
     outline: none;
   }
+  .dzgraph-probe {
+    color: var(--dzgraph-probe);
+  }
   .dzgraph-legend-button:focus-visible {
     stroke: var(--dzgraph-focus);
     stroke-width: 2;
+  }
+  .dzgraph-zoom-band {
+    fill: var(--dzgraph-focus);
+    fill-opacity: 0.12;
+    stroke: var(--dzgraph-focus);
+    stroke-width: 1;
+    pointer-events: none;
+  }
+  .dzgraph-nav-handle {
+    fill: none;
+    outline: none;
+  }
+  .dzgraph-nav-handle:focus-visible {
+    stroke: var(--dzgraph-focus);
+    stroke-width: 2;
+  }
+  .dzgraph-range-buttons button {
+    padding: 2px 8px;
+    font: var(--dzgraph-font-legend);
+    color: var(--tz-fg);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .dzgraph-range-buttons button[aria-pressed=true] {
+    border-color: var(--dzgraph-focus);
+    box-shadow: inset 0 0 0 1px var(--dzgraph-focus);
+  }
+  .dzgraph-range-buttons button:disabled {
+    color: var(--tz-fg-muted);
+    cursor: default;
+  }
+  .dzgraph-range-buttons button:focus-visible {
+    outline: 2px solid var(--dzgraph-focus);
+    outline-offset: 1px;
+  }
+  .dzgraph-table-range,
+  .dzgraph-reset {
+    padding: 4px 10px;
+    font: var(--dzgraph-font-legend);
+    color: var(--tz-fg);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .dzgraph-table-range:hover,
+  .dzgraph-reset:hover {
+    border-color: var(--dzgraph-focus);
+  }
+  .dzgraph-table-range:focus-visible,
+  .dzgraph-reset:focus-visible {
+    outline: 2px solid var(--dzgraph-focus);
+    outline-offset: 1px;
   }
   .dzgraph-table {
     border-collapse: collapse;

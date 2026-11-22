@@ -18,7 +18,8 @@
     "spike": "node spikes/all.mjs",
     "build:theme": "node scripts/build-theme.mjs",
     "playground": "node scripts/playground.mjs",
-    "test:reference": "node scripts/browser-reference.mjs"
+    "test:reference": "node scripts/browser-reference.mjs",
+    "bench": "node scripts/bench.mjs"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.9.7",

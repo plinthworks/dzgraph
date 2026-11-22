@@ -105,7 +105,7 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
 
   // The tooltip (hover-tooltip.md 6–7): a raised card, text in text colours, values aligned.
   .dzgraph-tooltip {
-    z-index: 1;
+    z-index: 2;
     padding: 6px 10px;
     color: var(--tz-fg);
     background: var(--tz-bg);
@@ -140,9 +140,80 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     outline: none;
   }
 
+  // The Canvas painter reads a theme colour through this element (canvas-painter.ts).
+  .dzgraph-probe {
+    color: var(--dzgraph-probe);
+  }
+
   .dzgraph-legend-button:focus-visible {
     stroke: var(--dzgraph-focus);
     stroke-width: 2;
+  }
+
+  // Zoom (zoom-pan.md 1, 7): the band a drag draws, and the button that goes back to the whole.
+  .dzgraph-zoom-band {
+    fill: var(--dzgraph-focus);
+    fill-opacity: 0.12;
+    stroke: var(--dzgraph-focus);
+    stroke-width: 1;
+    pointer-events: none;
+  }
+
+  // The navigator's handles take the keyboard (navigator.md 4): invisible, a ring when focused.
+  .dzgraph-nav-handle {
+    fill: none;
+    outline: none;
+
+    &:focus-visible {
+      stroke: var(--dzgraph-focus);
+      stroke-width: 2;
+    }
+  }
+
+  // The range buttons (range-buttons.md): the pressed one stands out; a disabled one is muted.
+  .dzgraph-range-buttons button {
+    padding: 2px 8px;
+    font: var(--dzgraph-font-legend);
+    color: var(--tz-fg);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 4px;
+    cursor: pointer;
+
+    &[aria-pressed='true'] {
+      border-color: var(--dzgraph-focus);
+      box-shadow: inset 0 0 0 1px var(--dzgraph-focus);
+    }
+
+    &:disabled {
+      color: var(--tz-fg-muted);
+      cursor: default;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--dzgraph-focus);
+      outline-offset: 1px;
+    }
+  }
+
+  .dzgraph-table-range,
+  .dzgraph-reset {
+    padding: 4px 10px;
+    font: var(--dzgraph-font-legend);
+    color: var(--tz-fg);
+    background: var(--tz-bg);
+    border: 1px solid var(--tz-border);
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--dzgraph-focus);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--dzgraph-focus);
+      outline-offset: 1px;
+    }
   }
 
   // Shown under the chart when `dataTable: true` (data-table.md 2).

@@ -39,6 +39,25 @@ export interface Messages {
   /** The data table's x column, when the x axis has no title: categories, or values (data-table.md 1). */
   readonly category: string;
   readonly xValue: string;
+  /** The button that goes back to the whole data (zoom-pan.md 7). */
+  readonly resetZoom: string;
+  /** Announced when the keyboard zooms or moves the range (zoom-pan.md 8), its ends already written. */
+  readonly rangeShown: (from: string, to: string) => string;
+  /** Announced when the range goes back to the whole data. */
+  readonly rangeWhole: string;
+  /** The navigator's two handles (navigator.md 4). */
+  readonly rangeStart: string;
+  readonly rangeEnd: string;
+  /** The range buttons (range-buttons.md 1). */
+  readonly range1m: string;
+  readonly range3m: string;
+  readonly rangeYtd: string;
+  readonly range1y: string;
+  readonly rangeAll: string;
+  /** The table's range in its caption, and its button (data-table.md 5). */
+  readonly tableRange: (from: string, to: string) => string;
+  readonly tableAll: string;
+  readonly tableVisible: string;
 }
 
 const BUILT_IN: Readonly<Record<string, Messages>> = { en, fr };

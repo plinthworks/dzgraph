@@ -24,6 +24,7 @@ for (const [name, c] of Object.entries(cases)) {
   box.className = 'chart';
   figure.append(caption, box);
   host.appendChild(figure);
-  chart(box, c.options(rtl), { types });
+  const made = chart(box, c.options(rtl), { types });
+  c.after?.(made);
 }
 document.body.dataset['ready'] = 'true';

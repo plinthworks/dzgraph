@@ -9,11 +9,14 @@
  * 4. the aids (summary, keyboard items, legend buttons, data table) — when the layout changes.
  */
 import type { ChartOptions, ChartUpdate, PointRef, Problem, Scene, SeriesOptions } from '@dzgraph/core';
-import type { ChartLayout, ChartModel, SeriesType, View } from '@dzgraph/core/internal';
-import { appearFrom, composeScene, layout, normalize, seriesName, summary, withKey } from '@dzgraph/core/internal';
+import type { ChartLayout, ChartModel, Extent, Range, SeriesType, View } from '@dzgraph/core/internal';
+import { appearFrom, clampRange, parseInstant, rangeButtonSpan, composeScene, extentOf, layout, normalize, seriesName, summary, validOrder, withKey, xValueLabel } from '@dzgraph/core/internal';
 import { createMeasurer } from './measure.js';
 import { messagesFor, type Messages } from './messages.js';
 import { SvgPainter } from './svg-painter.js';
+import { CanvasPainter } from './canvas-painter.js';
+import { Gestures, type GestureFrame } from './gestures.js';
+import { NavigatorControls } from './navigator.js';
 import type { Painter } from './painter.js';
 import { Hover } from './hover.js';
 import { LegendButtons } from './legend.js';
@@ -45,6 +48,8 @@ export interface ChartEvents {
   readonly pointFocus: { readonly point: PointRef };
   /** A series was hidden or shown, from the legend or `setSeriesVisible` (legend-interaction.md 5). */
   readonly legendToggle: { readonly seriesId: string; readonly shown: boolean };
+  /** The x axis's visible range changed (zoom-pan.md 9): its bounds, or `null` back to the whole data. */
+  readonly rangeChange: { readonly range: { readonly min: number; readonly max: number } | null };
 }
 
 export interface Chart {
@@ -57,6 +62,11 @@ export interface Chart {
   setData(seriesId: string, data: SeriesOptions['data']): void;
   /** Hides or shows a series, as its legend item does (GLOSSARY: Hidden series). */
   setSeriesVisible(seriesId: string, visible: boolean): void;
+  /**
+   * Shows a part of the x axis (GLOSSARY: Visible range), kept inside the data; `null` shows all of it. On a time
+   * axis the ends may be ISO date-times or days, read in its zone. Anything else is reported (`invalid-option`).
+   */
+  setRange(range: { readonly min: number | string; readonly max: number | string } | null): void;
   /** What is wrong with the current options and data, if anything. */
   readonly problems: readonly Problem[];
   /** Listens to an event; returns the function that stops listening. */
@@ -71,6 +81,12 @@ export type CreateChart = (element: HTMLElement, options: ChartOptions, setup: C
 const NS = 'http://www.w3.org/2000/svg';
 let charts = 0;
 /** Durations (owner 2026-11-21, animation.md 1–2). */
+/** How long a gesture rests before the summary, the points and the table are written again. */
+const AIDS_REST_MS = 200;
+/** A range covering the whole extent is no zoom. */
+const wholeOrNull = (r: Range, e: Extent): Range | null => (r.min <= e.min && r.max >= e.max ? null : r);
+/** Between the reset button and the plot's edges. */
+const RESET_INSET = 8;
 const APPEAR_MS = 400;
 const UPDATE_MS = 250;
 
@@ -115,13 +131,21 @@ export const chart: CreateChart = (element, initial, setup) => {
   const root = document.createElement('div');
   root.className = 'dzgraph';
   root.style.position = 'relative';
+  // The planes stack inside the chart, never with the page's.
+  root.style.isolation = 'isolate';
   root.style.inlineSize = '100%';
   root.setAttribute('role', 'figure');
+  // Three planes, back to front (ADR 0002): an SVG for the background and the grid, a Canvas for series of many marks,
+  // the main SVG for the rest (other series, axes, labels, legend), the hover layer and the aids. The main SVG comes
+  // first in the document (it is the chart's drawing for readers and scripts) and is raised above the two others.
   const svg = document.createElementNS(NS, 'svg');
-  svg.style.display = 'block';
   // Horizontal slides stay with the chart's tooltip; vertical ones scroll the page (hover-tooltip.md 9).
-  svg.style.touchAction = 'pan-y';
+  Object.assign(svg.style, { display: 'block', position: 'relative', zIndex: '1', touchAction: 'pan-y' });
   root.appendChild(svg);
+  const back = document.createElementNS(NS, 'svg');
+  back.setAttribute('aria-hidden', 'true');
+  Object.assign(back.style, { position: 'absolute', insetBlockStart: '0', insetInlineStart: '0', pointerEvents: 'none' });
+  root.appendChild(back);
   const described = document.createElement('div');
   described.id = `${prefix}-summary`;
   described.className = 'dzgraph-sr-only';
@@ -135,10 +159,18 @@ export const chart: CreateChart = (element, initial, setup) => {
   const tableBox = document.createElement('div');
   element.append(root, tableBox);
 
+  const backPainter: Painter = new SvgPainter(back, `${prefix}-b`);
+  const canvasPainter = new CanvasPainter(root);
   const painter: Painter = new SvgPainter(svg, prefix);
   const measurer = createMeasurer(root);
-  /** Every painter's groups (ADR 0002): Phase 1–2 has one painter, SVG, which draws them all; Phase 3 routes them. */
-  const paintAll = (scene: Scene) => painter.paint(scene, { font: measurer.font }, () => true);
+  /** Each painter gets its groups (ADR 0002): background and grid behind, Canvas groups in the middle, the rest in front. */
+  const behind = (layer: string) => layer === 'background' || layer === 'grid';
+  const paintAll = (s: Scene) => {
+    const opts = { font: measurer.font };
+    backPainter.paint(s, opts, (_g, layer) => behind(layer));
+    canvasPainter.paint(s, opts, (g, layer) => !behind(layer) && g.painter === 'canvas');
+    painter.paint(s, opts, (g, layer) => !behind(layer) && g.painter !== 'canvas');
+  };
   const animator = new Animator(paintAll);
 
   // ---- State. ----
@@ -156,7 +188,13 @@ export const chart: CreateChart = (element, initial, setup) => {
   /** The view (GLOSSARY: View): hidden series by id; `initiallyHidden` read once, when an id first appears. */
   const hidden = new Set<string>();
   const known = new Set<string>();
-  const view: View = { hidden };
+  let view: View = { hidden };
+  /** The first x axis's visible range (GLOSSARY: Visible range); null: the whole data. */
+  let range: Range | null = null;
+  /** A gesture is changing the range frame after frame: the aids wait for it to rest. */
+  let moving = false;
+  let lastRangeAt = -Infinity;
+  let aidsTimer: ReturnType<typeof setTimeout> | 0 = 0;
   /** Bumped when the view changes, so the layout is redone. */
   let viewVersion = 0;
   /** Bumped when a font arrives, so the layout is measured again. */
@@ -166,6 +204,10 @@ export const chart: CreateChart = (element, initial, setup) => {
   /** The last layout and its key; the last scene. */
   let laid: ChartLayout | null = null;
   let laidKey = '';
+  /** The container's size as last measured; null: measure again. */
+  let measured: { width: number; height: number } | null = null;
+  /** What was wrong with the last `setRange()` call, until a good one (CLAUDE.md: bad input becomes a Problem). */
+  let callProblem: Problem | null = null;
   let scene: Scene | null = null;
   /** The locale and messages of the last drawing. */
   let words: { locale: string; messages: Messages } = { locale: 'en', messages: messagesFor('en', setup.messages) };
@@ -182,7 +224,8 @@ export const chart: CreateChart = (element, initial, setup) => {
     const withData: ChartOptions = data.size
       ? { ...options, series: Array.isArray(options.series) ? options.series.map((s, i) => (isRecord(s) && data.has(idOf(s, i)) ? ({ ...s, data: data.get(idOf(s, i)) } as SeriesOptions) : s)) : options.series }
       : options;
-    const r = normalize(withData, setup.types);
+    // The page's zone, the default of a time axis (time-axis.md 2): read here, the core never reads the host.
+    const r = normalize(withData, setup.types, { zone: new Intl.DateTimeFormat().resolvedOptions().timeZone });
     model = r.model;
     found = r.problems;
     for (const s of model.series) {
@@ -195,6 +238,13 @@ export const chart: CreateChart = (element, initial, setup) => {
     }
     stale = false;
     laidKey = '';
+    // The aspect ratio or the direction may have changed: measured again.
+    measured = null;
+    // New data: the range stays inside it, or goes back to the whole (zoom-pan.md 5).
+    if (range) {
+      const e = xExtent();
+      applyRange(e && e.max > e.min ? wholeOrNull(clampRange(range, e), e) : null);
+    }
   };
 
   const render = () => {
@@ -204,8 +254,15 @@ export const chart: CreateChart = (element, initial, setup) => {
     const m = model!;
 
     // ---- Stage 2: layout, redone only when what it depends on changed. ----
-    const { width, height } = containerSize(element, root, m.aspectRatio, tableBox);
-    root.style.blockSize = `${height}px`;
+    // The container is measured when it may have changed (created, resized, new options), not at every frame of a
+    // zoom: reading styles forces the browser to compute them (big-data.md 4).
+    if (!measured) {
+      measured = containerSize(element, root, m.aspectRatio, tableBox);
+      root.style.blockSize = `${measured.height}px`;
+      drawnSize = contentSize();
+    }
+    const { width, height } = measured;
+    // Direction and language at every drawing: a page may switch them without resizing anything (review 9).
     const dir = m.dir ?? (getComputedStyle(element).direction === 'rtl' ? 'rtl' : 'ltr');
     const locale = m.locale ?? resolveLocale(element.closest('[lang]')?.getAttribute('lang'), navigator.language);
     const messages = messagesFor(locale, setup.messages);
@@ -234,14 +291,32 @@ export const chart: CreateChart = (element, initial, setup) => {
     // ---- Stage 4: the aids, with the layout (screen-reader.md, keyboard.md, legend-interaction.md, data-table.md). ----
     if (relaid) {
       root.setAttribute('aria-label', m.title?.text ?? m.description ?? messages.chart);
-      const sum = messages.summary(summary(m, l, view, locale, messages));
-      described.textContent = m.description ? `${sum} ${m.description}` : sum;
-      items.update({ model: m, layout: l, view, locale, messages });
+      // The summary, the points' items and the table read the data: during a gesture (a drag, the wheel, a pinch)
+      // they are written once it rests, not at every frame (big-data.md 4); otherwise at once.
+      if (aidsTimer) clearTimeout(aidsTimer);
+      aidsTimer = 0;
+      const writeAids = () => {
+        aidsTimer = 0;
+        if (destroyed || !model || !laid) return;
+        const sum = words.messages.summary(summary(model, laid, view, words.locale, words.messages));
+        described.textContent = model.description ? `${sum} ${model.description}` : sum;
+        items.update({ model, layout: laid, view, locale: words.locale, messages: words.messages });
+        writeTable(tableBox, model, laid, view, words.locale, words.messages, tableMode(), toggleTable);
+      };
+      if (moving && !items.hasFocus) aidsTimer = setTimeout(writeAids, AIDS_REST_MS);
+      else writeAids();
+      moving = false;
       legend.update(m, l, view, messages);
-      writeTable(tableBox, m, l, view, locale, messages);
+      navControls.update();
+      placeRangeButtons(m, l, width, dir);
+      // The reset button, at the end of the plot's top edge (zoom-pan.md 7).
+      reset.textContent = messages.resetZoom;
+      reset.hidden = range === null;
+      reset.style.insetBlockStart = `${l.plot.y + RESET_INSET}px`;
+      reset.style.insetInlineEnd = `${dir === 'rtl' ? l.plot.x + RESET_INSET : width - l.plot.x - l.plot.width + RESET_INSET}px`;
     }
 
-    const next = [...found, ...l.problems];
+    const next = [...found, ...l.problems, ...(callProblem ? [callProblem] : [])];
     if (JSON.stringify(next) !== JSON.stringify(problems)) {
       problems = next;
       emit('problems', { problems });
@@ -277,10 +352,7 @@ export const chart: CreateChart = (element, initial, setup) => {
     const h = element.clientHeight - (Number.parseFloat(s.paddingBlockStart) + Number.parseFloat(s.paddingBlockEnd) || 0);
     return `${Math.round(w)}x${Math.round(h)}`;
   };
-  const drawn = () => {
-    render();
-    drawnSize = contentSize();
-  };
+  const drawn = () => render();
 
   // ---- Interaction: hover, keyboard items, legend buttons. ----
   const setHighlight = (id: string | undefined) => {
@@ -302,7 +374,74 @@ export const chart: CreateChart = (element, initial, setup) => {
     schedule('data');
   };
 
+  // ---- Zoom and pan (zoom-pan.md): the range is part of the view; gestures and keys only propose ranges. ----
+  const xAxisId = () => laid?.axes.find((a) => a.dimension === 'x')?.id ?? model?.xAxes[0]?.id;
+  const xExtent = () => {
+    const id = xAxisId();
+    return model && id !== undefined ? extentOf(model, id) : null;
+  };
+  /** Sets the range and the view; tells the app. Drawing is the caller's. */
+  const applyRange = (r: Range | null) => {
+    if (r === range || (r && range && r.min === range.min && r.max === range.max)) return false;
+    range = r;
+    const id = xAxisId();
+    view = r && id !== undefined ? { hidden, range: { [id]: r } } : { hidden };
+    viewVersion++;
+    emit('rangeChange', { range: r && { min: r.min, max: r.max } });
+    return true;
+  };
+  const setRange = (r: Range | null, how: 'animate' | 'now', from: 'pointer' | 'keyboard') => {
+    if (!applyRange(r)) return;
+    // A gesture, or changes coming faster than the aids' rest (an app's own slider, linked charts): moving.
+    const now = performance.now();
+    moving = (how === 'now' && from === 'pointer') || now - lastRangeAt < AIDS_REST_MS;
+    lastRangeAt = now;
+    if (from === 'keyboard' && model) {
+      const id = xAxisId()!;
+      live.textContent = r ? words.messages.rangeShown(xValueLabel(model, id, r.min, words.locale), xValueLabel(model, id, r.max, words.locale)) : words.messages.rangeWhole;
+      keepFocusInView();
+    }
+    schedule(how === 'animate' ? 'data' : 'immediate');
+  };
+  /** The focused point, when a key moved the range past it, gives the focus to its series' nearest point in view. */
+  const keepFocusInView = () => {
+    const at = items.activePoint;
+    if (!range || !at || !items.hasFocus || !model) return;
+    const s = model.series.find((o) => o.id === at.seriesId);
+    if (!s) return;
+    const x = s.columns.x[at.index]!;
+    if (x >= range.min && x <= range.max) return;
+    const target = Math.min(Math.max(x, range.min), range.max);
+    let best = -1;
+    for (const i of validOrder(s)) {
+      const v = s.columns.x[i]!;
+      if (v < range.min || v > range.max) continue;
+      if (best === -1 || Math.abs(v - target) < Math.abs(s.columns.x[best]! - target)) best = i;
+    }
+    if (best !== -1) items.focusPoint({ seriesId: s.id, index: best });
+  };
+  const frameOf = (): GestureFrame | null => {
+    const axis = laid?.axes.find((a) => a.dimension === 'x');
+    const e = xExtent();
+    if (!model || !laid || !axis || !e || !(e.max > e.min)) return null;
+    const shown = range ?? { min: e.min, max: e.max };
+    return { plot: laid.plot, horizontal: model.orientation === 'vertical', ends: [axis.scale.map(shown.min), axis.scale.map(shown.max)], extent: e, shown, zoomed: range !== null };
+  };
+
+  // Gestures and the navigator listen before the hover (review 10): on the move that starts a drag, or the finger
+  // that starts a pinch, `busy()` is already true when the hover asks.
+  const gestures = new Gestures(root, svg, { frame: frameOf, setRange });
+  const navGroup = document.createElementNS(NS, 'g');
+  const navControls = new NavigatorControls(svg, navGroup, {
+    state: () => {
+      const nav = laid?.navigator;
+      return nav && model ? { nav, range, label: (v: number) => xValueLabel(model!, nav.axisId, v, words.locale) } : null;
+    },
+    setRange: (r, how) => setRange(r, how, 'pointer'),
+    words: () => ({ start: words.messages.rangeStart, end: words.messages.rangeEnd }),
+  });
   const hover = new Hover(root, svg, {
+    busy: () => gestures.busy() || navControls.busy(),
     state: () => (model && laid && scene ? { model, layout: laid, scene, locale: words.locale, text: words.messages, font: (r) => measurer.font(r), view } : null),
     highlight: setHighlight,
     hovered: (point) => emit('pointHover', { point: point && keyed(point) }),
@@ -314,7 +453,7 @@ export const chart: CreateChart = (element, initial, setup) => {
   a11y.setAttribute('class', 'dzgraph-a11y');
   const itemsGroup = document.createElementNS(NS, 'g');
   const legendGroup = document.createElementNS(NS, 'g');
-  a11y.append(itemsGroup, legendGroup);
+  a11y.append(itemsGroup, legendGroup, navGroup);
   svg.appendChild(a11y);
   const items = new PointItems(itemsGroup, {
     focused: (point) => {
@@ -324,12 +463,82 @@ export const chart: CreateChart = (element, initial, setup) => {
     leave: () => hover.focus(null),
     clicked: (point) => emit('pointClick', { point: keyed(point) }),
     escape: () => hover.hideTooltip(),
+    key: (e, point) => {
+      const s = model?.series.find((o) => o.id === point.seriesId);
+      return gestures.key(e, s ? s.columns.x[point.index]! : null);
+    },
   });
+  const reset = document.createElement('button');
+  reset.type = 'button';
+  reset.className = 'dzgraph-reset';
+  reset.hidden = true;
+  Object.assign(reset.style, { position: 'absolute', zIndex: '2' });
+  reset.addEventListener('click', () => {
+    const had = document.activeElement === reset;
+    setRange(null, 'animate', had ? 'keyboard' : 'pointer');
+    // The button goes: the focus goes back to the points rather than to the page.
+    const at = items.activePoint;
+    if (had && at) items.focusPoint(at);
+  });
+  root.appendChild(reset);
+
+  // ---- The range buttons (range-buttons.md): a row of HTML buttons in the layout's range bar. ----
+  const BUTTONS = ['1m', '3m', 'ytd', '1y', 'all'] as const;
+  const rangeBox = document.createElement('div');
+  rangeBox.className = 'dzgraph-range-buttons';
+  rangeBox.hidden = true;
+  Object.assign(rangeBox.style, { position: 'absolute', zIndex: '2', display: 'flex', gap: '4px' });
+  const rangeButtons = BUTTONS.map((p) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.addEventListener('click', () => {
+      const id = xAxisId();
+      if (!model || id === undefined) return;
+      if (p === 'all') return setRange(null, 'animate', 'pointer');
+      const r = rangeButtonSpan(model, id, p);
+      const e = xExtent();
+      if (r && e) setRange(wholeOrNull(clampRange(r, e), e), 'animate', 'pointer');
+    });
+    rangeBox.appendChild(b);
+    return b;
+  });
+  root.appendChild(rangeBox);
+  const placeRangeButtons = (m: ChartModel, l: ChartLayout, width: number, dir: 'ltr' | 'rtl') => {
+    const bar = l.rangeBar;
+    const id = xAxisId();
+    rangeBox.hidden = !bar || id === undefined;
+    // `hidden` loses to the inline display: hide it through the style too.
+    rangeBox.style.display = rangeBox.hidden ? 'none' : 'flex';
+    if (!bar || id === undefined) return;
+    rangeBox.style.insetBlockStart = `${bar.y}px`;
+    rangeBox.style.insetInlineStart = `${dir === 'rtl' ? width - bar.x - bar.width : bar.x}px`;
+    const names = { '1m': words.messages.range1m, '3m': words.messages.range3m, ytd: words.messages.rangeYtd, '1y': words.messages.range1y, all: words.messages.rangeAll };
+    BUTTONS.forEach((p, i) => {
+      const b = rangeButtons[i]!;
+      b.textContent = names[p];
+      const r = p === 'all' ? null : rangeButtonSpan(m, id, p);
+      b.disabled = p !== 'all' && !r?.fits;
+      const pressed = p === 'all' ? range === null : r !== null && range !== null && Math.abs(r.min - range.min) < 1 && Math.abs(r.max - range.max) < 1;
+      b.setAttribute('aria-pressed', String(pressed));
+    });
+  };
+
+  // ---- The table's range (data-table.md 5): the visible range, or all the data. ----
+  /** The user's choice, once they made one; until then the app's (`dataTable.rows`). */
+  let tableWhich: 'visible' | 'all' | null = null;
+  const tableMode = () => tableWhich ?? model?.dataTableRows ?? 'visible';
+  const toggleTable = () => {
+    tableWhich = tableMode() === 'all' ? 'visible' : 'all';
+    if (model && laid) writeTable(tableBox, model, laid, view, words.locale, words.messages, tableWhich, toggleTable);
+    tableBox.querySelector<HTMLButtonElement>('.dzgraph-table-range')?.focus();
+  };
+
   const legend = new LegendButtons(legendGroup, { toggle: (id) => setVisible(id, hidden.has(id)), highlight: setHighlight });
 
   const resize = new ResizeObserver((entries) => {
     const box = entries[entries.length - 1]?.contentRect;
     if (box && `${Math.round(box.width)}x${Math.round(box.height)}` === drawnSize) return;
+    measured = null;
     schedule();
   });
   resize.observe(element);
@@ -360,6 +569,36 @@ export const chart: CreateChart = (element, initial, setup) => {
     setSeriesVisible(seriesId, visible) {
       if (!destroyed) setVisible(seriesId, visible);
     },
+    setRange(r) {
+      if (destroyed) return;
+      const wrong = () => {
+        callProblem = { code: 'invalid-option', path: 'setRange' };
+        schedule();
+      };
+      if (r === null) {
+        callProblem = null;
+        schedule();
+        return setRange(null, 'animate', 'pointer');
+      }
+      // Plain JavaScript may pass anything: a range is { min, max }, numbers, or ISO strings on a time axis.
+      if (!isRecord(r)) return wrong();
+      const e = xExtent();
+      const axis = model?.xAxes.find((a) => a.id === xAxisId());
+      const read = (v: unknown) => {
+        if (typeof v === 'number') return Number.isFinite(v) ? v : Number.NaN;
+        if (typeof v === 'string' && axis?.scale === 'time') {
+          const t = parseInstant(v, axis.zone ?? 'UTC');
+          return typeof t === 'number' ? t : Number.NaN;
+        }
+        return Number.NaN;
+      };
+      const min = read(r['min']);
+      const max = read(r['max']);
+      if (!e || !(min < max)) return wrong();
+      callProblem = null;
+      schedule();
+      setRange(wholeOrNull(clampRange({ min, max }, e), e), 'animate', 'pointer');
+    },
     get problems() {
       return problems;
     },
@@ -373,10 +612,14 @@ export const chart: CreateChart = (element, initial, setup) => {
       if (destroyed) return;
       destroyed = true;
       if (frame) cancelAnimationFrame(frame);
+      if (aidsTimer) clearTimeout(aidsTimer);
       frame = 0;
       resize.disconnect();
       animator.stop();
       hover.destroy();
+      gestures.destroy();
+      canvasPainter.destroy();
+      navControls.destroy();
       root.remove();
       tableBox.remove();
       listeners.clear();

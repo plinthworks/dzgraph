@@ -4,6 +4,7 @@
  * on its alphabetic baseline (the one baseline every painter draws alike); each group's painter chosen by what it
  * draws (ADR 0002).
  */
+import { navigatorGroups } from './navigator.js';
 import type { ChartModel } from './model.js';
 import type { ChartLayout, PlacedText } from './layout.js';
 import type { MarkSet, SeriesType } from './series-type.js';
@@ -95,13 +96,15 @@ export function composeScene(input: ComposeInput): Scene {
       dir,
       measureText,
     });
+    // One painter for the whole series (ADR 0002): its line never sits under its own markers on another plane.
+    const painter: PainterKind = sets.some((set) => painterFor(set) === 'canvas') ? 'canvas' : 'svg';
     sets.forEach((set, k) => {
       const items = set.role === 'marks' ? set.items.map(snapRect) : set.items;
       // Lines are clipped to the plot; marks to the plot grown by a marker's half, so one on the edge shows whole
       // and none strays over the axes when the axis's bounds leave it out (review 5).
       const clip = set.role === 'path' ? plot : set.role === 'marks' ? grow(plot, MARK_BLEED) : undefined;
       const faded = input.highlight !== undefined && input.highlight !== s.id;
-      add(set.layer, { sceneId: sceneId('s', s.id, k), painter: painterFor(set), ...(clip ? { clip } : {}), ...(faded ? { opacity: FADED } : {}), items });
+      add(set.layer, { sceneId: sceneId('s', s.id, k), painter, ...(clip ? { clip } : {}), ...(faded ? { opacity: FADED } : {}), items });
     });
   }
 
@@ -128,6 +131,7 @@ export function composeScene(input: ComposeInput): Scene {
   for (const a of layout.axes) {
     a.ticks.forEach((t, i) => t.label && labels.push(text(t.label, sceneId('label', a.dimension, a.id, i), 'text-muted')));
     if (a.title) labels.push(text(a.title, sceneId('axis-title', a.dimension, a.id)));
+    a.second.forEach((t, i) => labels.push(text(t, sceneId('label2', a.dimension, a.id, i), 'text-muted')));
   }
   layout.title.forEach((t, i) => labels.push(text(t, sceneId('title', i))));
   if (layout.subtitle) labels.push(text(layout.subtitle, 'subtitle', 'text-muted'));
@@ -156,8 +160,14 @@ export function composeScene(input: ComposeInput): Scene {
     add('legend', { sceneId: 'legend', painter: 'svg', items });
   }
 
-  const order: LayerId[] = ['background', 'grid', 'series', 'axes', 'labels', 'legend', 'overlay'];
-  const out: Layer[] = order.map((id) => ({ id, groups: layers.get(id) ?? [] }));
+  // The navigator (navigator.md 1–2).
+  if (layout.navigator) for (const g of navigatorGroups(model, layout.navigator, input.view, (t, id) => text(t, id, 'text-muted'))) add('navigator', g);
+
+  const order: LayerId[] = ['background', 'grid', 'series', 'axes', 'labels', 'legend', 'navigator', 'overlay'];
+  // In each layer, Canvas groups first, in their order (ADR 0002): the screen draws the Canvas plane under the SVG, so
+  // the export (sceneToSvg), drawing the scene in order, puts them under too.
+  const canvasFirst = (groups: readonly Group[]) => [...groups.filter((g) => g.painter === 'canvas'), ...groups.filter((g) => g.painter !== 'canvas')];
+  const out: Layer[] = order.map((id) => ({ id, groups: canvasFirst(layers.get(id) ?? []) }));
   return { width: layout.width, height: layout.height, dir, areas: { plot }, layers: out };
 }
 

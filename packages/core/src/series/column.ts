@@ -96,6 +96,7 @@ function columnBounds(s: SeriesModel): { x: Bounds | null; y: Bounds | null } {
 export const column: SeriesType<ColumnSeriesOptions, 'cartesian'> = {
   name: 'column',
   system: 'cartesian',
+  zeroBased: true,
   sign: 'square',
   optionNames: {},
   check: () => [],
@@ -106,6 +107,7 @@ export const column: SeriesType<ColumnSeriesOptions, 'cartesian'> = {
 export const bar: SeriesType<BarSeriesOptions, 'cartesian'> = {
   name: 'bar',
   system: 'cartesian',
+  zeroBased: true,
   orientation: 'horizontal',
   sign: 'square',
   optionNames: {},

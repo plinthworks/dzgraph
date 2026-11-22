@@ -1,6 +1,6 @@
 # Where DzGraph stands
 
-Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.22 at its top win over the rest),
+Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.23 at its top win over the rest),
 `GLOSSARY.md`, `docs/adr/`, `docs/behaviors/`.
 
 ## 2026-11-21 — Phase 1 (the base) closed
@@ -35,9 +35,35 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   every redraw dropped the keyboard focus) and architecture check (fixed now: `pointAt`, `navigate.ts` in the core,
   `highlight` out of the view and renamed from `emphasis`, keys on events, `pointHover` for the pointer only,
   `setSeriesVisible`, aids rebuilt only with the layout, `table.ts`, raw `dataRows`; later phases' items at the end of
-  `docs/phase-2-steps/plan.md`). Gate green (432), three browsers green (654), references match. Not committed.
-- **Next: Phase 3** (time axes with zones, big volumes, Canvas painter, zoom and pan, navigator, range buttons): plan
-  to write and validate first. Open question for the owner: the data table shows the visible range, or all data?
+  `docs/phase-2-steps/plan.md`). Gate green (432), three browsers green (654), references match. Committed and pushed (`526b271`).
+- **Phase 3 in progress** (plan and owner decisions: `docs/phase-3-steps/plan.md`; the table question settled by D.23).
+  Done, uncommitted: 3.1 sheets (time-axis, zoom-pan, navigator, range-buttons, big-data); 3.2 time in the core
+  (`time.ts`: wall clock through Intl, ISO reading, ticks on the wall clock, two-tier labels, `formatInstant`; tested
+  in node, three browsers, Auckland and Los Angeles); 3.3 visible range as data (`zoom.ts`, `View.range`, value axes
+  fit the points in view through `rangeMinMax` on the pyramid, categories zoom by whole bands) and `hitMark` through a
+  per-scene grid (property against the old scan); 3.4 Canvas painter (`canvas-painter.ts`, shared `geometry.ts`,
+  three planes: back SVG for background and grid, Canvas, main SVG first in the document with `z-index: 1`; theme
+  colours read through `.dzgraph-probe`); reference cases `crowd` (5 000 points on Canvas) and `time` (128 images).
+  3.5 zoom and pan in the DOM (`gestures.ts`: drag, Shift + drag, Ctrl/⌘ + wheel, pinch, one-finger pan once zoomed,
+  + / − / 0 / Shift + arrows on a focused point; reset button; `rangeChange`; the click ending a drag is not a point
+  click; tested in three browsers). Budgets raised (dom 12600, apps 34100 / 34950, theme 1280).
+  3.6 navigator (`navigator: true`; core `navigator.ts`: strip layout, drawing, `rangeButtonSpan` on the zone's
+  calendar; DOM `navigator.ts`: handles, window, click to centre, two keyboard sliders), range buttons (shown with the
+  navigator on a time axis, or `rangeButtons: true`; disabled when longer than the data; `aria-pressed`), the table
+  following the visible range with its caption and a button for all data (D.23; `dataTable: { show, range }`),
+  `chart.setRange()`; second-tier time labels kept inside the chart. Gate green (514), references 136. Budgets
+  raised again (dom 14500, apps 37850 / 38700, theme 1390).
+  3.7 benches (`npm run bench`, `bench/`; Chrome, one run; script time per frame, budget 16.7 ms), first run then
+  after fixes (2026-11-21): line 10M first draw 6.3 s → 355 ms, zoom 501 → 2.1 ms (median), pan 212 → 2.1 ms;
+  time 1M with navigator zoom 73 → 8.9 ms; scatter 100k on Canvas zoom 58 → 19 ms (over budget: Phase 3 bis);
+  hover ≤ 0.3 ms everywhere. Fixes: `dataRows` merged with a limit and a total (property against the old reading),
+  `extentOf` kept per model, column bounds and pyramids kept per column and forgotten when an app column is read
+  again (`column-cache.ts`; it also fixes a stale pyramid after an in-place write, a Phase 1 bug), summary from
+  cached bounds, aids (summary, points, table) written once a gesture rests (200 ms), container measured only on
+  resize, `sceneId` fast path, Canvas styles set only when they change.
+  Close: code review (12 findings) and architecture check done, fixes with failing tests first (list at the end of
+  `docs/phase-3-steps/plan.md`). Phase 3 closed, uncommitted. Next: Phase 3 bis (WebGL2). Open question for the
+  owner: opt-in feature modules (ADR 0006) at the start of Phase 4.
 
 ## Working rules
 

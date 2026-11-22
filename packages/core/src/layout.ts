@@ -16,7 +16,10 @@ import { edgeX, sideOf, type Dir, type XSide } from './dir.js';
 import { categoryScale, linearScale } from './scale.js';
 import { alignedTicks, numericTicks, tickTarget, type Ticks } from './ticks.js';
 import { formatTicks } from './format.js';
+import { timeLabels, timeTicks } from './time.js';
 import { isShown, type View } from './view.js';
+import { rangeMinMax } from './decimate.js';
+import { NAV_STRIP, navigatorLayout, type NavigatorLayout } from './navigator.js';
 
 /** The words layout writes, translated by the DOM layer. */
 export interface LayoutText {
@@ -70,6 +73,8 @@ export interface AxisLayout {
   /** Gridlines across the plot from its ticks. */
   readonly grid: boolean;
   readonly title: PlacedText | null;
+  /** A time axis's second tier (time-axis.md 7): the larger unit, at its first tick and where it changes. */
+  readonly second: readonly PlacedText[];
 }
 
 export interface LegendItemLayout {
@@ -93,6 +98,10 @@ export interface ChartLayout {
   readonly legend: { readonly box: Rect; readonly items: readonly LegendItemLayout[] } | null;
   readonly noData: PlacedText | null;
   readonly problems: readonly Problem[];
+  /** The navigator under the plot, when asked (navigator.md). */
+  readonly navigator: NavigatorLayout | null;
+  /** The row the range buttons go in, above the plot (range-buttons.md 1); the DOM places its buttons there. */
+  readonly rangeBar: Rect | null;
 }
 
 // Spacing, in CSS pixels (layout.md, legend.md).
@@ -108,6 +117,12 @@ const ROW_GAP = 6;
 const TICK = 5;
 const LABEL_GAP = 3;
 const AXIS_TITLE_GAP = 6;
+/** Between the x axis's labels and the navigator; the range buttons' row and the gap under it. */
+const NAV_GAP = 14;
+const RANGE_BAR = 24;
+const RANGE_BAR_GAP = 8;
+/** Between a time axis's two rows of labels. */
+const SECOND_GAP = 2;
 /** Room kept around measured text (spike S2: WebKit draws SVG text up to 1.8 px wider than measured). */
 const LABEL_PAD = 2;
 /** The least space between two labels' boxes (axes.md 15). */
@@ -123,7 +138,7 @@ export function layout(input: LayoutInput): ChartLayout {
   const { width: W, height: H, dir } = input;
   if (W < MIN_WIDTH || H < MIN_HEIGHT) {
     // Too small for axes (layout.md 5): the plot alone.
-    return { width: W, height: H, dir, plot: { x: MARGIN, y: MARGIN, width: Math.max(0, W - 2 * MARGIN), height: Math.max(0, H - 2 * MARGIN) }, title: [], subtitle: null, axes: [], legend: null, noData: null, problems: [] };
+    return { width: W, height: H, dir, plot: { x: MARGIN, y: MARGIN, width: Math.max(0, W - 2 * MARGIN), height: Math.max(0, H - 2 * MARGIN) }, title: [], subtitle: null, axes: [], legend: null, noData: null, problems: [], navigator: null, rangeBar: null };
   }
   // Give way, in order, until the plot keeps its share (layout.md 4): axis titles, the legend, the title, then the
   // labels of the second axes, then every label (the ticks stay).
@@ -215,6 +230,21 @@ function attempt(input: LayoutInput, opts: Options): ChartLayout {
     }
   }
 
+  // The navigator (navigator.md 1): a strip and its labels at the bottom, above a bottom legend; the range buttons'
+  // row (range-buttons.md 1) at the top, under the title. Charts along x only (columns, lines, areas, scatters).
+  const xModel = model.xAxes[0];
+  const along = model.orientation === 'vertical' && xModel !== undefined;
+  let navTop: number | null = null;
+  if (along && model.navigator) {
+    navTop = bottom - NAV_STRIP - 2 - lineHeight('tick-label');
+    bottom = navTop - NAV_GAP;
+  }
+  let barTop: number | null = null;
+  if (along && (model.rangeButtons ?? (model.navigator && xModel.scale === 'time'))) {
+    barTop = top;
+    top += RANGE_BAR + RANGE_BAR_GAP;
+  }
+
   // Axes: settled in passes (sizes depend on each other).
   const problems: Problem[] = [];
   // No value to show: no series, or only gaps (axes.md 6, review 14b).
@@ -222,7 +252,12 @@ function attempt(input: LayoutInput, opts: Options): ChartLayout {
   const axes = settleAxes(input, { top, bottom, minX, maxX }, opts, empty, problems);
 
   const noData = empty ? { text: text.noData, x: axes.plot.x + axes.plot.width / 2, y: axes.plot.y + axes.plot.height / 2, font: 'tick-label' as const, anchor: 'middle' as const, baseline: 'middle' as const, dir } : null;
-  return { width: W, height: H, dir, plot: axes.plot, title, subtitle, axes: axes.layouts, legend, noData, problems };
+  const p = axes.plot;
+  const xLayout = axes.layouts.find((a) => a.dimension === 'x');
+  const reversed = xLayout ? xLayout.scale.map(1) < xLayout.scale.map(0) : false;
+  const nav = navTop !== null && xModel ? navigatorLayout(model, xModel.id, { x: p.x, y: navTop, width: p.width, height: NAV_STRIP }, reversed, input.locale, 'tick-label', widthOf, dir) : null;
+  const rangeBar = barTop !== null ? { x: p.x, y: barTop, width: p.width, height: RANGE_BAR } : null;
+  return { width: W, height: H, dir, plot: p, title, subtitle, axes: axes.layouts, legend, noData, problems, navigator: nav, rangeBar };
 }
 
 /** Shortens `s` with an ellipsis to fit `max` px; `force` adds the ellipsis even if it fits (a cut list). */
@@ -362,6 +397,8 @@ interface AxisPlan {
   readonly round: boolean;
   /** The first value axis of its kind: the others align to it and draw no gridlines (axes.md 9). */
   readonly primary: boolean;
+  /** An x axis's visible range, when zoomed (zoom-pan.md): its ends, exactly. */
+  readonly zoom: { readonly min: number; readonly max: number } | null;
 }
 
 interface Box {
@@ -389,14 +426,19 @@ function settleAxes(input: LayoutInput, box: Box, opts: Options, empty: boolean,
       let round = kind === 'y';
       for (const s of visible) {
         if ((kind === 'x' ? s.xAxis : s.yAxis) !== a.id) continue;
-        const b = boundsOf(s)[kind];
+        // A value axis fits the points in view when their x axis is zoomed (zoom-pan.md 6).
+        const zoomedRaw = kind === 'y' ? input.view?.range?.[s.xAxis] : undefined;
+        // A category axis shows whole categories, rounded as the axis rounds them (zoom-pan.md 10, review 1).
+        const zoomedX = zoomedRaw && model.xAxes.find((x) => x.id === s.xAxis)?.scale === 'category' ? { min: Math.round(zoomedRaw.min), max: Math.round(zoomedRaw.max) } : zoomedRaw;
+        const b = zoomedX ? visibleY(s, zoomedX, typeOf.get(s.type)?.zeroBased === true) : boundsOf(s)[kind];
         if (b) {
           min = Math.min(min, b.min);
           max = Math.max(max, b.max);
         }
         if (kind === 'x' && typeOf.get(s.type)?.roundX) round = true;
       }
-      plans.push({ model: a, dimension: kind, index, edge, across, data: min <= max ? { min, max } : null, round, primary: index === 0 });
+      const zoom = kind === 'x' ? (input.view?.range?.[a.id] ?? null) : null;
+      plans.push({ model: a, dimension: kind, index, edge, across, data: min <= max ? { min, max } : null, round, primary: index === 0, zoom });
     });
   plan('x', model.xAxes);
   plan('y', model.yAxes);
@@ -482,15 +524,41 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     let scale: Scale;
     let ticks: { value: number; text: string | null }[] = [];
 
-    if (a.scale === 'category') {
+    let secondTier: { index: number; text: string }[] = [];
+    if (a.scale === 'time') {
+      // Time (time-axis.md 3–7): the data's ends, ticks on the zone's wall clock, the target lowered while labels overlap.
+      const zone = a.zone ?? 'UTC';
+      const lo = p.zoom?.min ?? a.min ?? p.data?.min ?? 0;
+      const hi = p.zoom?.max ?? a.max ?? p.data?.max ?? lo + 86_400_000;
+      let target = a.ticks.target ?? tickTarget(length, p.across ? 'across' : 'upright');
+      const format = safeFormat(a.ticks.format as Formatter<InstantMs> | null, path, problems, locale, 0);
+      for (;;) {
+        const t = timeTicks(lo, hi, target, zone);
+        const named = timeLabels(t, locale, zone);
+        const texts = t.values.map((v, i) => (format ? format(v as InstantMs) : null) ?? named.labels[i]!);
+        const span = linearScale([lo, hi], range);
+        const fits = p.across ? acrossFits(t.values.map((v) => span.map(v)), texts, widthOf, labelFont) : uprightFits(t.values.map((v) => span.map(v)), LH);
+        if (fits || target <= 2 || a.ticks.target !== null) {
+          ticks = t.values.map((v, i) => ({ value: v, text: texts[i]! }));
+          secondTier = p.across ? named.second : [];
+          break;
+        }
+        target--;
+      }
+      scale = linearScale([lo, hi === lo ? lo + 1 : hi], range);
+    } else if (a.scale === 'category') {
       const cats = a.categories ?? [];
-      scale = categoryScale(cats.length, range);
+      // Zoomed: whole categories (zoom-pan.md 10), the first and last shown in full.
+      const first = p.zoom ? Math.max(0, Math.round(p.zoom.min)) : 0;
+      const last = p.zoom ? Math.min(cats.length - 1, Math.round(p.zoom.max)) : cats.length - 1;
+      scale = categoryScale(Math.max(1, last - first + 1), range, first);
       const format = safeFormat(a.ticks.format as Formatter<string> | null, path, problems, locale, 1);
-      ticks = cats.map((c, i) => ({ value: i, text: format ? format(c) : c }));
+      ticks = cats.slice(first, last + 1).map((c, k) => ({ value: first + k, text: format ? format(c) : c }));
     } else {
-      // A bound the app gives is kept; one on the wrong side of the data is reported and left out (axes.md 4).
-      let min = a.min;
-      let max = a.max;
+      // A bound the app gives is kept; one on the wrong side of the data is reported and left out (axes.md 4). A
+      // zoomed x axis shows its visible range, exactly.
+      let min = p.zoom?.min ?? a.min;
+      let max = p.zoom?.max ?? a.max;
       const where = `${p.dimension}Axis[${p.index}]`;
       if (p.data && min !== null && max === null && min >= p.data.max) {
         problems.push({ code: 'invalid-option', path: `${where}.min` });
@@ -590,9 +658,11 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     const widest = shown.length ? Math.max(...shown) : 0;
     const titleH = titles && a.title ? lh('axis-title') + AXIS_TITLE_GAP : 0;
     let room: number;
+    const secondShown = showLabels && secondTier.length > 0 && (p.edge === 'bottom' || p.edge === 'top');
+    const secondH = secondShown ? LH + SECOND_GAP : 0;
     if (p.across) {
       const labelsH = !shown.length ? 0 : rotate ? (widest + LH) * SIN45 : LH;
-      room = Math.ceil(out + labelsH + titleH);
+      room = Math.ceil(out + labelsH + secondH + titleH);
     } else room = Math.ceil(out + (shown.length ? widest + LABEL_PAD : 0) + titleH);
     sizes.set(p, room);
 
@@ -607,7 +677,25 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
       }
     }
     const grid = a.ticks.grid ?? (p.dimension === 'y' && p.primary);
-    layouts.push({ id: a.id, dimension: p.dimension, edge: p.edge, scale, ticks: tickLayouts, grid, title });
+    // The second tier, under (or over) the first row, starting at its tick, along the reading direction.
+    // Each label's ink runs from its tick toward later times (rightward unless the axis is mirrored or reversed),
+    // slides inside the chart at the end (the 2 px text margin, spike S2), and is left out if it would overlap the
+    // previous one.
+    const second: PlacedText[] = [];
+    if (secondShown) {
+      const rightward = scale.map(1) >= scale.map(0);
+      const anchor = rightward === (dir === 'ltr') ? 'start' : 'end';
+      const y = p.edge === 'bottom' ? plot.y + plot.height + out + LH + SECOND_GAP : plot.y - out - LH - SECOND_GAP;
+      let reach = rightward ? -Infinity : Infinity;
+      for (const t of secondTier) {
+        const w = widthOf(t.text, labelFont);
+        const lo = rightward ? Math.min(at[t.index]!, input.width - LABEL_PAD - w) : Math.max(at[t.index]! - w, LABEL_PAD);
+        if (rightward ? lo < reach + LABEL_PAD : lo + w > reach - LABEL_PAD) continue;
+        reach = rightward ? lo + w : lo;
+        second.push({ text: t.text, x: rightward ? lo : lo + w, y, font: labelFont, anchor, baseline: p.edge === 'bottom' ? 'top' : 'bottom', dir });
+      }
+    }
+    layouts.push({ id: a.id, dimension: p.dimension, edge: p.edge, scale, ticks: tickLayouts, grid, title, second });
   }
   return { layouts, sizes, overhang: Math.max(0, overhang) };
 }
@@ -673,4 +761,36 @@ function safeFormat<V>(format: Formatter<V> | null, path: string, problems: Prob
     }
     return null;
   };
+}
+
+/** The lowest and highest value of a series' points within an x range (zoom-pan.md 6), zero kept for zero-based types. */
+function visibleY(s: SeriesModel, r: { readonly min: number; readonly max: number }, zeroBased: boolean): { min: number; max: number } | null {
+  const { x, y } = s.columns;
+  let b: { min: number; max: number } | null = null;
+  if (s.sorted) {
+    let lo = 0;
+    let hi = x.length;
+    while (lo < hi) {
+      const m = (lo + hi) >>> 1;
+      if (x[m]! < r.min) lo = m + 1;
+      else hi = m;
+    }
+    let end = lo;
+    hi = x.length;
+    while (end < hi) {
+      const m = (end + hi) >>> 1;
+      if (x[m]! <= r.max) end = m + 1;
+      else hi = m;
+    }
+    b = rangeMinMax(y, lo, end);
+  } else {
+    let min = Infinity;
+    let max = -Infinity;
+    for (let i = 0; i < x.length; i++) if (x[i]! >= r.min && x[i]! <= r.max && !Number.isNaN(y[i]!)) {
+      min = Math.min(min, y[i]!);
+      max = Math.max(max, y[i]!);
+    }
+    b = min <= max ? { min, max } : null;
+  }
+  return b && zeroBased ? { min: Math.min(0, b.min), max: Math.max(0, b.max) } : b;
 }

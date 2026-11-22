@@ -25,7 +25,7 @@ export class SvgPainter implements Painter {
     svg.appendChild(this.defs);
   }
 
-  paint(scene: Scene, opts: SvgOptions, accepts: (group: Group) => boolean = () => true): void {
+  paint(scene: Scene, opts: SvgOptions, accepts: (group: Group, layer: string) => boolean = () => true): void {
     const { svg } = this;
     svg.setAttribute('width', String(scene.width));
     svg.setAttribute('height', String(scene.height));
@@ -33,10 +33,13 @@ export class SvgPainter implements Painter {
 
     // Clip paths, one per distinct rectangle: the same table and ids as the export (svg.ts).
     const clips = clipsOf(scene);
+    // A layer none of whose groups this painter draws is left out (the back SVG draws two layers, the front the rest).
+    const drawn = new Set(scene.layers.filter((l) => l.groups.some((g) => accepts(g, l.id))).map((l) => l.id));
     const seenGroups = new Set<string>();
     const seen = new Set<string>();
     let layerCursor: ChildNode | null = this.defs.nextSibling;
     for (const layer of scene.layers) {
+      if (!drawn.has(layer.id) && !this.layers.has(layer.id)) continue;
       let lg = this.layers.get(layer.id);
       if (!lg) {
         lg = document.createElementNS(NS, 'g');
@@ -51,7 +54,7 @@ export class SvgPainter implements Painter {
 
       let groupCursor: ChildNode | null = lg.firstChild;
       for (const group of layer.groups) {
-        if (!accepts(group)) continue;
+        if (!accepts(group, layer.id)) continue;
         const gid = `${layer.id}\u0000${group.sceneId}`;
         seenGroups.add(gid);
         let g = this.groups.get(gid);

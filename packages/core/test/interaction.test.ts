@@ -147,7 +147,7 @@ describe('accessibility models (screen-reader.md, data-table.md)', () => {
 
   it('the data table: x, then one column per visible series; at most 1 000 rows', () => {
     const { model, l } = build(LINES, { hidden: new Set(['b']) });
-    expect(dataTable(model, l, { hidden: new Set(['b']) }, 'en-US', text)).toEqual({ columns: ['Apples'], rows: [['Jan', '10'], ['Feb', '20'], ['Mar', '30']], omitted: 0 });
+    expect(dataTable(model, l, { hidden: new Set(['b']) }, 'en-US', text)).toEqual({ columns: ['Apples'], rows: [['Jan', '10'], ['Feb', '20'], ['Mar', '30']], omitted: 0, range: null });
     const many = build({ series: [{ type: 'line', data: Array.from({ length: 1500 }, (_, i) => i) }] });
     const table = dataTable(many.model, many.l, undefined, 'en-US', text);
     expect([table.rows.length, table.omitted]).toEqual([1000, 500]);

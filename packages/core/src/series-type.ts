@@ -103,6 +103,8 @@ export interface SeriesType<O extends SeriesBase<string, unknown> = SeriesBase<s
    * plots: no marker on the edge, axes.md 3). Default: the axis runs from the first point to the last.
    */
   readonly roundX?: boolean;
+  /** Whether its value axis always shows zero (columns, bars, areas: axes.md 1), also when zoomed. */
+  readonly zeroBased?: boolean;
   /** Whether the type draws its points in x order (lines, areas): x going backwards is reported (`unsorted-x`). */
   readonly sortedX?: boolean;
   /** How the legend draws the series' sign (legend.md 3): a short line with its marker, a square, or its marker. */

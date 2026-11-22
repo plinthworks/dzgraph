@@ -154,7 +154,7 @@ export interface Group {
 }
 
 /** The scene's layers, back to front (GLOSSARY: Layer). */
-export type LayerId = 'background' | 'grid' | 'series' | 'axes' | 'labels' | 'legend' | 'overlay';
+export type LayerId = 'background' | 'grid' | 'series' | 'axes' | 'labels' | 'legend' | 'navigator' | 'overlay';
 
 export interface Layer {
   readonly id: LayerId;

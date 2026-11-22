@@ -32,6 +32,8 @@ export interface HoverHooks {
   /** The point under the pointer changed (null: none). The pointer only, never the keyboard focus. */
   hovered(point: PointRef | null): void;
   clicked(point: PointRef): void;
+  /** Whether a zoom or pan gesture holds the pointer: the hover stands aside (zoom-pan.md). */
+  busy?(): boolean;
 }
 
 interface Found {
@@ -188,13 +190,14 @@ export class Hover {
   }
 
   private readonly onMove = (e: PointerEvent) => {
+    if (this.hooks.busy?.()) return this.hide();
     if (e.pointerType === 'touch' && !this.touching) return;
     const p = this.local(e);
     this.showAt(this.find(p.x, p.y));
   };
 
   private readonly onDown = (e: PointerEvent) => {
-    if (e.pointerType !== 'touch') return;
+    if (e.pointerType !== 'touch' || this.hooks.busy?.()) return;
     this.touching = true;
     const p = this.local(e);
     // A tap outside the plot hides it (hover-tooltip.md 9).

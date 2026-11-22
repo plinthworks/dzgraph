@@ -11,12 +11,14 @@ export function hideVisually(el: HTMLElement): void {
   Object.assign(el.style, { position: 'absolute', inlineSize: '1px', blockSize: '1px', overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' });
 }
 
-export function writeTable(box: HTMLElement, model: ChartModel, layout: ChartLayout, view: View, locale: string, messages: Messages): void {
-  const t = dataTable(model, layout, view, locale, messages);
+export function writeTable(box: HTMLElement, model: ChartModel, layout: ChartLayout, view: View, locale: string, messages: Messages, which: 'visible' | 'all' = 'visible', toggle?: () => void): void {
+  const t = dataTable(model, layout, view, locale, messages, which);
   const table = document.createElement('table');
   table.className = 'dzgraph-table';
   const caption = document.createElement('caption');
-  caption.textContent = model.title?.text ?? messages.tableCaption;
+  const name = model.title?.text ?? messages.tableCaption;
+  // Zoomed, the caption says which part it shows (data-table.md 5).
+  caption.textContent = t.range ? `${name} (${messages.tableRange(t.range.from, t.range.to)})` : name;
   // The x column's header: the axis's title, else a word for what x is (review 10).
   const xa = model.xAxes[0];
   const xHeader = xa?.title ?? (xa?.scale === 'category' ? messages.category : messages.xValue);
@@ -50,6 +52,16 @@ export function writeTable(box: HTMLElement, model: ChartModel, layout: ChartLay
   }
   table.append(caption, head, body);
   box.replaceChildren(table);
+  // Zoomed, a button switches between the visible range and all the data (data-table.md 5, D.23).
+  const zoomed = model.xAxes[0] !== undefined && view.range?.[model.xAxes[0].id] !== undefined;
+  if (zoomed && toggle) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'dzgraph-table-range';
+    b.textContent = which === 'all' ? messages.tableVisible : messages.tableAll;
+    b.addEventListener('click', toggle);
+    box.appendChild(b);
+  }
   // Shown, it is a `.dzgraph` too: it takes the theme's fonts and colours (review 12).
   if (model.dataTable) {
     box.className = 'dzgraph dzgraph-table-box';

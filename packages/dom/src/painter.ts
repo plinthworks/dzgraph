@@ -7,6 +7,6 @@ import type { Group, Scene } from '@dzgraph/core';
 import type { SvgOptions } from '@dzgraph/core/internal';
 
 export interface Painter {
-  /** Draws the scene's groups that `accepts` keeps, back to front, reusing what it drew last time by scene id. */
-  paint(scene: Scene, opts: SvgOptions, accepts: (group: Group) => boolean): void;
+  /** Draws the scene's groups that `accepts` keeps (with their layer), back to front, reusing what it can. */
+  paint(scene: Scene, opts: SvgOptions, accepts: (group: Group, layer: string) => boolean): void;
 }

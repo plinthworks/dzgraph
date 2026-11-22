@@ -25,13 +25,14 @@ export function linearScale(domain: readonly [number, number], range: readonly [
  * A category scale: `count` bands over `range`, a category's rank mapped to its band's centre; `invert` gives the
  * band under a pixel, clamped to the categories.
  */
-export function categoryScale(count: number, range: readonly [number, number]): Scale {
+export function categoryScale(count: number, range: readonly [number, number], first = 0): Scale {
   const [r0, r1] = range;
   const n = Math.max(count, 1);
   const band = (r1 - r0) / n;
+  // `first`: the rank shown in the first band (a zoomed axis shows a run of categories, zoom-pan.md 10).
   return {
-    map: (rank) => r0 + (rank + 0.5) * band,
-    invert: (p) => Math.min(n - 1, Math.max(0, Math.floor((p - r0) / band))),
+    map: (rank) => r0 + (rank - first + 0.5) * band,
+    invert: (p) => first + Math.min(n - 1, Math.max(0, Math.floor((p - r0) / band))),
     bandwidth: Math.abs(band),
   };
 }

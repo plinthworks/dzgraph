@@ -3,7 +3,8 @@
  * painter applies it to live elements, `sceneToSvg` writes it as a standalone string (exports, node, tests). One
  * translation for both, so the screen and the export cannot drift apart.
  */
-import type { FontRole, Paint, PathData, Primitive, Scene } from './scene.js';
+import type { FontRole, MarkerSymbol, Paint, PathData, Primitive, Scene } from './scene.js';
+import { endRadius, markerPolygon } from './geometry.js';
 import { PathCommand } from './scene.js';
 import { cssColor, type ResolveColor } from './paint.js';
 import { clipIndex, clipsOf } from './compose.js';
@@ -51,20 +52,14 @@ function paintAttrs(paint: Paint, opts: SvgOptions): Record<string, string> {
   return a;
 }
 
-/** A marker's outline, centred on (x, y), `size` across. */
-function markerPath(symbol: string, x: number, y: number, size: number): string {
-  const r = size / 2;
-  const pts =
-    symbol === 'square' ? [[x - r, y - r], [x + r, y - r], [x + r, y + r], [x - r, y + r]]
-      : symbol === 'diamond' ? [[x, y - r * 1.2], [x + r * 1.2, y], [x, y + r * 1.2], [x - r * 1.2, y]]
-        : symbol === 'triangle' ? [[x, y - r * 1.15], [x + r * 1.15, y + r * 0.85], [x - r * 1.15, y + r * 0.85]]
-          : [[x, y + r * 1.15], [x + r * 1.15, y - r * 0.85], [x - r * 1.15, y - r * 0.85]];
-  return `M${pts.map(([a, b]) => `${num(a!)} ${num(b!)}`).join('L')}Z`;
+/** A marker's outline, centred on (x, y), `size` across (geometry.ts: the same as every painter's). */
+function markerPath(symbol: Exclude<MarkerSymbol, 'circle'>, x: number, y: number, size: number): string {
+  return `M${markerPolygon(symbol, x, y, size).map(([a, b]) => `${num(a)} ${num(b)}`).join('L')}Z`;
 }
 
 /** A rectangle with the corners of one edge rounded, drawn clockwise from a corner of the straight edge opposite. */
 function roundedEnd(x: number, y: number, w: number, h: number, radius: number, end: 'x-min' | 'x-max' | 'y-min' | 'y-max'): string {
-  const r = Math.min(radius, w / 2, h / 2, end === 'y-min' || end === 'y-max' ? h : w);
+  const r = endRadius({ width: w, height: h, radius, roundEnd: end });
   const a = (tx: number, ty: number) => `A${num(r)} ${num(r)} 0 0 1 ${num(tx)} ${num(ty)}`;
   const p = (px: number, py: number, cmd = 'L') => `${cmd}${num(px)} ${num(py)}`;
   const x2 = x + w;

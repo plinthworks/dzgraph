@@ -77,12 +77,17 @@ l'impression la dessinent tous.
 _Avoid_: render tree, virtual DOM, display list
 
 **Layer** (calque) :
-Une tranche de la scène dessinée d'un seul tenant (grille, séries, axes, étiquettes, légende, surcouche).
+Une tranche de la scène, dans l'ordre du dessin (fond, grille, séries, axes, étiquettes, légende, navigateur,
+surcouche) ; plusieurs peintres peuvent se partager un calque.
 _Avoid_: pane, level
 
 **Painter** (peintre) :
 Ce qui dessine une scène sur un support : SVG, Canvas, WebGL2.
 _Avoid_: renderer, backend, engine
+
+**Plane** (plan) :
+Une surface de l'écran qui reçoit le dessin d'un peintre ; les plans d'un graphique s'empilent.
+_Avoid_: layer (le calque est une tranche de la scène), canvas (c'est un peintre)
 
 **Decimation** (décimation) :
 Le choix des seuls points qui changent l'image quand une série en a plus que l'écran ne peut en montrer.
@@ -106,6 +111,10 @@ _Avoid_: timezone offset, locale (une locale règle la langue, pas l'heure)
 L'heure qu'affiche une horloge dans un fuseau ; elle peut sauter ou se répéter au changement d'heure.
 _Avoid_: local time (ambigu : local à qui ?)
 
+**Second tier** (second étage) :
+La rangée d'étiquettes sous les graduations de temps qui nomme l'unité plus large (le mois sous les jours).
+_Avoid_: sub-label, secondary axis
+
 ## Exploration
 
 **Exploration** (exploration) :
@@ -119,11 +128,19 @@ _Avoid_: state, snapshot, session
 
 **Visible range** (plage visible) :
 L'intervalle de l'axe x que montre la zone de tracé ; le zoom et le déplacement le changent.
-_Avoid_: window, viewport, extent, zoom (le zoom est le geste, pas la plage)
+_Avoid_: viewport, zoom (le zoom est le geste, pas la plage)
+
+**Extent** (étendue) :
+L'intervalle de l'axe x que couvrent toutes les données ; la plage visible est toujours dedans.
+_Avoid_: domain, data range, bounds
 
 **Navigator** (navigateur) :
 Le petit graphique de toute la série sous le graphique principal, avec des poignées qui règlent la plage visible.
 _Avoid_: scrollbar, minimap, overview
+
+**Window** (fenêtre) :
+La plage visible telle que le navigateur la dessine, entre ses deux poignées.
+_Avoid_: brush, selection (la sélection est autre chose)
 
 **Range button** (bouton de plage) :
 Un raccourci qui règle la plage visible sur une durée (1 mois, 1 an, tout).

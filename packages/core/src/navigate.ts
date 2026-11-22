@@ -75,3 +75,23 @@ export function navigate(model: ChartModel, layout: ChartLayout, view: View | un
   const k = candidates.findIndex((c) => c.ref.seriesId === at.seriesId);
   return candidates[k + dir]?.ref ?? { seriesId: at.seriesId, index: at.index };
 }
+
+/**
+ * Which way an arrow points on screen along an axis: +1 toward the end of the screen (right, down), −1 toward its
+ * start, 0 for another key (zoom-pan.md 8: Shift + arrows move the range the way they point).
+ */
+export function screenStep(key: string, horizontal: boolean): -1 | 0 | 1 {
+  const steps: Record<string, -1 | 1> = horizontal ? { ArrowRight: 1, ArrowLeft: -1 } : { ArrowDown: 1, ArrowUp: -1 };
+  return steps[key] ?? 0;
+}
+
+/**
+ * How far a key moves a slider (navigator.md 4), as a share of the whole: arrows a hundredth (→ and ↑ toward larger
+ * values, or → toward the screen's end when `towardEnd` says larger values lie there), Page keys a tenth, Home and End
+ * all the way. Null for another key.
+ */
+export function sliderStep(key: string, largerTowardScreenEnd: boolean): number | null {
+  const side = largerTowardScreenEnd ? 1 : -1;
+  const steps: Record<string, number> = { ArrowRight: 0.01 * side, ArrowLeft: -0.01 * side, ArrowUp: 0.01, ArrowDown: -0.01, PageUp: 0.1, PageDown: -0.1, Home: -Infinity, End: Infinity };
+  return steps[key] ?? null;
+}

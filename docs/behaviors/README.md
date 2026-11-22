@@ -21,3 +21,8 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [data-table.md](data-table.md) — the table equivalent | 2 |
 | [animation.md](animation.md) — appearing and updating | 2 |
 | [angular.md](angular.md) — `<dz-chart>` | 2 |
+| [time-axis.md](time-axis.md) — time axes in a zone, ticks, two-tier labels | 3 |
+| [zoom-pan.md](zoom-pan.md) — zoom and pan, mouse, touch, keyboard | 3 |
+| [navigator.md](navigator.md) — the navigator | 3 |
+| [range-buttons.md](range-buttons.md) — range buttons | 3 |
+| [big-data.md](big-data.md) — big series, Canvas, WebGL2 | 3 |

@@ -3,9 +3,10 @@
  * for each pixel column of the visible window, keep the first, the last, the lowest and the highest point — and the
  * first gap, so a line still breaks there. Exact at any size: each column's index range is found by binary search,
  * then its lowest and highest point read from a min/max pyramid in O(log n) (blocks of 16, 32, 64… points, built
- * once per series and kept while the app's array is the same). A frame costs O(width × log n), whatever the data's
- * length; the pyramid holds about 3 × n / 16 indices.
+ * once per column and kept until the column is read again, column-cache.ts). A frame costs O(width × log n),
+ * whatever the data's length; the pyramid holds about 3 × n / 16 indices.
  */
+import { columnCache } from './column-cache.js';
 
 /** The smallest block the pyramid keeps: points at a column's ragged ends are read one by one (memory: n / 16 × 3). */
 const LEAF = 16;
@@ -17,7 +18,7 @@ interface Pyramid {
   readonly gap: Int32Array[];
 }
 
-const pyramids = new WeakMap<Float64Array, Pyramid>();
+const pyramids = columnCache<Pyramid>();
 
 function pyramidOf(y: Float64Array): Pyramid {
   let p = pyramids.get(y);
@@ -175,4 +176,14 @@ export function decimate(x: Float64Array, y: Float64Array, x0: number, x1: numbe
   }
   if (after) out[k++] = e;
   return out.slice(0, k);
+}
+
+/**
+ * The lowest and highest value over the indices [s, e) of a series, gaps skipped, from the same pyramid: O(log n), so
+ * a value axis can fit what is in view at every frame of a zoom (zoom-pan.md 6). Null when there is no value.
+ */
+export function rangeMinMax(y: Float64Array, s: number, e: number): { min: number; max: number } | null {
+  if (e <= s) return null;
+  const [lo, hi] = query(pyramidOf(y), y, Math.max(0, s), Math.min(y.length, e));
+  return lo === -1 || hi === -1 ? null : { min: y[lo]!, max: y[hi]! };
 }

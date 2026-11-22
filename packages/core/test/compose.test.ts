@@ -24,7 +24,7 @@ describe('composeScene', () => {
   const ONE = { series: [{ type: 'line', data: [13, 40, 87, 60, 20] }] };
 
   it('layers back to front, each in its place', () => {
-    expect(scene(ONE).layers.map((l) => l.id)).toEqual(['background', 'grid', 'series', 'axes', 'labels', 'legend', 'overlay']);
+    expect(scene(ONE).layers.map((l) => l.id)).toEqual(['background', 'grid', 'series', 'axes', 'labels', 'legend', 'navigator', 'overlay']);
   });
 
   it('one-pixel lines on pixel centres (layout.md 8)', () => {
@@ -107,5 +107,22 @@ describe('sceneToSvg', () => {
     const svg = sceneToSvg(tiny, { resolve: (t) => `[${t}]`, font: (r) => `{${r}}` });
     expect(svg).toContain('fill="[background]"');
     expect(svg).toContain('style="font:{title}"');
+  });
+});
+
+describe('Canvas and SVG keep one order on screen and in the export (ADR 0002, Phase 3 close)', () => {
+  const many = Array.from({ length: 3_000 }, (_, i) => i % 50);
+
+  it('a series is drawn by one painter: a line whose markers go to Canvas goes there whole', () => {
+    // 1 400 px wide: decimation keeps up to four points a pixel, so all 3 000 markers are drawn.
+    const s = scene({ series: [{ type: 'line', id: 'a', marker: true, data: many }] }, 1_400);
+    const groups = layer(s, 'series').groups;
+    expect(groups.map((g) => g.painter)).toEqual(['canvas', 'canvas']);
+  });
+
+  it('in each layer, Canvas groups come first: what the screen puts under the SVG, the export draws first too', () => {
+    const s = scene({ series: [{ type: 'line', id: 'l', data: [1, 2, 3] }, { type: 'scatter', id: 'p', data: many.map((y, i) => [i, y]) }] });
+    const groups = layer(s, 'series').groups;
+    expect(groups.map((g) => [g.sceneId.split('/')[1], g.painter])).toEqual([['p', 'canvas'], ['l', 'svg'], ['l', 'svg']]);
   });
 });

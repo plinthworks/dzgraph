@@ -208,8 +208,15 @@ export interface ChartOptions {
   readonly highlight?: boolean | undefined;
   /** Animate appearing and updates (animation.md). Default `true`; never under `prefers-reduced-motion`. */
   readonly animation?: boolean | undefined;
-  /** Show the data table under the chart (data-table.md 2). Default `false`: it is there for screen readers only. */
-  readonly dataTable?: boolean | undefined;
+  /**
+   * The data table (data-table.md 2, 5): `true` shows it under the chart (default `false`: it is there for screen
+   * readers only); `{ show, rows }` also chooses which rows it starts with when zoomed, the visible range (default) or all.
+   */
+  readonly dataTable?: boolean | { readonly show?: boolean | undefined; readonly rows?: 'visible' | 'all' | undefined } | undefined;
+  /** A strip under the plot showing the whole x range and the visible window (navigator.md). Default `false`. */
+  readonly navigator?: boolean | undefined;
+  /** Buttons for usual time spans (range-buttons.md). Default: shown with the navigator on a time axis. */
+  readonly rangeButtons?: boolean | undefined;
 }
 
 /**

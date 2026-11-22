@@ -41,4 +41,9 @@ export interface ChartModel {
   readonly highlight: boolean;
   readonly animation: boolean;
   readonly dataTable: boolean;
+  /** What the table starts with when zoomed (data-table.md 5). */
+  readonly dataTableRows: 'visible' | 'all';
+  readonly navigator: boolean;
+  /** Null: shown with the navigator when the x axis is a time axis (range-buttons.md). */
+  readonly rangeButtons: boolean | null;
 }

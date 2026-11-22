@@ -18,6 +18,8 @@ export interface KeyboardHooks {
   leave(): void;
   clicked(point: PointRef): void;
   escape(): void;
+  /** A key the chart takes before the points' navigation (zoom keys, zoom-pan.md 8); true when used. */
+  key?(e: KeyboardEvent, point: PointRef): boolean;
 }
 
 interface Ready {
@@ -150,12 +152,28 @@ export class PointItems {
     if (!r || !at) return;
     if (e.key === 'Enter') return void this.hooks.clicked(at);
     if (e.key === 'Escape') return void this.hooks.escape();
+    if (this.hooks.key?.(e, at)) return void e.preventDefault();
     // Where the key leads (keyboard.md 2–3): the core decides (navigate.ts).
     const next = navigate(r.model, r.layout, r.view, at, e.key);
     if (!next) return;
     e.preventDefault();
     if (next.seriesId !== at.seriesId || next.index !== at.index) this.moveTo(next);
   };
+
+  /** The point that holds the tab stop. */
+  get activePoint(): PointRef | null {
+    return this.active;
+  }
+
+  /** Whether the keyboard focus is on one of the points. */
+  get hasFocus(): boolean {
+    return refOf(document.activeElement) !== null;
+  }
+
+  /** Moves the focus to a point (a zoom that left the focused one out of view, zoom-pan.md 8). */
+  focusPoint(ref: PointRef): void {
+    this.moveTo(ref);
+  }
 
   private moveTo(ref: PointRef): void {
     const key = `${ref.seriesId}\u0000${ref.index}`;

@@ -4,6 +4,7 @@
  * reported once for the series (its first place, its count), never with a value (CLAUDE.md). The app's arrays are
  * never written to: a typed column is read as it is, or copied when it must change.
  */
+import { forgetColumn } from './column-cache.js';
 import type { Problem, ProblemCode } from './problem.js';
 
 /** x as read: from the points' positions, or values (numbers, and strings for categories or dates). */
@@ -197,7 +198,11 @@ function readColumns(data: Readonly<Record<string, unknown>>, path: string, seri
   if (yIn instanceof Float64Array) {
     let clean = yIn.length === n;
     for (let i = 0; i < n && clean; i++) if (yIn[i] === Infinity || yIn[i] === -Infinity) clean = false;
-    if (clean) y = yIn;
+    if (clean) {
+      y = yIn;
+      // The app's own array, perhaps written into since: what was computed from it is forgotten.
+      forgetColumn(yIn);
+    }
     else {
       y = yIn.slice(0, n);
       for (let i = 0; i < n; i++) if (y[i] === Infinity || y[i] === -Infinity) {
