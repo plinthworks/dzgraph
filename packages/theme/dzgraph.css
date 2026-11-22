@@ -297,6 +297,65 @@
       --dzgraph-series-8: CanvasText;
     }
   }
+  .dzgraph-sparkline {
+    --dzgraph-series-1: light-dark(#2a78d6, #3987e5);
+    --dzgraph-series-2: light-dark(#eb6834, #d95926);
+    --dzgraph-series-3: light-dark(#199e70, #199e70);
+    --dzgraph-series-4: light-dark(#c98500, #c98500);
+    --dzgraph-series-5: light-dark(#d55181, #d55181);
+    --dzgraph-series-6: light-dark(#008300, #0ca30c);
+    --dzgraph-series-7: light-dark(#6250d6, #9085e9);
+    --dzgraph-series-8: light-dark(#e34948, #e66767);
+    color-scheme: var(--tz-color-scheme, light dark);
+    --dzgraph-sparkline-line: var(--dzgraph-series-1);
+    --dzgraph-sparkline-area: color-mix(in oklab, var(--dzgraph-series-1) 20%, transparent);
+    --dzgraph-sparkline-negative: var(--dzgraph-series-8);
+    --dzgraph-sparkline-marker: var(--tz-fg);
+    display: inline-block;
+    inline-size: 6em;
+    block-size: 1.2em;
+    vertical-align: -0.2em;
+    overflow: visible;
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-line {
+    fill: none;
+    stroke: var(--dzgraph-sparkline-line);
+    stroke-width: 1.5px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-area {
+    fill: var(--dzgraph-sparkline-area);
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-column {
+    fill: var(--dzgraph-sparkline-line);
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-negative {
+    fill: var(--dzgraph-sparkline-negative);
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-marked {
+    fill: var(--dzgraph-sparkline-marker);
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-dot {
+    fill: none;
+    stroke: var(--dzgraph-sparkline-line);
+    stroke-width: 3.5px;
+    stroke-linecap: round;
+  }
+  .dzgraph-sparkline .dzgraph-sparkline-marker {
+    fill: none;
+    stroke: var(--dzgraph-sparkline-marker);
+    stroke-width: 5px;
+    stroke-linecap: round;
+  }
+  @media (forced-colors: active) {
+    .dzgraph-sparkline {
+      --dzgraph-sparkline-line: CanvasText;
+      --dzgraph-sparkline-area: transparent;
+      --dzgraph-sparkline-negative: CanvasText;
+      --dzgraph-sparkline-marker: Highlight;
+    }
+  }
   @media print {
     .dzgraph {
       color-scheme: light;

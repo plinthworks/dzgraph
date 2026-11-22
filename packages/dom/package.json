@@ -6,7 +6,14 @@
   "license": "MIT",
   "sideEffects": false,
   "exports": {
-    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./sparkline": {
+      "types": "./src/sparkline.ts",
+      "default": "./src/sparkline.ts"
+    },
     "./package.json": "./package.json"
   },
   "dependencies": {

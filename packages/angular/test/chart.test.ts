@@ -3,6 +3,7 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import type { ChartOptions, PointRef } from '@dzgraph/core';
+import type { ChartEvents } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
@@ -79,6 +80,15 @@ describe('<dz-chart> (angular.md)', () => {
     const f = await mount();
     await frame();
     expect(f.componentInstance.chart().chart?.exportCsv()).toBe('\uFEFFX value,Apples,Pears\r\n0,1,3\r\n1,2,2\r\n2,3,1\r\n');
+    f.destroy();
+  });
+
+  it('an output for every event of the chart, none forgotten (3)', async () => {
+    // Every event by name: TypeScript refuses this list when the chart gains an event it does not name.
+    const events = { problems: true, pointHover: true, pointClick: true, pointFocus: true, legendToggle: true, rangeChange: true, viewChange: true, modeChange: true, selectionChange: true, measure: true, drill: true } satisfies Record<keyof ChartEvents, true>;
+    const f = await mount();
+    const component = f.componentInstance.chart() as unknown as Record<string, { subscribe?: unknown }>; // read by name below
+    expect(Object.keys(events).filter((e) => typeof component[e]?.subscribe !== 'function')).toEqual([]);
     f.destroy();
   });
 

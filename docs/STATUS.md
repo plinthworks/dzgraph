@@ -144,6 +144,15 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   in the plan). Budgets raised (core 11 340, dom 33 950, everything 80 480, theme 2 000). Next: Phase 7 (Angular
   complete, sparklines, DzTooltip and DzGrid bridges).
 
+## 2026-11-22 — Phase 7 (Angular complete, sparklines, bridges), plan `docs/phase-7-steps/plan.md`
+
+- Owner's decisions: sparklines outside grids only (DzGrid keeps its own in cells); grid ↔ chart: selection both ways,
+  filter as an option; DzTooltip draws the points' tooltip; 7a then 7b, a review each.
+- **7a built and closed.** `@dzgraph/core/sparkline`, `@dzgraph/dom/sparkline` (1.9 KB gz alone), theme
+  `.dzgraph-sparkline`, `<dz-sparkline>`, `<dz-chart>`'s missing `drill` output, `npm run check:angular` (Angular 19.2,
+  20.3, 21.2, 22.3 compile the built package). Review: 4 findings fixed. Gate green (1 051), three browsers green
+  (1 806). Phase 6 committed (`dc1e538`); 7a not committed. Next: 7b (DzTooltip and DzGrid bridges).
+
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure

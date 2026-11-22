@@ -39,6 +39,7 @@ export class DzChart {
   readonly modeChange = output<ChartEvents['modeChange']['mode']>();
   readonly measure = output<ChartEvents['measure']>();
   readonly selectionChange = output<ChartEvents['selectionChange']>();
+  readonly drill = output<ChartEvents['drill']>();
 
   private instance: Chart | null = null;
 
@@ -72,6 +73,7 @@ export class DzChart {
       c.on('modeChange', (d) => this.modeChange.emit(d.mode));
       c.on('measure', (d) => this.measure.emit(d));
       c.on('selectionChange', (d) => this.selectionChange.emit(d));
+      c.on('drill', (d) => this.drill.emit(d));
       if (c.problems.length) this.problems.emit(c.problems);
     };
     // In the browser only, once the host is in the page.

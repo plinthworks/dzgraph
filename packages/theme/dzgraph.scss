@@ -403,6 +403,67 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     }
   }
 
+  // A sparkline in a page (sparkline.md 7, 9): its own element, outside any chart, so the series' colours are set on
+  // it too. 6em × 1.2em by default: the app's CSS sizes it; lines and dots keep their width however it stretches.
+  .dzgraph-sparkline {
+    @include palette(dzgraph, $dzgraph-palette);
+    color-scheme: var(--tz-color-scheme, light dark);
+    --dzgraph-sparkline-line: var(--dzgraph-series-1);
+    --dzgraph-sparkline-area: color-mix(in oklab, var(--dzgraph-series-1) 20%, transparent);
+    --dzgraph-sparkline-negative: var(--dzgraph-series-8);
+    --dzgraph-sparkline-marker: var(--tz-fg);
+    display: inline-block;
+    inline-size: 6em;
+    block-size: 1.2em;
+    vertical-align: -0.2em;
+    overflow: visible;
+
+    .dzgraph-sparkline-line {
+      fill: none;
+      stroke: var(--dzgraph-sparkline-line);
+      stroke-width: 1.5px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .dzgraph-sparkline-area {
+      fill: var(--dzgraph-sparkline-area);
+    }
+
+    .dzgraph-sparkline-column {
+      fill: var(--dzgraph-sparkline-line);
+    }
+
+    .dzgraph-sparkline-negative {
+      fill: var(--dzgraph-sparkline-negative);
+    }
+
+    .dzgraph-sparkline-marked {
+      fill: var(--dzgraph-sparkline-marker);
+    }
+
+    .dzgraph-sparkline-dot {
+      fill: none;
+      stroke: var(--dzgraph-sparkline-line);
+      stroke-width: 3.5px;
+      stroke-linecap: round;
+    }
+
+    .dzgraph-sparkline-marker {
+      fill: none;
+      stroke: var(--dzgraph-sparkline-marker);
+      stroke-width: 5px;
+      stroke-linecap: round;
+    }
+
+    @media (forced-colors: active) {
+      --dzgraph-sparkline-line: CanvasText;
+      --dzgraph-sparkline-area: transparent;
+      --dzgraph-sparkline-negative: CanvasText;
+      --dzgraph-sparkline-marker: Highlight;
+    }
+  }
+
   // A page printed whole (print.md 3): paper is light, the tools stay on screen, a chart is not cut between sheets.
   @media print {
     .dzgraph {

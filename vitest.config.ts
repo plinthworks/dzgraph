@@ -7,6 +7,8 @@ import type { BrowserCommand } from 'vitest/node';
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const alias = {
   '@dzgraph/core/internal': here('./packages/core/src/internal.ts'),
+  '@dzgraph/core/sparkline': here('./packages/core/src/sparkline.ts'),
+  '@dzgraph/dom/sparkline': here('./packages/dom/src/sparkline.ts'),
   '@dzgraph/core': here('./packages/core/src/index.ts'),
   '@dzgraph/dom': here('./packages/dom/src/index.ts'),
   '@dzgraph/angular': here('./packages/angular/src/index.ts'),

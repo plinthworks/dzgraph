@@ -12,7 +12,7 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": [],
-    "paths": { "@dzgraph/core": ["../core/src/index.ts"], "@dzgraph/core/internal": ["../core/src/internal.ts"] }
+    "paths": { "@dzgraph/core": ["../core/src/index.ts"], "@dzgraph/core/internal": ["../core/src/internal.ts"], "@dzgraph/core/sparkline": ["../core/src/sparkline.ts"] }
   },
   "include": ["src/**/*.ts"]
 }

@@ -11,7 +11,9 @@
     "paths": {
       "@dzgraph/core": ["../core/dist/index.d.ts"],
       "@dzgraph/core/internal": ["../core/dist/internal.d.ts"],
-      "@dzgraph/dom": ["../dom/dist/index.d.ts"]
+      "@dzgraph/core/sparkline": ["../core/dist/sparkline.d.ts"],
+      "@dzgraph/dom": ["../dom/dist/index.d.ts"],
+      "@dzgraph/dom/sparkline": ["../dom/dist/sparkline.d.ts"]
     },
     "types": []
   },

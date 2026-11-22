@@ -19,7 +19,8 @@
     "build:theme": "node scripts/build-theme.mjs",
     "playground": "node scripts/playground.mjs",
     "test:reference": "node scripts/browser-reference.mjs",
-    "bench": "node scripts/bench.mjs"
+    "bench": "node scripts/bench.mjs",
+    "check:angular": "node scripts/angular-compat.mjs"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.9.7",

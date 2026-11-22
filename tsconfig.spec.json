@@ -12,6 +12,8 @@
     "paths": {
       "@dzgraph/core": ["./packages/core/src/index.ts"],
       "@dzgraph/core/internal": ["./packages/core/src/internal.ts"],
+      "@dzgraph/core/sparkline": ["./packages/core/src/sparkline.ts"],
+      "@dzgraph/dom/sparkline": ["./packages/dom/src/sparkline.ts"],
       "@dzgraph/dom": ["./packages/dom/src/index.ts"],
       "@dzgraph/angular": ["./packages/angular/src/index.ts"]
     }

@@ -44,3 +44,4 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [export.md](export.md) — the chart as a picture: PNG, SVG | 6 |
 | [csv.md](csv.md) — the data as CSV | 6 |
 | [print.md](print.md) — printing the chart, printing the page | 6 |
+| [sparkline.md](sparkline.md) — sparklines in a page | 7a |

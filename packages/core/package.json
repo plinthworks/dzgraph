@@ -14,6 +14,10 @@
       "types": "./src/internal.ts",
       "default": "./src/internal.ts"
     },
+    "./sparkline": {
+      "types": "./src/sparkline.ts",
+      "default": "./src/sparkline.ts"
+    },
     "./package.json": "./package.json"
   }
 }
