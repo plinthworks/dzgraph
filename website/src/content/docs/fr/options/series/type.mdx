@@ -1,0 +1,93 @@
+---
+title: "type"
+description: "Le type de la série : comment elle est dessinée et quelles options propres elle prend."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le type de la série : comment elle est dessinée, et quelles options propres elle prend.
+
+<OptionFacts series="type" />
+
+## Ce qu'elle fait
+
+`'line'`, `'area'`, `'column'`, `'bar'`, `'scatter'`, `'pie'`, `'donut'` ou `'gauge'` : le nom d'un type donné au
+graphique dans `types` (`allTypes` les donne tous). Chaque type a sa page, avec ses propres options :
+[`line`](../../series-types/line/), [`column`](../../series-types/column/), [`pie`](../../series-types/pie/)…
+
+Un nom que le graphique n'a pas reçu laisse la série de côté, signalée par `unknown-series-type` avec le nom en
+détail. Un graphique a un seul système de coordonnées, celui de sa première série : lignes, aires, colonnes, barres
+et nuages se mêlent sur des axes, alors qu'un secteur, un anneau ou une jauge est seul. Une série qui ne convient pas
+est laissée de côté et signalée (`invalid-option` sur `series[i].type`). Les colonnes et les barres fixent
+l'orientation du graphique : l'une et l'autre ensemble donnent `mixed-orientation`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('rain')!,
+  {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie (mm)', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'trend', name: 'Tendance (mm)', data: [58, 54, 50, 47] },
+    ],
+  },
+  { types: [column, line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie (mm)', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'trend', name: 'Tendance (mm)', data: [58, 54, 50, 47] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'La pluie et sa tendance (inventées)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie (mm)', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'trend', name: 'Tendance (mm)', data: [58, 54, 50, 47] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`types`](../../setup/types/) : les types qu'un graphique peut dessiner.
+- [Types de séries](../../../guides/series-types/) : chaque type, avec des graphiques vivants.

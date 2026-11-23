@@ -1,0 +1,67 @@
+---
+title: "xAxis"
+description: "L'axe x sur lequel la série est dessinée, par l'id de l'axe."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+L'axe x sur lequel la série est dessinée, nommé par l'id de l'axe.
+
+<OptionFacts series="xAxis" />
+
+## Ce qu'elle fait
+
+Les ids d'axe sont donnés par [`id`](../../axis/id/) sur l'axe, ou valent `x`, puis `x2`, `x3`… selon la position ;
+les axes x et y partagent un même ensemble d'ids. Un id qu'aucun axe x ne porte est signalé par `unknown-axis`, avec
+l'id en détail, et la série va sur le premier axe x. Dans un graphique en barres, l'axe x est vertical, mais il reste
+le `xAxis` de la série.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('honey')!,
+  {
+    xAxis: { id: 'months', scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', xAxis: 'months', data: [14, 22, 19] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-honey',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Honey {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    xAxis: { id: 'months', scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', xAxis: 'months', data: [14, 22, 19] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [`yAxis`](../y-axis/) : l'axe des valeurs.
+- [Axes et temps](../../../guides/axes-time/).

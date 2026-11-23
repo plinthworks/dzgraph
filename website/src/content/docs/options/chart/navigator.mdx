@@ -1,0 +1,93 @@
+---
+title: "navigator"
+description: "A strip under the plot showing all the data and the visible window."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A strip under the plot showing all the data and the visible window.
+
+<OptionFacts chart="navigator" />
+
+## What it does
+
+The strip (40 px, its own labels under it) draws the visible series over their whole x range, thin. A window marks
+the range shown in the plot, the rest shaded. Drag the window to move the range, a handle to move one end; a click
+outside the window moves it there. The two handles are sliders for the keyboard: the arrows move them by a hundredth of
+the whole, Page Up and Page Down by a tenth, Shift moves the window. Zooming the plot moves the window, and the other
+way round.
+
+It needs the [`navigatorStrip`](../../features/navigator-strip/) feature, which brings
+[`zoom`](../../features/zoom/). Without it the option is reported (`missing-module` at `navigator`) and no strip is
+drawn. On a time axis the [range buttons](../range-buttons/) come with it.
+
+A value other than a boolean is reported (`invalid-option` at `navigator`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis, navigatorStrip } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('navigator')!,
+  {
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'level', name: 'Pond level (cm)', data: [['2026-01-01', 41], ['2026-02-01', 44], ['2026-03-01', 52], ['2026-04-01', 49]] }],
+  },
+  { types: [line], features: [timeAxis, navigatorStrip] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { timeAxis, navigatorStrip } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-navigator',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class NavigatorChart {
+  readonly types = [line];
+  readonly features = [timeAxis, navigatorStrip];
+  readonly options: ChartOptions = {
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'level', name: 'Pond level (cm)', data: [['2026-01-01', 41], ['2026-02-01', 44], ['2026-03-01', 52], ['2026-04-01', 49]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={400}
+  features={['timeAxis', 'navigatorStrip']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'A made-up sensor, one reading a minute' },
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`rangeButtons`](../range-buttons/): spans of time with one click.
+- [Exploring](../../../guides/exploring/): zoom, the navigator and the view.

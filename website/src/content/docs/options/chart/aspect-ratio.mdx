@@ -1,0 +1,67 @@
+---
+title: "aspectRatio"
+description: "Width ÷ height, for an element without a height of its own."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Width ÷ height, for an element without a height of its own.
+
+<OptionFacts chart="aspectRatio" />
+
+## What it does
+
+The chart takes its element's size and follows it. Its height comes from the element — a CSS height, a grid or
+flex cell — never from its content, so the chart does not jump when its data changes. When the element has no height
+of its own, the chart takes its width and this ratio: `2` is twice as wide as tall.
+
+A value that is not a positive finite number is reported (`invalid-option` at `aspectRatio`) and the default is used.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { area } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('aspect-ratio')!,
+  {
+    aspectRatio: 3,
+    series: [{ type: 'area', id: 'rain', name: 'Rain (mm)', data: [12, 18, 9, 22, 30, 14, 8] }],
+  },
+  { types: [area] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { area, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-aspect-ratio',
+  imports: [DzChart],
+  template: `<dz-chart style="inline-size: 100%" [options]="options" [types]="types" />`,
+})
+export class AspectRatioChart {
+  readonly types = [area];
+  readonly options: ChartOptions = {
+    aspectRatio: 3,
+    series: [{ type: 'area', id: 'rain', name: 'Rain (mm)', data: [12, 18, 9, 22, 30, 14, 8] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [TypeScript](../../../getting-started/typescript/): the element's size.

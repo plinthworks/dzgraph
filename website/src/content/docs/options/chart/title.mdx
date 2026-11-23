@@ -1,0 +1,88 @@
+---
+title: "title"
+description: "The chart's title, with a subtitle under it."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The chart's title, with a subtitle under it.
+
+<OptionFacts chart="title" />
+
+## What it does
+
+A string is the title. An object gives `text`, the title; `subtitle`, a smaller line under it; and `align`,
+`'start'` (the default), `'center'` or `'end'`, along the reading direction: in right to left, `'start'` is on the
+right.
+
+The title is more than a heading. It names the chart for screen readers (the chart is a figure named by its title),
+it heads an exported picture, and it names a downloaded file (letters, digits and hyphens kept), unless
+[`exporting`](../exporting/) gives a `filename`.
+
+A title that is neither a string nor an object with a `text` string is reported (`invalid-option` at `title`) and
+left out. A key other than these three is reported (`unknown-option` at `title.<key>`), and so is a wrong `subtitle` or
+`align` (`invalid-option` at `title.subtitle`, `title.align`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('title')!,
+  {
+    title: { text: 'Jars of honey sold (made up)', subtitle: 'First half of the year', align: 'center' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [14, 22, 19, 27, 31, 26] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-title',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class TitleChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    title: { text: 'Jars of honey sold (made up)', subtitle: 'First half of the year', align: 'center' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [14, 22, 19, 27, 31, 26] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Jars of honey sold (made up)', subtitle: 'First half of the year', align: 'center' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [14, 22, 19, 27, 31, 26] }],
+  }}
+/>
+
+## See also
+
+- [`description`](../description/): the sentence screen readers hear after the summary.
+- [Export and print](../../../guides/exporting/): the title in pictures and file names.

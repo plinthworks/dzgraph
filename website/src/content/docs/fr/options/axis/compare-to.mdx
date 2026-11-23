@@ -1,0 +1,94 @@
+---
+title: "compareTo"
+description: "Une base fixe pour la comparaison : une valeur de x."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Une base fixe pour la comparaison, à une valeur de x.
+
+<OptionFacts axis="compareTo" />
+
+## Ce qu'elle fait
+
+Avec [`compare`](../compare/) sur le même axe y : chaque série est comparée à son point à ce x, ou au dernier
+avant lui. Une base fixe ne bouge pas quand l'utilisateur zoome ou se déplace. Le x est un nombre, ou sur un axe x de
+temps une date-heure ISO avec son décalage, lue dans le [fuseau](../zone/) de l'axe.
+
+Une valeur d'une autre sorte est signalée (`invalid-option` sur `yAxis[0].compareTo`). Sans `compare`, la comparaison
+n'a pas de mode : signalé sur `yAxis[0].compare`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, compare, timeAxis } from '@dzgraph/dom';
+
+chart(document.getElementById('jars')!, {
+  title: { text: 'Pots vendus, comparés au 4 mars (inventés)' },
+  xAxis: { scale: 'time', zone: 'UTC' },
+  yAxis: { compare: 'percent', compareTo: '2026-03-04T00:00:00Z' },
+  series: [
+    { type: 'line', id: 'plum', name: 'Prune', data: [['2026-03-02', 40], ['2026-03-03', 44], ['2026-03-04', 50], ['2026-03-05', 47], ['2026-03-06', 58], ['2026-03-07', 61]] },
+    { type: 'line', id: 'quince', name: 'Coing', data: [['2026-03-02', 22], ['2026-03-03', 21], ['2026-03-04', 20], ['2026-03-05', 26], ['2026-03-06', 25], ['2026-03-07', 29]] },
+  ],
+}, { types: [line], features: [timeAxis, compare] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { compare, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Jars {
+  readonly types = [line];
+  readonly features = [timeAxis, compare];
+  readonly options: ChartOptions = {
+    title: { text: 'Pots vendus, comparés au 4 mars (inventés)' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    yAxis: { compare: 'percent', compareTo: '2026-03-04T00:00:00Z' },
+    series: [
+      { type: 'line', id: 'plum', name: 'Prune', data: [['2026-03-02', 40], ['2026-03-03', 44], ['2026-03-04', 50], ['2026-03-05', 47], ['2026-03-06', 58], ['2026-03-07', 61]] },
+      { type: 'line', id: 'quince', name: 'Coing', data: [['2026-03-02', 22], ['2026-03-03', 21], ['2026-03-04', 20], ['2026-03-05', 26], ['2026-03-06', 25], ['2026-03-07', 29]] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'compare']}
+  options={{
+    title: { text: 'Pots vendus, comparés au 4 mars (inventés)' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    yAxis: { compare: 'percent', compareTo: '2026-03-04T00:00:00Z' },
+    series: [
+      { type: 'line', id: 'plum', name: 'Prune', data: [['2026-03-02', 40], ['2026-03-03', 44], ['2026-03-04', 50], ['2026-03-05', 47], ['2026-03-06', 58], ['2026-03-07', 61]] },
+      { type: 'line', id: 'quince', name: 'Coing', data: [['2026-03-02', 22], ['2026-03-03', 21], ['2026-03-04', 20], ['2026-03-05', 26], ['2026-03-06', 25], ['2026-03-07', 29]] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`compare`](../compare/) : les modes.
+- [`zone`](../zone/) : comment une date-heure est lue.

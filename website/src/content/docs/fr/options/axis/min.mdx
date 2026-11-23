@@ -1,0 +1,83 @@
+---
+title: "min"
+description: "La borne basse de l'axe, fixée."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+La borne basse de l'axe, fixée.
+
+<OptionFacts axis="min" />
+
+## Ce qu'elle fait
+
+Sans elle, un axe de valeurs s'ajuste aux données et arrondit ses bouts vers l'extérieur, aux graduations ; les
+colonnes, les barres et les aires gardent toujours zéro. Un `min` est gardé tel quel, sans arrondi ; l'autre bout
+reste arrondi à une graduation, et les graduations tombent à l'intérieur. Un `min` au-dessus de toutes les valeurs est
+signalé (`invalid-option`) et laissé de côté. Un zoom reste dans les bornes.
+
+Sur un axe de temps, une borne est un nombre de millisecondes, une date-heure ISO avec son décalage, ou un
+jour (`'2026-03-01'`, son minuit dans le [fuseau](../zone/) de l'axe) ; une date-heure sans décalage est signalée
+`ambiguous-instant` et laissée de côté. Sur un axe logarithmique, une borne nulle ou négative est signalée
+(`invalid-option`) et laissée de côté. Un `min` supérieur ou égal à `max` est signalé sur `min`, et les deux sont
+laissés de côté. Un axe de catégories n'a pas de bornes : elles sont signalées (`unknown-option`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('visits')!, {
+  title: { text: 'Visiteurs par jour (inventés)' },
+  yAxis: { min: 0 },
+  series: [{ type: 'line', id: 'visits', name: 'Visiteurs', data: [64, 71, 69, 78, 87, 82, 75] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Visits {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: { text: 'Visiteurs par jour (inventés)' },
+    yAxis: { min: 0 },
+    series: [{ type: 'line', id: 'visits', name: 'Visiteurs', data: [64, 71, 69, 78, 87, 82, 75] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visiteurs par jour (inventés)' },
+    yAxis: { min: 0 },
+    series: [{ type: 'line', id: 'visits', name: 'Visiteurs', data: [64, 71, 69, 78, 87, 82, 75] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`max`](../max/) : la borne haute.
+- [`ticks`](../ticks/) : combien, et leurs étiquettes.

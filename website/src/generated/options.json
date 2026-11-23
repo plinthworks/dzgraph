@@ -1,0 +1,951 @@
+{
+  "chart": [
+    {
+      "name": "title",
+      "type": "string | TitleOptions",
+      "required": false,
+      "default": null,
+      "feature": null,
+      "source": "packages/core/src/options.ts#L265"
+    },
+    {
+      "name": "series",
+      "type": "readonly SeriesOptions[]",
+      "required": true,
+      "default": null,
+      "feature": null,
+      "source": "packages/core/src/options.ts#L266"
+    },
+    {
+      "name": "xAxis",
+      "type": "AxisOptions | readonly AxisOptions[]",
+      "required": false,
+      "default": {
+        "token": "guessedAxis"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L271"
+    },
+    {
+      "name": "yAxis",
+      "type": "AxisOptions | readonly AxisOptions[]",
+      "required": false,
+      "default": {
+        "token": "guessedAxis"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L275"
+    },
+    {
+      "name": "legend",
+      "type": "LegendOptions | boolean",
+      "required": false,
+      "default": {
+        "token": "legendTwo"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L280"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "required": false,
+      "default": {
+        "token": "pageLanguage"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L285"
+    },
+    {
+      "name": "dir",
+      "type": "'ltr' | 'rtl'",
+      "required": false,
+      "default": {
+        "token": "elementDirection"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L290"
+    },
+    {
+      "name": "mirror",
+      "type": "boolean",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L295"
+    },
+    {
+      "name": "aspectRatio",
+      "type": "number",
+      "required": false,
+      "default": {
+        "code": "16 / 9"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L300"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "required": false,
+      "default": null,
+      "feature": null,
+      "source": "packages/core/src/options.ts#L302"
+    },
+    {
+      "name": "highlight",
+      "type": "boolean",
+      "required": false,
+      "default": {
+        "code": "true"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L307"
+    },
+    {
+      "name": "animation",
+      "type": "boolean",
+      "required": false,
+      "default": {
+        "code": "true"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L312"
+    },
+    {
+      "name": "dataTable",
+      "type": "boolean | { readonly show?: boolean; readonly rows?: 'visible' | 'all' }",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L318"
+    },
+    {
+      "name": "navigator",
+      "type": "boolean",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": "navigatorStrip",
+      "source": "packages/core/src/options.ts#L324"
+    },
+    {
+      "name": "rangeButtons",
+      "type": "boolean",
+      "required": false,
+      "default": {
+        "token": "withNavigator"
+      },
+      "feature": "navigatorStrip",
+      "source": "packages/core/src/options.ts#L330"
+    },
+    {
+      "name": "crosshair",
+      "type": "boolean | { readonly horizontal?: boolean }",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": "crosshair",
+      "source": "packages/core/src/options.ts#L336"
+    },
+    {
+      "name": "menu",
+      "type": "boolean | { readonly items: readonly ('type' | 'aggregation' | 'scale' | 'compare' | 'export' | 'print')[] }",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": "menu",
+      "source": "packages/core/src/options.ts#L342"
+    },
+    {
+      "name": "exporting",
+      "type": "{ readonly filename?: string; readonly theme?: 'light' | 'dark'; readonly csv?: { readonly locale?: boolean } }",
+      "required": false,
+      "default": null,
+      "feature": "exporting",
+      "source": "packages/core/src/options.ts#L349"
+    },
+    {
+      "name": "drilldown",
+      "type": "'time'",
+      "required": false,
+      "default": null,
+      "feature": "drilldown",
+      "source": "packages/core/src/options.ts#L354"
+    },
+    {
+      "name": "selection",
+      "type": "boolean | { readonly shapes?: readonly ('rectangle' | 'range' | 'lasso')[] }",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": "selection",
+      "source": "packages/core/src/options.ts#L360"
+    }
+  ],
+  "series": [
+    {
+      "name": "type",
+      "type": "T",
+      "required": true,
+      "default": null,
+      "feature": null,
+      "source": "packages/core/src/options.ts#L61"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "required": false,
+      "default": {
+        "token": "byPosition"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L67"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "required": false,
+      "default": {
+        "token": "seriesN"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L72"
+    },
+    {
+      "name": "data",
+      "type": "D",
+      "required": true,
+      "default": null,
+      "feature": null,
+      "source": "packages/core/src/options.ts#L73"
+    },
+    {
+      "name": "xAxis",
+      "type": "string",
+      "required": false,
+      "default": {
+        "token": "firstAxis"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L78"
+    },
+    {
+      "name": "yAxis",
+      "type": "string",
+      "required": false,
+      "default": {
+        "token": "firstAxis"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L82"
+    },
+    {
+      "name": "color",
+      "type": "SeriesColor",
+      "required": false,
+      "default": {
+        "token": "paletteOrder"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L86"
+    },
+    {
+      "name": "initiallyHidden",
+      "type": "boolean",
+      "required": false,
+      "default": {
+        "code": "false"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L92"
+    },
+    {
+      "name": "drilldown",
+      "type": "{ readonly details: Readonly<Record<string, readonly SeriesOptions[]>> } | { readonly load: (point: PointRef) => Promise<readonly SeriesOptions[]> }",
+      "required": false,
+      "default": null,
+      "feature": "drilldown",
+      "source": "packages/core/src/options.ts#L98"
+    },
+    {
+      "name": "aggregate",
+      "type": "'sum' | 'mean' | 'min' | 'max' | 'count'",
+      "required": false,
+      "default": {
+        "token": "aggregateByType"
+      },
+      "feature": null,
+      "source": "packages/core/src/options.ts#L103"
+    }
+  ],
+  "seriesTypes": [
+    {
+      "name": "line",
+      "entry": "@dzgraph/core",
+      "options": "LineSeriesOptions",
+      "system": "cartesian",
+      "keys": [
+        {
+          "name": "marker",
+          "type": "boolean",
+          "required": false,
+          "default": {
+            "token": "markerRoom"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/line.ts#L13"
+        }
+      ],
+      "source": "packages/core/src/series/line.ts#L122"
+    },
+    {
+      "name": "area",
+      "entry": "@dzgraph/core",
+      "options": "AreaSeriesOptions",
+      "system": "cartesian",
+      "keys": [
+        {
+          "name": "marker",
+          "type": "boolean",
+          "required": false,
+          "default": {
+            "token": "markerRoom"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/area.ts#L11"
+        },
+        {
+          "name": "stack",
+          "type": "boolean | string",
+          "required": false,
+          "default": {
+            "code": "false"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/area.ts#L16"
+        }
+      ],
+      "source": "packages/core/src/series/area.ts#L25"
+    },
+    {
+      "name": "column",
+      "entry": "@dzgraph/core",
+      "options": "ColumnSeriesOptions",
+      "system": "cartesian",
+      "keys": [
+        {
+          "name": "stack",
+          "type": "boolean | string",
+          "required": false,
+          "default": {
+            "code": "false"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/column.ts#L16"
+        }
+      ],
+      "source": "packages/core/src/series/column.ts#L125"
+    },
+    {
+      "name": "bar",
+      "entry": "@dzgraph/core",
+      "options": "BarSeriesOptions",
+      "system": "cartesian",
+      "keys": [
+        {
+          "name": "stack",
+          "type": "boolean | string",
+          "required": false,
+          "default": {
+            "code": "false"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/column.ts#L23"
+        }
+      ],
+      "source": "packages/core/src/series/column.ts#L138"
+    },
+    {
+      "name": "scatter",
+      "entry": "@dzgraph/core",
+      "options": "ScatterSeriesOptions",
+      "system": "cartesian",
+      "keys": [],
+      "source": "packages/core/src/series/scatter.ts#L20"
+    },
+    {
+      "name": "pie",
+      "entry": "@dzgraph/core",
+      "options": "PieSeriesOptions",
+      "system": "polar",
+      "keys": [
+        {
+          "name": "others",
+          "type": "boolean",
+          "required": false,
+          "default": {
+            "code": "true"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/pie.ts#L21"
+        }
+      ],
+      "source": "packages/core/src/series/pie.ts#L289"
+    },
+    {
+      "name": "donut",
+      "entry": "@dzgraph/core",
+      "options": "DonutSeriesOptions",
+      "system": "polar",
+      "keys": [
+        {
+          "name": "others",
+          "type": "boolean",
+          "required": false,
+          "default": {
+            "code": "true"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/pie.ts#L21"
+        },
+        {
+          "name": "hole",
+          "type": "number",
+          "required": false,
+          "default": {
+            "code": "0.6"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/pie.ts#L29"
+        },
+        {
+          "name": "center",
+          "type": "false | { readonly label?: string; readonly value?: string }",
+          "required": false,
+          "default": {
+            "token": "totalCenter"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/pie.ts#L34"
+        }
+      ],
+      "source": "packages/core/src/series/pie.ts#L301"
+    },
+    {
+      "name": "gauge",
+      "entry": "@dzgraph/core",
+      "options": "GaugeSeriesOptions",
+      "system": "polar",
+      "keys": [
+        {
+          "name": "min",
+          "type": "number",
+          "required": false,
+          "default": {
+            "code": "0"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L28"
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "required": false,
+          "default": {
+            "code": "100"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L32"
+        },
+        {
+          "name": "thresholds",
+          "type": "readonly GaugeThreshold[]",
+          "required": false,
+          "default": null,
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L33"
+        }
+      ],
+      "source": "packages/core/src/series/gauge.ts#L174"
+    }
+  ],
+  "axis": [
+    {
+      "name": "id",
+      "default": {
+        "token": "axisIds"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "string"
+        },
+        {
+          "scale": "log",
+          "type": "string"
+        },
+        {
+          "scale": "category",
+          "type": "string"
+        },
+        {
+          "scale": "time",
+          "type": "string"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L153"
+    },
+    {
+      "name": "title",
+      "default": null,
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "string"
+        },
+        {
+          "scale": "log",
+          "type": "string"
+        },
+        {
+          "scale": "category",
+          "type": "string"
+        },
+        {
+          "scale": "time",
+          "type": "string"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L154"
+    },
+    {
+      "name": "opposite",
+      "default": {
+        "code": "false"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "boolean"
+        },
+        {
+          "scale": "log",
+          "type": "boolean"
+        },
+        {
+          "scale": "category",
+          "type": "boolean"
+        },
+        {
+          "scale": "time",
+          "type": "boolean"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L160"
+    },
+    {
+      "name": "reversed",
+      "default": {
+        "code": "false"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "boolean"
+        },
+        {
+          "scale": "log",
+          "type": "boolean"
+        },
+        {
+          "scale": "category",
+          "type": "boolean"
+        },
+        {
+          "scale": "time",
+          "type": "boolean"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L165"
+    },
+    {
+      "name": "scale",
+      "default": {
+        "token": "scaleGuessed"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "'linear'"
+        },
+        {
+          "scale": "log",
+          "type": "'log'"
+        },
+        {
+          "scale": "category",
+          "type": "'category'"
+        },
+        {
+          "scale": "time",
+          "type": "'time'",
+          "feature": "timeAxis"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L172"
+    },
+    {
+      "name": "min",
+      "default": {
+        "token": "fromData"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "number"
+        },
+        {
+          "scale": "log",
+          "type": "number"
+        },
+        {
+          "scale": "time",
+          "type": "number | string"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L177"
+    },
+    {
+      "name": "max",
+      "default": {
+        "token": "fromData"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "number"
+        },
+        {
+          "scale": "log",
+          "type": "number"
+        },
+        {
+          "scale": "time",
+          "type": "number | string"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L181"
+    },
+    {
+      "name": "ticks",
+      "default": null,
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "TicksOptions<number>"
+        },
+        {
+          "scale": "log",
+          "type": "TicksOptions<number>"
+        },
+        {
+          "scale": "category",
+          "type": "TicksOptions<string>"
+        },
+        {
+          "scale": "time",
+          "type": "TicksOptions<InstantMs>"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L182"
+    },
+    {
+      "name": "stacking",
+      "default": null,
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "'percent'"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L184"
+    },
+    {
+      "name": "compare",
+      "default": null,
+      "feature": "compare",
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "'value' | 'percent' | 'index'",
+          "feature": "compare"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L189"
+    },
+    {
+      "name": "compareTo",
+      "default": {
+        "token": "firstInView"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "number | string"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L194"
+    },
+    {
+      "name": "aggregate",
+      "default": null,
+      "feature": "aggregation",
+      "scales": [
+        {
+          "scale": "linear",
+          "type": "{ readonly step: number }",
+          "feature": "aggregation"
+        },
+        {
+          "scale": "time",
+          "type": "'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year' | { readonly step: number }",
+          "feature": "aggregation"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L199"
+    },
+    {
+      "name": "categories",
+      "default": {
+        "token": "fromDataOrder"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "category",
+          "type": "readonly string[]"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L217"
+    },
+    {
+      "name": "zone",
+      "default": {
+        "token": "pageZone"
+      },
+      "feature": null,
+      "scales": [
+        {
+          "scale": "time",
+          "type": "ZoneName"
+        }
+      ],
+      "source": "packages/core/src/options.ts#L230"
+    }
+  ],
+  "setup": [
+    {
+      "name": "types",
+      "type": "readonly SeriesType[]",
+      "required": true,
+      "default": null,
+      "feature": null,
+      "source": "packages/dom/src/chart.ts#L33",
+      "angular": true,
+      "angularDefault": "allTypes"
+    },
+    {
+      "name": "features",
+      "type": "readonly Feature[]",
+      "required": false,
+      "default": {
+        "code": "[]"
+      },
+      "feature": null,
+      "source": "packages/dom/src/chart.ts#L39",
+      "angular": true,
+      "angularDefault": "allFeatures"
+    },
+    {
+      "name": "messages",
+      "type": "Partial<Messages>",
+      "required": false,
+      "default": {
+        "token": "pageLanguageWords"
+      },
+      "feature": null,
+      "source": "packages/dom/src/chart.ts#L44",
+      "angular": true,
+      "angularDefault": null
+    },
+    {
+      "name": "animate",
+      "type": "(animation: AnimateHook) => void",
+      "required": false,
+      "default": null,
+      "feature": null,
+      "source": "packages/dom/src/chart.ts#L46",
+      "angular": true,
+      "angularDefault": null
+    }
+  ],
+  "features": [
+    {
+      "name": "timeAxis",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L85",
+      "enables": [
+        {
+          "section": "axis",
+          "name": "scale",
+          "scale": "time"
+        }
+      ]
+    },
+    {
+      "name": "zoom",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L88",
+      "enables": []
+    },
+    {
+      "name": "navigatorStrip",
+      "needs": [
+        "zoom"
+      ],
+      "source": "packages/dom/src/features.ts#L94",
+      "enables": [
+        {
+          "section": "chart",
+          "name": "navigator"
+        },
+        {
+          "section": "chart",
+          "name": "rangeButtons"
+        }
+      ]
+    },
+    {
+      "name": "canvas",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L101",
+      "enables": []
+    },
+    {
+      "name": "webgl",
+      "needs": [
+        "canvas"
+      ],
+      "source": "packages/dom/src/features.ts#L107",
+      "enables": []
+    },
+    {
+      "name": "crosshair",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L110",
+      "enables": [
+        {
+          "section": "chart",
+          "name": "crosshair"
+        }
+      ]
+    },
+    {
+      "name": "compare",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L113",
+      "enables": [
+        {
+          "section": "axis",
+          "name": "compare"
+        }
+      ]
+    },
+    {
+      "name": "measure",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L118",
+      "enables": []
+    },
+    {
+      "name": "selection",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L121",
+      "enables": [
+        {
+          "section": "chart",
+          "name": "selection"
+        }
+      ]
+    },
+    {
+      "name": "aggregation",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L124",
+      "enables": [
+        {
+          "section": "axis",
+          "name": "aggregate"
+        }
+      ]
+    },
+    {
+      "name": "drilldown",
+      "needs": [
+        "aggregation"
+      ],
+      "source": "packages/dom/src/features.ts#L127",
+      "enables": [
+        {
+          "section": "chart",
+          "name": "drilldown"
+        },
+        {
+          "section": "series",
+          "name": "drilldown"
+        }
+      ]
+    },
+    {
+      "name": "menu",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L130",
+      "enables": [
+        {
+          "section": "chart",
+          "name": "menu"
+        }
+      ]
+    },
+    {
+      "name": "exporting",
+      "needs": [],
+      "source": "packages/dom/src/features.ts#L137",
+      "enables": [
+        {
+          "section": "chart",
+          "name": "exporting"
+        }
+      ]
+    }
+  ]
+}

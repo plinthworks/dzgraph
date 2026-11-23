@@ -1,0 +1,93 @@
+---
+title: "navigator"
+description: "Une bande sous le tracé qui montre toutes les données et la fenêtre visible."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Une bande sous le tracé qui montre toutes les données et la fenêtre visible.
+
+<OptionFacts chart="navigator" />
+
+## Ce qu'elle fait
+
+La bande (40 px, avec ses propres libellés dessous) dessine les séries visibles sur toute leur étendue en x, en fin.
+Une fenêtre marque la plage montrée dans le tracé, le reste ombré. Glissez la fenêtre pour déplacer la plage, une
+poignée pour déplacer un bout ; un clic hors de la fenêtre l'y amène. Les deux poignées sont des curseurs au clavier :
+les flèches les déplacent d'un centième du tout, Page précédente et Page suivante d'un dixième, Maj déplace la
+fenêtre. Zoomer dans le tracé déplace la fenêtre, et inversement.
+
+Elle demande la fonction [`navigatorStrip`](../../features/navigator-strip/), qui apporte
+[`zoom`](../../features/zoom/). Sans elle, l'option est signalée (`missing-module` sur `navigator`) et aucune bande
+n'est dessinée. Sur un axe de temps, les [boutons de plage](../range-buttons/) viennent avec elle.
+
+Une autre valeur qu'un booléen est signalée (`invalid-option` sur `navigator`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis, navigatorStrip } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('navigator')!,
+  {
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'level', name: 'Niveau de la mare (cm)', data: [['2026-01-01', 41], ['2026-02-01', 44], ['2026-03-01', 52], ['2026-04-01', 49]] }],
+  },
+  { types: [line], features: [timeAxis, navigatorStrip] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { timeAxis, navigatorStrip } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-navigator',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class NavigatorChart {
+  readonly types = [line];
+  readonly features = [timeAxis, navigatorStrip];
+  readonly options: ChartOptions = {
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'level', name: 'Niveau de la mare (cm)', data: [['2026-01-01', 41], ['2026-02-01', 44], ['2026-03-01', 52], ['2026-04-01', 49]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={400}
+  features={['timeAxis', 'navigatorStrip']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'Un capteur inventé, une mesure par minute' },
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`rangeButtons`](../range-buttons/) : des durées en un clic.
+- [Explorer](../../../guides/exploring/) : le zoom, le navigateur et la vue.

@@ -1,0 +1,99 @@
+---
+title: "compare"
+description: "Des séries montrées par rapport à une base : en écart, en pourcentage ou en base 100."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des séries montrées par rapport à une base : en écart, en pourcentage ou en base 100.
+
+<OptionFacts feature="compare" />
+
+## Ce qu'elle fait
+
+Elle permet au [`compare`](../../axis/compare/) d'un axe y de dessiner, et au [`menu`](../menu/) d'offrir
+« Comparaison ». Chaque série de cet axe est dessinée par rapport à sa base : `'value'` en écart, `'percent'` en
+variation en pourcentage, `'index'` en base 100. La base est le premier point visible de chaque série qui a une
+valeur : zoomer ou se déplacer la change ; [`compareTo`](../../axis/compare-to/) la fixe à un x.
+
+L'axe écrit des valeurs signées (« +10 », « +12 % »), et une ligne marque la référence. L'infobulle donne d'abord la
+valeur comparée, puis la valeur brute ; le tableau de données donne les deux. Une série sans base visible (ou une base
+de 0 en pourcentage et en base 100) n'est pas dessinée, et un problème `no-baseline` le dit jusqu'à ce que la plage lui
+en donne une. Les séries empilées et les axes logarithmiques ne sont pas comparés (`invalid-option`). Le choix de
+l'utilisateur fait partie de la vue.
+
+Sans elle, `compare` est signalé (`missing-module`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, compare } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('shops')!,
+  {
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique nord', data: [120, 132, 128, 150, 161] },
+      { type: 'line', id: 'south', name: 'Boutique sud', data: [80, 78, 90, 99, 97] },
+    ],
+  },
+  { types: [line], features: [compare] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { compare } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-shops',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Shops {
+  readonly types = [line];
+  readonly features = [compare];
+  readonly options: ChartOptions = {
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique nord', data: [120, 132, 128, 150, 161] },
+      { type: 'line', id: 'south', name: 'Boutique sud', data: [80, 78, 90, 99, 97] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['compare', 'zoom']}
+  options={{
+    title: { text: 'Deux boutiques inventées, en pourcentage du premier point visible' },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique nord', data: [120, 132, 128, 150, 161, 158, 170] },
+      { type: 'line', id: 'south', name: 'Boutique sud', data: [80, 78, 90, 99, 97, 104, 112] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`compare`](../../axis/compare/), l'option d'axe.
+- [Explorer](../../../guides/exploring/) : le guide.

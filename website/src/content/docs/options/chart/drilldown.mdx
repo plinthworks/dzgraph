@@ -1,0 +1,96 @@
+---
+title: "drilldown"
+description: "Years, then months, then days, by click, on a time axis."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Years, then months, then days, by click, on a time axis.
+
+<OptionFacts chart="drilldown" />
+
+## What it does
+
+`'time'` aggregates a time x axis by year. A click, or Enter on a focused point, shows the months of that year;
+another, the days of that month. The level shows its whole period, even past the data's end. A breadcrumb above the
+plot goes back to any level, as do Backspace and Alt + ← (→ in right to left); going back restores the level as it
+was. The level is part of the view, and the `drill` event gives its path.
+
+It starts from years, whatever the axis's [`aggregate`](../../axis/aggregate/) says. Each series keeps its own
+[aggregation function](../../series/aggregate/) (a sum for columns, a mean for lines).
+
+It needs the [`drilldown`](../../features/drilldown/) feature, which brings
+[`aggregation`](../../features/aggregation/): without it, `missing-module` at `drilldown`. Off a time x axis, or with
+another value, it is `invalid-option` at `drilldown`. A detail per point, by key or loaded, is a series' own
+[`drilldown`](../../series/drilldown/).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, timeAxis, drilldown } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('drilldown')!,
+  {
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'rain', name: 'Rain (mm)', data: [['2025-03-04', 12], ['2025-09-18', 30], ['2026-01-05', 9], ['2026-02-21', 14]] }],
+  },
+  { types: [column], features: [timeAxis, drilldown] },
+);
+
+c.on('drill', (e) => console.log(e.path));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { timeAxis, drilldown } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-drilldown',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class DrilldownChart {
+  readonly types = [column];
+  readonly features = [timeAxis, drilldown];
+  readonly options: ChartOptions = {
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'rain', name: 'Rain (mm)', data: [['2025-03-04', 12], ['2025-09-18', 30], ['2026-01-05', 9], ['2026-02-21', 14]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={340}
+  features={['timeAxis', 'drilldown']}
+  data={{ recipe: 'walk', count: 600000 }}
+  options={{
+    title: { text: 'A made-up sensor, mean by year' },
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'sensor', name: 'Reading', aggregate: 'mean', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`drilldown`](../../series/drilldown/): a detail per point.
+- [Exploring](../../../guides/exploring/): aggregation and drilldown.

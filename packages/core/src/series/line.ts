@@ -6,7 +6,10 @@ import { decimate } from '../decimate.js';
 import { PathBuilder, isGap, placer, rangeOf, sceneId, symbolOf, visibleX } from './shared.js';
 
 export interface LineSeriesOptions extends SeriesBase<'line'> {
-  /** Markers on every point (`true`) or none (`false`); default: when points are far enough apart to read them. */
+  /**
+   * Markers on every point (`true`) or none (`false`); default: when points are far enough apart to read them.
+   * @default {markerRoom}
+   */
   readonly marker?: boolean | undefined;
 }
 

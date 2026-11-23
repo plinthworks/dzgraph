@@ -1,0 +1,91 @@
+---
+title: "canvas"
+description: "Un plan Canvas pour les séries de nombreuses marques."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Un plan Canvas pour les séries de nombreuses marques.
+
+<OptionFacts feature="canvas" />
+
+## Ce qu'elle fait
+
+Il n'y a pas d'option : la fonction donnée, une série qui dessine plus de 2 000 marques (marqueurs, colonnes)
+est peinte sur un Canvas, sous les axes et les étiquettes. Elle a le même aspect qu'en SVG : les mêmes couleurs lues
+dans le thème, les mêmes tailles, calées sur le pixel. Le survol, l'anneau de focus et l'infobulle ne changent pas.
+Une série de moins de marques reste en SVG, comme les lignes et les aires de toute longueur : elles sont réduites à ce
+que le tracé peut montrer (décimées) et restent nettes.
+
+Sans elle, chaque série est dessinée en SVG : le même dessin, avec un élément par marque. L'export PNG dessine aussi
+les marques du Canvas ; l'export SVG écrit chaque marque en élément, mais seulement celles qui peuvent se voir dans le
+tracé. [`webgl`](../webgl/) va plus loin pour les nuages de plus de 100 000 points, et retombe sur ce Canvas quand
+WebGL2 n'est pas là.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { canvas, chart } from '@dzgraph/dom';
+
+const n = 20_000;
+const x = new Float64Array(n);
+const y = new Float64Array(n);
+for (let i = 0; i < n; i++) {
+  x[i] = (i * 7919) % 1000;
+  y[i] = (i * 104_729) % 1000;
+}
+chart(
+  document.getElementById('dots')!,
+  { series: [{ type: 'scatter', id: 'dots', name: 'Points', data: { x, y } }] },
+  { types: [scatter], features: [canvas] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { canvas } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-dots',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Dots {
+  readonly types = [scatter];
+  readonly features = [canvas];
+  readonly options: ChartOptions = {
+    series: [{ type: 'scatter', id: 'dots', name: 'Points', data: { x: Float64Array.from({ length: 20_000 }, (_, i) => (i * 7919) % 1000), y: Float64Array.from({ length: 20_000 }, (_, i) => (i * 104_729) % 1000) } }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={380}
+  features={['canvas', 'zoom']}
+  data={{ recipe: 'cloud', count: 20000 }}
+  options={{
+    title: { text: 'Deux nuages inventés, 20 000 points sur un Canvas' },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [Gros volumes](../../../guides/big-data/) : le guide, avec les coûts mesurés.
+- [`webgl`](../webgl/), pour les nuages les plus denses.

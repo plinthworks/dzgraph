@@ -1,0 +1,97 @@
+---
+title: "legend"
+description: "The list of series under the chart, each a button that hides or shows it."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The list of series under the chart, each a button that hides or shows it.
+
+<OptionFacts chart="legend" />
+
+## What it does
+
+Each item is the series' sign (its colour and its marker, so it is not told by colour alone) and its name; a
+series without a name is « Series 1 », « Series 2 »… Items are buttons: a click hides the series, which stays in the
+legend, greyed, and a second click shows it again. Items wrap onto as many rows as needed.
+
+`false` hides the legend; `true` shows it even for one series. An object places it: `position`, `'bottom'` (the
+default), `'top'`, `'start'` or `'end'` (a column beside the plot, on the reading direction's start or end side); and
+`align`, `'start'`, `'center'` (the default) or `'end'`.
+
+A pie or a donut lists its slices instead, and shows its legend by default only when the labels beside the slices do
+not fit.
+
+Something else than a boolean or an object is `invalid-option` at `legend`; another key `unknown-option` at
+`legend.<key>`; a wrong value `invalid-option` at `legend.position` or `legend.align`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('legend')!,
+  {
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5, 6] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6, 8] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-legend',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class LegendChart {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5, 6] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6, 8] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Garden beds watered (made up)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5, 6] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6, 8] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`initiallyHidden`](../../series/initially-hidden/): a series hidden when it first appears.
+- [Interactions](../../../guides/interactions/): the legend with the tooltip and the keyboard.

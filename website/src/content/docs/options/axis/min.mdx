@@ -1,0 +1,81 @@
+---
+title: "min"
+description: "The axis's lower bound, fixed."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The axis's lower bound, fixed.
+
+<OptionFacts axis="min" />
+
+## What it does
+
+Without it, a value axis fits the data and rounds its ends outwards to ticks; columns, bars and areas always keep
+zero in. A `min` is kept exactly, not rounded; the other end is still rounded to a tick, and the ticks fall inside.
+A `min` above every value of the data is reported (`invalid-option`) and left out. A zoom stays within the bounds.
+
+On a time axis a bound is milliseconds, an ISO date-time with an offset, or a day (`'2026-03-01'`, its
+midnight in the axis's [zone](../zone/)); a date-time without an offset is reported `ambiguous-instant` and left out.
+On a log axis a bound of zero or below is reported (`invalid-option`) and left out. A `min` at or above `max` is
+reported at `min`, and both are left out. A category axis has no bounds: they are reported (`unknown-option`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('visits')!, {
+  title: { text: 'Visitors a day (made up)' },
+  yAxis: { min: 0 },
+  series: [{ type: 'line', id: 'visits', name: 'Visitors', data: [64, 71, 69, 78, 87, 82, 75] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Visits {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: { text: 'Visitors a day (made up)' },
+    yAxis: { min: 0 },
+    series: [{ type: 'line', id: 'visits', name: 'Visitors', data: [64, 71, 69, 78, 87, 82, 75] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visitors a day (made up)' },
+    yAxis: { min: 0 },
+    series: [{ type: 'line', id: 'visits', name: 'Visitors', data: [64, 71, 69, 78, 87, 82, 75] }],
+  }}
+/>
+
+## See also
+
+- [`max`](../max/): the upper bound.
+- [`ticks`](../ticks/): how many, and their labels.

@@ -1,0 +1,86 @@
+---
+title: "mirror"
+description: "In right to left, the x axis running right to left too."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+In right to left, the x axis running right to left too.
+
+<OptionFacts chart="mirror" />
+
+## What it does
+
+Only right-to-left charts are concerned ([`dir`](../dir/) `'rtl'`, or the element's direction). By default
+their x axis still runs left to right: time and categories flow as numbers do. `true` mirrors it: the first category,
+the earliest time, is on the right. The value axis, the title and the legend follow the reading direction either way.
+
+In left to right `mirror` changes nothing. A value other than a boolean is reported (`invalid-option` at `mirror`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('mirror')!,
+  {
+    dir: 'rtl',
+    mirror: true,
+    xAxis: { scale: 'category', categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [18, 24, 21, 30] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-mirror',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class MirrorChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    dir: 'rtl',
+    mirror: true,
+    xAxis: { scale: 'category', categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [18, 24, 21, 30] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Jars sold, mirrored (made up)' },
+    dir: 'rtl',
+    mirror: true,
+    xAxis: { scale: 'category', categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [18, 24, 21, 30] }],
+  }}
+/>
+
+## See also
+
+- [`dir`](../dir/): the reading direction.
+- [Theming and right to left](../../../guides/theming-rtl/): right to left.

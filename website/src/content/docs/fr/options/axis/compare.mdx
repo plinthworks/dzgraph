@@ -1,0 +1,103 @@
+---
+title: "compare"
+description: "Chaque série d'un axe y montrée par rapport à sa base : un écart, un pourcentage ou un indice."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Chaque série de cet axe y montrée par rapport à sa base.
+
+<OptionFacts axis="compare" />
+
+## Ce qu'elle fait
+
+Sur un axe y, avec la fonction [`compare`](../../features/compare/) :
+
+- `'value'` : l'écart, y − base ; l'axe est signé (+10, −5).
+- `'percent'` : le changement en pourcentage, (y / base − 1) × 100 ; l'axe est signé (+12 %).
+- `'index'` : base 100, y / base × 100.
+
+La base est le premier point de chaque série qui a une valeur dans la plage visible : un zoom ou un déplacement la
+change. [`compareTo`](../compare-to/) la fixe. Une ligne marque la référence (0, 0 % ou 100). L'infobulle et le tableau
+de données donnent la valeur comparée, puis la valeur brute.
+
+Une série qui ne peut pas être comparée (aucun point à la base ou avant, ou une base nulle pour un pourcentage ou un
+indice) n'est pas tracée et est signalée `no-baseline` jusqu'à ce que la plage lui en donne une. Signalé
+(`invalid-option` sur `yAxis[0].compare`) et laissé de côté : sur un axe x, un axe logarithmique, ou un axe à séries
+empilées. Le [menu](../../chart/menu/) du graphique peut proposer la comparaison ; la vue garde le choix, qui l'emporte
+sur l'option.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, compare } from '@dzgraph/dom';
+
+chart(document.getElementById('shops')!, {
+  title: { text: 'Deux boutiques inventées, comparées à janvier' },
+  xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+  yAxis: { compare: 'percent' },
+  series: [
+    { type: 'line', id: 'north', name: 'Boutique nord', data: [210, 231, 224, 262, 282, 277] },
+    { type: 'line', id: 'south', name: 'Boutique sud', data: [90, 88, 101, 111, 109, 126] },
+  ],
+}, { types: [line], features: [compare] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { compare } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-shops',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Shops {
+  readonly types = [line];
+  readonly features = [compare];
+  readonly options: ChartOptions = {
+    title: { text: 'Deux boutiques inventées, comparées à janvier' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique nord', data: [210, 231, 224, 262, 282, 277] },
+      { type: 'line', id: 'south', name: 'Boutique sud', data: [90, 88, 101, 111, 109, 126] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['compare']}
+  options={{
+    title: { text: 'Deux boutiques inventées, comparées à janvier' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique nord', data: [210, 231, 224, 262, 282, 277] },
+      { type: 'line', id: 'south', name: 'Boutique sud', data: [90, 88, 101, 111, 109, 126] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`compareTo`](../compare-to/) : une base fixe.
+- [Explorer](../../../guides/exploring/) : comparer, avec les autres façons d'explorer.

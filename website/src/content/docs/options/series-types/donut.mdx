@@ -1,0 +1,103 @@
+---
+title: "donut"
+description: "A donut: a pie with a hole that holds the total. Its own options: others, hole, center."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A pie with a hole, which holds the total.
+
+<OptionFacts seriesType="donut" />
+
+## What it draws
+
+Everything a [pie](../pie/) does, `others` included, with a hole in the middle. `hole` is its size as a share of the
+radius, from 0 to 0.9; anything else is reported (`invalid-option`, `series[i].hole`). The hole shows the total and
+the word « Total »; `center: { label, value }` writes your own words (both strings), and `center: false` leaves it
+empty. A `center` of another shape is `invalid-option` (`series[i].center`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { donut } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('seeds')!,
+  {
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Seeds',
+        hole: 0.5,
+        center: { label: 'Packets', value: '1 400' },
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  },
+  { types: [donut] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { donut, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-seeds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Seeds {
+  readonly types = [donut];
+  readonly options: ChartOptions = {
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Seeds',
+        hole: 0.5,
+        center: { label: 'Packets', value: '1 400' },
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Seeds sown (made up)' },
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Seeds',
+        hole: 0.5,
+        center: { label: 'Packets', value: '1 400' },
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  }}
+/>
+
+## See also
+
+- [`pie`](../pie/): the slices, their labels and « Others ».
+- [Series types](../../../guides/series-types/).

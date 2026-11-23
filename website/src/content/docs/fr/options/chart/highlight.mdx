@@ -1,0 +1,92 @@
+---
+title: "highlight"
+description: "Estomper les autres séries pendant qu'on en pointe une."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Estomper les autres séries pendant qu'on en pointe une.
+
+<OptionFacts chart="highlight" />
+
+## Ce qu'elle fait
+
+Pendant que le pointeur est sur une colonne, une barre ou un point de nuage, les autres séries s'estompent à 35 %,
+pour que celle qu'on pointe ressorte ; l'infobulle la nomme. Un graphique de lignes, dont l'infobulle commune liste
+toutes les séries, n'estompe rien. `false` coupe l'estompage : chaque série reste telle quelle.
+
+La mise en avant ne vient que du pointeur. L'estompage d'une [`selection`](../selection/) est autre chose et dure.
+Une autre valeur qu'un booléen est signalée (`invalid-option` sur `highlight`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('highlight')!,
+  {
+    highlight: false,
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes'] },
+    series: [
+      { type: 'column', id: 'y2025', name: '2025', data: [52, 31, 18] },
+      { type: 'column', id: 'y2026', name: '2026', data: [47, 35, 22] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-highlight',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class HighlightChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    highlight: false,
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes'] },
+    series: [
+      { type: 'column', id: 'y2025', name: '2025', data: [52, 31, 18] },
+      { type: 'column', id: 'y2026', name: '2026', data: [47, 35, 22] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fruits cueillis, sans mise en avant (inventés)' },
+    highlight: false,
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes'] },
+    series: [
+      { type: 'column', id: 'y2025', name: '2025', data: [52, 31, 18] },
+      { type: 'column', id: 'y2026', name: '2026', data: [47, 35, 22] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [Interactions](../../../guides/interactions/) : l'infobulle et la mise en avant.

@@ -1,0 +1,91 @@
+---
+title: "rangeButtons"
+description: "Buttons for usual spans of time: a month, three months, the year so far, a year, all."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Buttons for usual spans of time: a month, three months, the year so far, a year, all.
+
+<OptionFacts chart="rangeButtons" />
+
+## What it does
+
+Above the plot, on the reading direction's start side: « 1m », « 3m », « YTD », « 1y », « All » (in the chart's
+language). Each shows a span ending at the last point, counted on the axis's calendar and zone: one or three months
+back, from 1 January of the last point's year, one year back; « All » goes back to the whole data. A button whose span
+is longer than the data is disabled; the one matching the visible range is pressed.
+
+They come by default with the [`navigator`](../navigator/) on a time axis; `false` leaves them out, `true` shows them
+without the navigator. They need the [`navigatorStrip`](../../features/navigator-strip/) feature (`missing-module` at
+`rangeButtons` without it). They are spans of time: off a time axis they are reported (`not-available` at
+`rangeButtons`, detail `not-time`) and left out. A value other than a boolean is `invalid-option`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis, navigatorStrip } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('range-buttons')!,
+  {
+    rangeButtons: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'level', name: 'Pond level (cm)', data: [['2025-06-01', 38], ['2025-12-01', 47], ['2026-03-01', 52], ['2026-04-01', 49]] }],
+  },
+  { types: [line], features: [timeAxis, navigatorStrip] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { timeAxis, navigatorStrip } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-range-buttons',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class RangeButtonsChart {
+  readonly types = [line];
+  readonly features = [timeAxis, navigatorStrip];
+  readonly options: ChartOptions = {
+    rangeButtons: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'level', name: 'Pond level (cm)', data: [['2025-06-01', 38], ['2025-12-01', 47], ['2026-03-01', 52], ['2026-04-01', 49]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={340}
+  features={['timeAxis', 'navigatorStrip']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'A made-up sensor, one reading a minute' },
+    rangeButtons: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`navigator`](../navigator/): the strip they come with.
+- [Exploring](../../../guides/exploring/): zoom, the navigator and the view.

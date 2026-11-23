@@ -1,0 +1,93 @@
+---
+title: "area"
+description: "Une aire : une ligne remplie jusqu'à zéro. Ses options propres : marker, stack."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Une ligne dont la surface est remplie jusqu'à zéro.
+
+<OptionFacts seriesType="area" />
+
+## Ce qu'il dessine
+
+Une aire est une [ligne](../line/) dont la surface est remplie jusqu'à zéro, translucide, la ligne par-dessus ; sous
+zéro, elle remplit jusqu'à zéro. Son axe contient toujours zéro. `marker` fonctionne comme sur une ligne.
+
+`stack` empile l'aire sur les autres aires de la même pile : `true` est la pile nommée `default`, une chaîne en nomme
+une autre. Les aires s'empilent par x égaux, un point manquant y comptant pour zéro ; l'axe des valeurs englobe les
+piles. `stacking: 'percent'` sur l'axe y fait de chaque pile des parts de son total. Les aires empilées ne sont pas
+décimées. Un `stack` qui n'est ni un booléen ni une chaîne non vide donne `invalid-option` (`series[i].stack`), de
+même qu'une pile sur un axe logarithmique.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { area } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('visits')!,
+  {
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Serre', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Verger', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  },
+  { types: [area] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { area, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Visits {
+  readonly types = [area];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Serre', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Verger', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visiteurs, empilés (inventés)' },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Serre', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Verger', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`line`](../line/) : la même sans le remplissage.
+- [`stacking`](../../axis/stacking/) : des piles en parts.
+- [Types de séries](../../../guides/series-types/) : les piles.

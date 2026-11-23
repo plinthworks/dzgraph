@@ -1,0 +1,93 @@
+---
+title: "area"
+description: "An area: a line filled down to zero. Its own options: marker, stack."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A line with its surface filled down to zero.
+
+<OptionFacts seriesType="area" />
+
+## What it draws
+
+An area is a [line](../line/) whose surface is filled down to zero, translucent, with the line on top; below zero it
+fills up to zero. Its axis always holds zero. `marker` works as on a line.
+
+`stack` piles the area on the other areas of the same stack: `true` is the stack named `default`, a string names
+another. Areas pile by equal x values, a missing point counting as zero there; the value axis takes the piles in.
+`stacking: 'percent'` on the y axis turns each pile into shares of its total. Stacked areas are not decimated. A
+`stack` that is not a boolean or a non-empty string is `invalid-option` (`series[i].stack`), and so is a stack on a
+log axis.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { area } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('visits')!,
+  {
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Greenhouse', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Orchard', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  },
+  { types: [area] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { area, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Visits {
+  readonly types = [area];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Greenhouse', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Orchard', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visitors, stacked (made up)' },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Greenhouse', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Orchard', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`line`](../line/): the same without the fill.
+- [`stacking`](../../axis/stacking/): piles as shares.
+- [Series types](../../../guides/series-types/): stacks.

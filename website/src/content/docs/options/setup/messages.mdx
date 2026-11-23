@@ -1,0 +1,74 @@
+---
+title: "messages"
+description: "Words to use instead of the built-in ones, in any language."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Words to use instead of the built-in ones.
+
+<OptionFacts setup="messages" />
+
+## What it does
+
+A chart writes words of its own: « No data », a series without a name, the summary and each point's label for
+screen readers, the tooltip's total, the menu, the breadcrumb, the selection's count. English and French are built in.
+The chart picks them by the language of its [`locale`](../../chart/locale/), else of the nearest `lang` attribute
+around it, else of the browser; any other language gets the English words.
+
+`messages` puts the app's words on top, for any language: some words to change, or every word of a language DzGraph
+does not ship. Its type is `Partial<Messages>` (`Messages` from `@dzgraph/dom`). A group of words (`menu`,
+`exporting`, `drill`, `shapes`) is replaced whole, so give all of its words. A word that depends on a value is a
+function (`seriesName: (place) => …`).
+
+`<dz-chart>` takes them as its `[messages]` input; a new value draws a new chart.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, type Messages } from '@dzgraph/dom';
+
+const words: Partial<Messages> = {
+  noData: 'Nothing measured yet',
+  seriesName: (place) => `Sensor ${place}`,
+};
+
+chart(document.getElementById('sensors')!, { title: { text: 'Garden sensors (made up)' }, series: [{ type: 'line', data: [] }] }, { types: [line], messages: words });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import type { Messages } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sensors',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [messages]="words" />`,
+})
+export class Sensors {
+  readonly types = [line];
+  readonly words: Partial<Messages> = {
+    noData: 'Nothing measured yet',
+    seriesName: (place) => `Sensor ${place}`,
+  };
+  readonly options: ChartOptions = { title: { text: 'Garden sensors (made up)' }, series: [{ type: 'line', data: [] }] };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [`locale`](../../chart/locale/): the language of numbers, dates and words.
+- [Theming and right to left](../../../guides/theming-rtl/): the chart's words.

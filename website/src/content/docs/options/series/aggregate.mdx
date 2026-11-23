@@ -1,0 +1,85 @@
+---
+title: "aggregate"
+description: "How the series sums up its points when the x axis aggregates them: sum, mean, min, max or count."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+How the series sums up its points, when the x axis groups them by period or by bucket.
+
+<OptionFacts series="aggregate" />
+
+## What it does
+
+Used only when the x axis aggregates: by its [`aggregate`](../../axis/aggregate/) option, or by the user's choice in
+the [menu](../../chart/menu/). Each period, or bucket, becomes one point: `'sum'` of its values, their `'mean'`,
+their `'min'`, their `'max'`, or the `'count'` of its points. Gaps count for nothing, and a period without points is a
+gap, not a zero. The tooltip names the period and says how many points it holds. Another value is reported as
+`invalid-option` (`series[i].aggregate`) and the default is used.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { aggregation, chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('sensor')!,
+  {
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' },
+    series: [{ type: 'column', id: 'sensor', name: 'Highest reading', aggregate: 'max', data: [['2026-01-01T09:00Z', 4], ['2026-01-01T15:00Z', 7], ['2026-01-02T11:00Z', 5]] }],
+  },
+  { types: [column], features: [aggregation, timeAxis] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { aggregation, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sensor',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Sensor {
+  readonly types = [column];
+  readonly features = [aggregation, timeAxis];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' },
+    series: [{ type: 'column', id: 'sensor', name: 'Highest reading', aggregate: 'max', data: [['2026-01-01T09:00Z', 4], ['2026-01-01T15:00Z', 7], ['2026-01-02T11:00Z', 5]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  features={['timeAxis', 'aggregation']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'A made-up sensor, highest reading by day' },
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' },
+    series: [{ type: 'column', id: 'sensor', name: 'Highest reading', aggregate: 'max', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`aggregate`](../../axis/aggregate/) on the axis: the periods or buckets.
+- [`aggregation`](../../features/aggregation/), the feature.
+- [Exploring](../../../guides/exploring/): aggregation.

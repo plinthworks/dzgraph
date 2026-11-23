@@ -1,0 +1,71 @@
+---
+title: "description"
+description: "Une phrase pour les lecteurs d'écran, après le résumé que le graphique écrit."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Une phrase pour les lecteurs d'écran, après le résumé que le graphique écrit.
+
+<OptionFacts chart="description" />
+
+## Ce qu'elle fait
+
+Le graphique est une figure pour les lecteurs d'écran, décrite par un résumé qu'il écrit lui-même : son genre, ses
+séries et l'étendue de chacune, son axe x (« Graphique en lignes, 2 séries… »). `description` ajoute la phrase de
+l'app après lui — à quoi sert le graphique, ce qu'il faut remarquer. Elle n'est pas montrée à l'écran. Une image SVG
+exportée porte le même texte dans son `<desc>`.
+
+Une autre valeur qu'une chaîne est signalée (`invalid-option` sur `description`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('description')!,
+  {
+    title: 'Visites (inventées)',
+    description: 'Les visites ont doublé entre janvier et juin.',
+    series: [{ type: 'line', id: 'visits', name: 'Visites', data: [310, 340, 420, 510, 580, 640] }],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-description',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class DescriptionChart {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: 'Visites (inventées)',
+    description: 'Les visites ont doublé entre janvier et juin.',
+    series: [{ type: 'line', id: 'visits', name: 'Visites', data: [310, 340, 420, 510, 580, 640] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [`title`](../title/) : le nom que les lecteurs d'écran entendent d'abord.
+- [Accessibilité](../../../guides/accessibility/) : lecteurs d'écran, clavier, tableau de données.

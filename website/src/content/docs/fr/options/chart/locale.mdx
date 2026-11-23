@@ -1,0 +1,88 @@
+---
+title: "locale"
+description: "La langue dans laquelle sont écrits les nombres, les dates et les mots du graphique."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+La langue dans laquelle sont écrits les nombres, les dates et les mots du graphique.
+
+<OptionFacts chart="locale" />
+
+## Ce qu'elle fait
+
+Une étiquette de langue (`'de-DE'`, `'fr'`, `'ar-EG'`), donnée à `Intl` : elle écrit les graduations, l'infobulle,
+le tableau de données et les libellés des lecteurs d'écran — chiffres, séparateurs, noms des mois. Elle choisit aussi
+les mots du graphique (« Aucune donnée », le menu, le résumé) : l'anglais et le français sont fournis, une autre
+langue prend l'anglais sauf si `chart()` reçoit des [`messages`](../../setup/messages/).
+
+Sans elle, le graphique prend le `lang` de son élément ou du parent le plus proche qui en a un, sinon la langue du
+navigateur. Une étiquette qu'`Intl` refuse est signalée (`invalid-option` sur `locale`) et la langue de la page est
+prise.
+
+La langue ne choisit ni le fuseau ([`zone`](../../axis/zone/)) ni le sens de lecture ([`dir`](../dir/)).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('locale')!,
+  {
+    locale: 'de-DE',
+    xAxis: { scale: 'category', categories: ['Nord', 'Sud', 'Est'] },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', data: [1234.5, 2875.25, 1980.75] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-locale',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class LocaleChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    locale: 'de-DE',
+    xAxis: { scale: 'category', categories: ['Nord', 'Sud', 'Est'] },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', data: [1234.5, 2875.25, 1980.75] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Miel par ruche, en allemand (inventé)' },
+    locale: 'de-DE',
+    xAxis: { scale: 'category', categories: ['Nord', 'Sud', 'Est'] },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', data: [1234.5, 2875.25, 1980.75] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`dir`](../dir/) : le sens de lecture.
+- [Thème et droite à gauche](../../../guides/theming-rtl/) : les mots du graphique et la droite à gauche.

@@ -1,0 +1,104 @@
+---
+title: "data"
+description: "Les valeurs de la série : des valeurs seules, des paires, des points écrits en entier ou des colonnes typées."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les valeurs de la série, sous l'une de quatre formes.
+
+<OptionFacts series="data" />
+
+## Ce qu'elle fait
+
+- **Des valeurs seules**, `[3, 5, null, 4]` : x est la place de chaque valeur, ou les catégories de l'axe dans l'ordre.
+- **Des paires**, `[[x, y], …]` : x un nombre, une chaîne (une catégorie, ou une date-heure sur un axe de temps), y un
+  nombre.
+- **Des points**, `[{ x, y, key, name }, …]` : `key` est l'identité du point (pour un détail par clic, une ligne de
+  DzGrid, un graphique lié) ; `name` remplace x dans l'infobulle et le tableau de données.
+- **Des colonnes**, `{ x, y, key }` : un tableau par champ, de même longueur ; la forme la plus rapide pour une grosse
+  série. Un `y` typé (`Float64Array`) est lu sans copie, et `NaN` y est un trou.
+
+`null` est un trou : une ligne s'y coupe, une colonne y manque. Un secteur prend des parts (`[['Pommes', 120], …]`) et
+une jauge une seule valeur (`72`) : voir [`pie`](../../series-types/pie/) et [`gauge`](../../series-types/gauge/).
+
+Une mauvaise valeur ne lève jamais d'exception : chaque sorte de faute devient un trou, signalée une fois pour la
+série avec sa première place et son nombre, jamais la valeur. Une valeur qui n'est pas un nombre donne `invalid-data`
+(`series[i].data[3]`, `count=2`) ; `Infinity` donne `non-finite-value` ; une clé répétée, `duplicate-key` ; des
+colonnes de longueurs différentes, `invalid-data` avec `length`. Sur une ligne ou une aire, des x qui reculent sont
+dessinés tels quels et signalés (`unsorted-x`). `setData()` remplace les valeurs seules, la mise à jour la moins
+coûteuse.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('shapes')!,
+  {
+    series: [
+      { type: 'line', id: 'values', name: 'Valeurs', data: [3, 5, null, 4, 6] },
+      { type: 'line', id: 'pairs', name: 'Paires', data: [[0, 2], [1, 3], [3, 2.5], [4, 4]] },
+      { type: 'line', id: 'points', name: 'Points', data: [{ x: 0, y: 1, key: 'start' }, { x: 2, y: 1.5, name: 'Milieu' }, { x: 4, y: 2 }] },
+      { type: 'line', id: 'columns', name: 'Colonnes', data: { x: new Float64Array([0, 1, 2, 3, 4]), y: new Float64Array([6, 6.5, 7, 6, 7.5]) } },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-shapes',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Shapes {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    series: [
+      { type: 'line', id: 'values', name: 'Valeurs', data: [3, 5, null, 4, 6] },
+      { type: 'line', id: 'pairs', name: 'Paires', data: [[0, 2], [1, 3], [3, 2.5], [4, 4]] },
+      { type: 'line', id: 'points', name: 'Points', data: [{ x: 0, y: 1, key: 'start' }, { x: 2, y: 1.5, name: 'Milieu' }, { x: 4, y: 2 }] },
+      { type: 'line', id: 'columns', name: 'Colonnes', data: { x: new Float64Array([0, 1, 2, 3, 4]), y: new Float64Array([6, 6.5, 7, 6, 7.5]) } },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Quatre formes de données (inventées)' },
+    series: [
+      { type: 'line', id: 'values', name: 'Valeurs', data: [3, 5, null, 4, 6] },
+      { type: 'line', id: 'pairs', name: 'Paires', data: [[0, 2], [1, 3], [3, 2.5], [4, 4]] },
+      { type: 'line', id: 'points', name: 'Points', data: [{ x: 0, y: 1, key: 'start' }, { x: 2, y: 1.5, name: 'Milieu' }, { x: 4, y: 2 }] },
+      { type: 'line', id: 'columns', name: 'Colonnes', data: { x: [0, 1, 2, 3, 4], y: [6, 6.5, 7, 6, 7.5] } },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [Les données](../../../guides/data/) : chaque forme, les trous et les clés, en détail.
+- [Gros volumes](../../../guides/big-data/) : des colonnes typées à un million de points.

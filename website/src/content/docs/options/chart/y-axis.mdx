@@ -1,0 +1,104 @@
+---
+title: "yAxis"
+description: "The value axis, or several of them."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The value axis, or several of them.
+
+<OptionFacts chart="yAxis" />
+
+## What it does
+
+One axis, or a list of axes. Absent, the chart makes one, its scale guessed from the data: `'category'`
+when the y values are strings, else `'linear'`. Each axis's keys have their page under [Axes](../../axis/scale/):
+[`scale`](../../axis/scale/), [`min`](../../axis/min/) and [`max`](../../axis/max/),
+[`ticks`](../../axis/ticks/), [`title`](../../axis/title/), [`opposite`](../../axis/opposite/),
+[`reversed`](../../axis/reversed/), and the keys of one scale ([`categories`](../../axis/categories/),
+[`zone`](../../axis/zone/)).
+
+With several axes, the first is `y`, the next `y2`, `y3`… unless an axis has an [`id`](../../axis/id/); a series
+names the one it is drawn against ([`yAxis`](../../series/y-axis/)). An id is shared by x and y axes: two axes may not have
+the same one (`duplicate-id`).
+
+A value axis may show its piles as shares ([`stacking`](../../axis/stacking/)) and compare each series to a
+baseline ([`compare`](../../axis/compare/)). Two value axes: give the second `opposite: true` to put it on the far
+side; its ticks fall on the first one's gridlines, and each axis shows the signs of its series before its title.
+
+Problems name the axis by its place, even when one axis is given alone: `yAxis[0]`. An axis that is not an object is
+`invalid-option` at `yAxis[i]`; a key the axis's scale does not have is `unknown-option` at `yAxis[i].<key>`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('y-axis')!,
+  {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: [{ title: 'Rain (mm)' }, { title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'y2', data: [4, 6, 9, 12, 16, 19] },
+    ],
+  },
+  { types: [column, line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-y-axis',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class YAxisChart {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: [{ title: 'Rain (mm)' }, { title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'y2', data: [4, 6, 9, 12, 16, 19] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Rain and warmth (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: [{ title: 'Rain (mm)' }, { title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'y2', data: [4, 6, 9, 12, 16, 19] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`xAxis`](../x-axis/): the axis of the x values.
+- [Axes and time](../../../guides/axes-time/): two value axes, log scale, bounds.

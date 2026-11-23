@@ -1,0 +1,79 @@
+---
+title: "reversed"
+description: "The axis drawn from its end to its start."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The axis drawn from its end to its start.
+
+<OptionFacts axis="reversed" />
+
+## What it does
+
+Values grow towards the origin: on a y axis, downwards (a depth, a rank where 1 is best); on an x axis, from the
+end of the reading direction to its start. Every other rule stays: rounded ends, ticks, zero kept for columns and
+areas, which now grow from the top. On a log axis it works the same.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { area } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('lake')!, {
+  title: { text: 'A made-up lake, crossed' },
+  xAxis: { title: 'Distance from the shore (m)' },
+  yAxis: { title: 'Depth (m)', reversed: true },
+  series: [{ type: 'area', id: 'depth', name: 'Depth', data: [[0, 0], [20, 3.5], [40, 8.2], [60, 12.4], [80, 9.1], [100, 2.6], [120, 0]] }],
+}, { types: [area] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { area, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-lake',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Lake {
+  readonly types = [area];
+  readonly options: ChartOptions = {
+    title: { text: 'A made-up lake, crossed' },
+    xAxis: { title: 'Distance from the shore (m)' },
+    yAxis: { title: 'Depth (m)', reversed: true },
+    series: [{ type: 'area', id: 'depth', name: 'Depth', data: [[0, 0], [20, 3.5], [40, 8.2], [60, 12.4], [80, 9.1], [100, 2.6], [120, 0]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'A made-up lake, crossed' },
+    xAxis: { title: 'Distance from the shore (m)' },
+    yAxis: { title: 'Depth (m)', reversed: true },
+    series: [{ type: 'area', id: 'depth', name: 'Depth', data: [[0, 0], [20, 3.5], [40, 8.2], [60, 12.4], [80, 9.1], [100, 2.6], [120, 0]] }],
+  }}
+/>
+
+## See also
+
+- [`opposite`](../opposite/): the axis on the far side.
+- [Axes and time](../../../guides/axes-time/).

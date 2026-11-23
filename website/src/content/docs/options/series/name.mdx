@@ -1,0 +1,87 @@
+---
+title: "name"
+description: "The series' name, in the legend, the tooltip, the data table and for screen readers."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series' name, shown in the legend, the tooltip and the data table, and read by screen readers.
+
+<OptionFacts series="name" />
+
+## What it does
+
+Text, written as given. A name in another script keeps its own direction (« مبيعات » reads right to left in a left
+to right chart). Absent, the chart names the series by its place, in its own language: « Series 2 » here, « Série 2 »
+on a French page; the `seriesName` words of `messages` change that. A name that is not a string is reported as
+`invalid-option` (`series[i].name`).
+
+The name is what a reader sees, not an identity: [`id`](../id/) is what updates and the view use.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('bees')!,
+  {
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 18, 26, 31] },
+      { type: 'line', id: 'hiveB', data: [8, 11, 19, 24] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Bees {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 18, 26, 31] },
+      { type: 'line', id: 'hiveB', data: [8, 11, 19, 24] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Bees seen (made up)' },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 18, 26, 31] },
+      { type: 'line', id: 'hiveB', data: [8, 11, 19, 24] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`id`](../id/): the series' identity.
+- [`messages`](../../setup/messages/): the chart's own words.

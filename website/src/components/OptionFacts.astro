@@ -1,0 +1,113 @@
+---
+/**
+ * An option's facts, generated from the sources (scripts/gen-options.mjs → src/generated/options.json): its type, its
+ * default or that it is required, the feature it needs, how it is updated, how Angular gives it, where it is
+ * declared. A series type's: its import, how it is drawn, its own options. A feature's: its import, the features it
+ * brings, the options that need it. An unknown name fails the build. Taken from DzGrid's OptionFacts.
+ *
+ *   <OptionFacts chart="aspectRatio" />      <OptionFacts series="color" />     <OptionFacts axis="zone" />
+ *   <OptionFacts setup="types" />            <OptionFacts seriesType="donut" /> <OptionFacts feature="zoom" />
+ *
+ * Links point within options/: `../../<section>/<slug>/` from a page two levels down.
+ */
+import data from '../generated/options.json';
+import { FACTS } from '../i18n/facts';
+
+interface Props {
+  chart?: string;
+  series?: string;
+  axis?: string;
+  setup?: string;
+  seriesType?: string;
+  feature?: string;
+}
+type Default = { code: string } | { token: string } | null;
+interface Key {
+  name: string;
+  type?: string;
+  required?: boolean;
+  default: Default;
+  feature: string | null;
+  source: string;
+  scales?: { scale: string; type: string; feature?: string }[];
+  angular?: boolean;
+  angularDefault?: string | null;
+}
+
+const props = Astro.props;
+const kind = (['chart', 'series', 'axis', 'setup', 'seriesType', 'feature'] as const).find((k) => props[k] !== undefined);
+const name = kind ? props[kind]! : '';
+const words = FACTS[Astro.currentLocale === 'fr' ? 'fr' : 'en'];
+const fail = (why: string) => {
+  throw new Error(`<OptionFacts ${kind}="${name}">: ${why} (node scripts/gen-options.mjs)`);
+};
+const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const code = (text: string) => `<code>${escape(text)}</code>`;
+const inline = (md: string) => escape(md).replace(/`([^`]+)`/g, '<code>$1</code>');
+const kebab = (s: string) => s.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+const link = (section: string, slug: string, text: string) => `<a href="../../${section}/${kebab(slug)}/">${text}</a>`;
+const def = (d: Default) => {
+  if (d === null) return words.none;
+  if ('code' in d) return code(d.code);
+  const t = words.tokens[d.token];
+  if (!t) fail(`no words for the default {${d.token}} in src/i18n/facts.ts`);
+  return inline(t!);
+};
+const featureLink = (f: string) => link('features', f, code(f));
+const href = (source: string) => `https://github.com/plinthworks/dzgraph/blob/main/${source}`;
+const sourceCell = (source: string) => `<a href="${href(source)}"><code>${escape(source.replace(/#L\d+$/, ''))}</code></a>`;
+
+/** The rows of the table: a heading (plain or with code) and a cell, both as HTML. */
+const rows: [string, string][] = [];
+let ownKeys: Key[] = [];
+if (kind === 'chart' || kind === 'series' || kind === 'setup') {
+  const list = (kind === 'chart' ? data.chart : kind === 'series' ? data.series : data.setup) as Key[];
+  const k = list.find((o) => o.name === name) ?? fail('not an option of that name');
+  rows.push([words.type, code(k!.type!)]);
+  rows.push(k!.required ? [words.required, words.yes] : [words.default, def(k!.default)]);
+  if (kind !== 'setup') rows.push([words.needs, k!.feature ? featureLink(k!.feature) : words.noFeature]);
+  rows.push([words.live, inline(kind === 'chart' ? words.liveChart(name) : kind === 'series' ? words.liveSeries : words.liveSetup)]);
+  rows.push([words.angular, inline(kind === 'setup' ? (k!.angular ? words.angularInput(name, k!.angularDefault ?? null) : '—') : words.angularOptions)]);
+  rows.push([words.source, sourceCell(k!.source)]);
+} else if (kind === 'axis') {
+  const k = (data.axis as Key[]).find((o) => o.name === name) ?? fail('not an axis option of that name');
+  // One type when every scale agrees; else a row per scale.
+  const types = [...new Set(k!.scales!.map((s) => s.type))];
+  if (types.length === 1) rows.push([words.type, `${code(types[0]!)} — ${k!.scales!.map((s) => inline(words.onScale(s.scale))).join(', ')}`]);
+  else for (const s of k!.scales!) rows.push([escape(words.typeOn(s.scale)), code(s.type)]);
+  rows.push([words.default, def(k!.default)]);
+  const needs = k!.feature ? featureLink(k!.feature) : k!.scales!.filter((s) => s.feature).map((s) => `${featureLink(s.feature!)} (${inline(words.onScale(s.scale))})`).join(', ') || words.noFeature;
+  rows.push([words.needs, needs]);
+  rows.push([words.live, inline(words.liveAxis)]);
+  rows.push([words.angular, inline(words.angularOptions)]);
+  rows.push([words.source, sourceCell(k!.source)]);
+} else if (kind === 'seriesType') {
+  const t = data.seriesTypes.find((o) => o.name === name) ?? fail('not a series type of that name');
+  rows.push([words.entry, code(`import { ${name} } from '${t!.entry}';`)]);
+  rows.push([words.system, escape(words.systems[t!.system!] ?? t!.system!)]);
+  rows.push([words.source, sourceCell(t!.source)]);
+  ownKeys = t!.keys as Key[];
+} else if (kind === 'feature') {
+  const f = data.features.find((o) => o.name === name) ?? fail('not a feature of that name');
+  rows.push([words.entry, code(`import { ${name} } from '@dzgraph/dom';`)]);
+  if (f!.needs.length) rows.push([words.brings, f!.needs.map(featureLink).join(', ')]);
+  const sections: Record<string, string> = { chart: 'chart', series: 'series', axis: 'axis' };
+  if (f!.enables.length) rows.push([words.enables, f!.enables.map((e) => link(sections[e.section]!, e.name, code(e.name)) + ('scale' in e && e.scale ? ` (${inline(words.onScale(e.scale))})` : '')).join(', ')]);
+  rows.push([words.source, sourceCell(f!.source)]);
+} else fail('give one of chart, series, axis, setup, seriesType, feature');
+---
+
+<table class="dzgraph-facts">
+  <tbody>
+    {rows.map(([th, td]) => <tr><th scope="row" set:html={th} /><td set:html={td} /></tr>)}
+  </tbody>
+</table>
+{ownKeys.length > 0 && (
+  <table class="dzgraph-facts">
+    <caption>{words.keys}</caption>
+    <thead><tr><th scope="col">{words.key}</th><th scope="col">{words.type}</th><th scope="col">{words.default}</th></tr></thead>
+    <tbody>
+      {ownKeys.map((k) => <tr><th scope="row"><code>{k.name}</code></th><td set:html={code(k.type!)} /><td set:html={k.required ? words.required : def(k.default)} /></tr>)}
+    </tbody>
+  </table>
+)}

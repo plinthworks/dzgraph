@@ -1,0 +1,94 @@
+---
+title: "zoom"
+description: "Le zoom et le déplacement par l'utilisateur : glisser, Maj + glisser, Ctrl/⌘ + molette, pincer, touches."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le zoom et le déplacement par l'utilisateur : glisser, Maj + glisser, Ctrl/⌘ + molette, pincer, touches.
+
+<OptionFacts feature="zoom" />
+
+## Ce qu'elle fait
+
+Il n'y a pas d'option : la fonction donnée, l'utilisateur peut zoomer sur l'axe des x.
+
+- **Souris ou stylet** : glisser sur le tracé dessine une bande sur la plage de x couverte, et relâcher zoome dessus
+  (moins de 5 px, c'est un clic). Une fois zoomé, Maj + glisser déplace la plage.
+- **Molette** : la molette fait défiler la page, comme sur toute page ; Ctrl (⌘ sur Mac) + molette zoome autour du
+  pointeur.
+- **Tactile** : pincer zoome autour du milieu des doigts ; une fois zoomé, glisser d'un doigt déplace la plage.
+- **Clavier**, sur un point qui a le focus : + et − zooment autour de lui, Maj + ← et → déplacent la plage, 0 montre
+  tout.
+
+Zoomé, un bouton « Réinitialiser le zoom » apparaît au bout du bord haut du tracé. Un zoom ne dépasse jamais les bouts
+des données, ni ne descend sous deux points sur la largeur du tracé ; sur un axe de catégories, il couvre des
+catégories entières. Les axes de valeurs s'ajustent aux points visibles, sauf si leurs bornes sont fixées.
+
+La plage fait partie de la vue : `rangeChange` donne ses bornes (`null` pour le tout), `getView()` la garde et
+`setView()` la rend. Avec [`selection`](../selection/) ou [`measure`](../measure/), une barre de modes choisit ce que
+fait un glisser ; Ctrl/⌘ + molette zoome dans tous les modes.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, zoom } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('sales')!,
+  { series: [{ type: 'line', id: 'sales', name: 'Ventes', data: [12, 18, 15, 22, 30, 27, 35, 31, 40, 38] }] },
+  { types: [line], features: [zoom] },
+);
+c.on('rangeChange', (e) => console.log(e.range));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sales',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (rangeChange)="range = $event" />`,
+})
+export class Sales {
+  readonly types = [line];
+  readonly features = [zoom];
+  range: { readonly min: number; readonly max: number } | null = null;
+  readonly options: ChartOptions = {
+    series: [{ type: 'line', id: 'sales', name: 'Ventes', data: [12, 18, 15, 22, 30, 27, 35, 31, 40, 38] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'zoom']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'Un capteur inventé : glissez sur le tracé pour zoomer' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [Explorer](../../../guides/exploring/) : le guide.
+- [`navigatorStrip`](../navigator-strip/) : le navigateur et les boutons de plage.

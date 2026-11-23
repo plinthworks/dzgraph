@@ -1,8 +1,71 @@
 ---
 title: "Options"
-description: "Every option of a chart, a series, an axis and a module, one page each."
+description: "Every option of a chart, a series, an axis, chart()'s setup and each feature, one page each, its facts read from the sources."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [the option types](https://github.com/plinthworks/dzgraph/blob/main/packages/core/src/options.ts).
-:::
+import OptionFacts from '../../../components/OptionFacts.astro';
+
+One page per option, in six groups. Each page starts with the option's facts, read from the library's sources, then
+says what it does, with an example and often a live chart.
+
+## The groups
+
+| Group | What it holds | For instance |
+|---|---|---|
+| Chart | the top-level keys of `ChartOptions` | [`title`](chart/title/), [`aspectRatio`](chart/aspect-ratio/) |
+| Series | the keys every series has, whatever its type | [`data`](series/data/), [`id`](series/id/) |
+| Series types | each series type, with its own keys | [`line`](series-types/line/), [`donut`](series-types/donut/) |
+| Axes | the keys of an axis, with the scales each holds for | [`scale`](axis/scale/), [`zone`](axis/zone/) |
+| Setup | the third argument of `chart()`: `types`, `features`, `messages`, `animate` | [`types`](setup/types/), [`features`](setup/features/) |
+| Features | each feature of `@dzgraph/dom`, and the options that need it | [`zoom`](features/zoom/), [`timeAxis`](features/time-axis/) |
+
+An axis option is given in `xAxis` or `yAxis`, one axis or a list of them; a series option in each entry of `series`.
+
+## Reading a facts table
+
+This is the table of [`aspectRatio`](chart/aspect-ratio/):
+
+<OptionFacts chart="aspectRatio" />
+
+- **Type**: as the types write it.
+- **Default**, or **Required** when the option has none.
+- **Needs**: the feature to give `chart()` in `features`. Without it the option is reported (`missing-module`) and the
+  chart draws without it.
+- **Live update**: how a new value reaches a chart already drawn.
+- **Angular**: how `<dz-chart>` takes it.
+- **Declared in**: the line of the sources, on GitHub.
+
+A script reads these facts from the sources, and the site's tests check them: that each page shows its own, that every
+option has a page, and that each « Needs » is the feature the chart really asks for.
+
+## Updating options
+
+`update()` takes any top-level field of the options:
+
+- a field given replaces the previous one whole: no deep merge to guess about;
+- a field given as `undefined` goes back to its default;
+- a field left out is kept;
+- `series` is matched by `id`: a series that keeps its id keeps the user's state on it and is animated from where it
+  was.
+
+What the user did — a zoom, a hidden series, a selection — is the view, and new options never overwrite it.
+`setData()` replaces one series' values, the cheapest way to show new numbers; the next `update()` that gives that
+series' data wins over it. The setup (`types`, `features`, `messages`, `animate`) is read once, when the chart is made;
+in Angular a new value of those inputs draws a new chart.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { title: { text: 'Load (made up)' }, series: [{ type: 'line', id: 'load', data: [12, 15, 11] }] }, { types: [line] });
+
+c.update({ legend: false });
+c.update({ title: undefined });
+c.setData('load', [12, 15, 11, 18]);
+```
+
+## Options the chart cannot read
+
+A bad option never throws. A key the chart does not know is reported `unknown-option`, a value it cannot read
+`invalid-option`, an option without its feature `missing-module`, each with its path (`yAxis[0].min`); the chart draws
+what it can. The problems are in `c.problems` and the `problems` event, and never carry your data.

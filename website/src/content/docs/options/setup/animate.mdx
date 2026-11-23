@@ -1,0 +1,90 @@
+---
+title: "animate"
+description: "Drive the chart's animations yourself."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Drive the chart's animations yourself.
+
+<OptionFacts setup="animate" />
+
+## What it does
+
+A chart animates its first drawing (400 ms) and each update (250 ms) with its own timing. `animate` takes the
+timing over, to follow an app's own motion or a library such as GSAP. It is called instead, with an `AnimateHook`:
+
+- `from` and `to`: the two scenes;
+- `duration`: the milliseconds the chart would take;
+- `draw(t)`: draws the state at `t`, from 0 (`from`) to 1 (`to`), with any easing the app likes;
+- `done()`: ends the animation, drawing the end state if it was not.
+
+A newer animation, or the chart destroyed, makes the older hook's `draw` do nothing. The hook is not called when there
+is nothing to animate: under `prefers-reduced-motion: reduce`, or with [`animation: false`](../../chart/animation/),
+the end state is drawn at once.
+
+`<dz-chart>` takes it as its `[animate]` input; a new value draws a new chart.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, type AnimateHook } from '@dzgraph/dom';
+
+/** Twice as slow as the chart's own timing, at an even pace. */
+const slow = (a: AnimateHook) => {
+  const start = performance.now();
+  const step = (now: number) => {
+    const t = Math.min(1, (now - start) / (a.duration * 2));
+    a.draw(t);
+    if (t < 1) requestAnimationFrame(step);
+    else a.done();
+  };
+  requestAnimationFrame(step);
+};
+
+chart(document.getElementById('bees')!, { title: { text: 'Bees seen (made up)' }, series: [{ type: 'column', name: 'Bees', data: [12, 30, 52, 61] }] }, { types: [column], animate: slow });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import type { AnimateHook } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [animate]="slow" />`,
+})
+export class Bees {
+  readonly types = [column];
+  readonly options: ChartOptions = { title: { text: 'Bees seen (made up)' }, series: [{ type: 'column', name: 'Bees', data: [12, 30, 52, 61] }] };
+  /** Twice as slow as the chart's own timing, at an even pace. */
+  readonly slow = (a: AnimateHook) => {
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / (a.duration * 2));
+      a.draw(t);
+      if (t < 1) requestAnimationFrame(step);
+      else a.done();
+    };
+    requestAnimationFrame(step);
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [`animation`](../../chart/animation/): on or off.
+- [Interactions](../../../guides/interactions/): animation.

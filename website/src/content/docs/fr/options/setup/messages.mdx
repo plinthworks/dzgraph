@@ -1,0 +1,74 @@
+---
+title: "messages"
+description: "Des mots à la place de ceux fournis, dans toute langue."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des mots à la place de ceux fournis.
+
+<OptionFacts setup="messages" />
+
+## Ce qu'elle fait
+
+Un graphique écrit ses propres mots : « Aucune donnée », une série sans nom, le résumé et le nom de chaque point
+pour les lecteurs d'écran, le total de l'infobulle, le menu, le fil d'Ariane, le compte de la sélection. L'anglais et le
+français sont fournis. Le graphique les choisit selon la langue de sa [`locale`](../../chart/locale/), sinon de
+l'attribut `lang` le plus proche, sinon du navigateur ; toute autre langue reçoit les mots anglais.
+
+`messages` met les mots de l'app par-dessus, pour toute langue : quelques mots à changer, ou tous les mots d'une langue
+que DzGraph ne fournit pas. Son type est `Partial<Messages>` (`Messages` de `@dzgraph/dom`). Un groupe de mots (`menu`,
+`exporting`, `drill`, `shapes`) est remplacé en entier : donnez tous ses mots. Un mot qui dépend d'une valeur est une
+fonction (`seriesName: (place) => …`).
+
+`<dz-chart>` les prend par son entrée `[messages]` ; une nouvelle valeur dessine un nouveau graphique.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, type Messages } from '@dzgraph/dom';
+
+const words: Partial<Messages> = {
+  noData: 'Rien de mesuré pour le moment',
+  seriesName: (place) => `Capteur ${place}`,
+};
+
+chart(document.getElementById('sensors')!, { title: { text: 'Capteurs du jardin (inventés)' }, series: [{ type: 'line', data: [] }] }, { types: [line], messages: words });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import type { Messages } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sensors',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [messages]="words" />`,
+})
+export class Sensors {
+  readonly types = [line];
+  readonly words: Partial<Messages> = {
+    noData: 'Rien de mesuré pour le moment',
+    seriesName: (place) => `Capteur ${place}`,
+  };
+  readonly options: ChartOptions = { title: { text: 'Capteurs du jardin (inventés)' }, series: [{ type: 'line', data: [] }] };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [`locale`](../../chart/locale/) : la langue des nombres, des dates et des mots.
+- [Thème et droite à gauche](../../../guides/theming-rtl/) : les mots du graphique.

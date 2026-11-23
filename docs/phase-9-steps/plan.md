@@ -52,3 +52,20 @@ en main Angular (le détail des sorties ; `types`/`features` ne réduisent pas l
 
 À décider par le propriétaire : `DzChart` prend `allTypes` et `allFeatures` par défaut, si bien qu'une app Angular
 embarque tout quoi qu'elle passe. `drilldown: 'time'` part toujours des années, même avec `xAxis.aggregate` donné.
+
+## Lot 3 — une page par option (fait le 2026-11-23)
+
+Décision du propriétaire : une page par clé, comme DzGrid. Six groupes sous `options/` (graphique, séries, types de
+séries, axes, création, fonctions), 69 pages par langue et la page d'ensemble. Les faits viennent des sources : balises
+`@default` et `@feature` dans les commentaires des types (ôtés de la surface d'API), `scripts/gen-options.mjs`, le
+composant `OptionFacts` ; deux tests (les faits à jour et chaque option sa page ; chaque `@feature` tenu par le graphique
+lui-même). Pages écrites par quatre agents sur un pilote (`crosshair`), puis vérifiées : tests, construction, Chrome
+(142 pages, chaque démo dessinée, aucun message, chaque lien répond), images regardées.
+
+Trouvé et corrigé : le `drilldown` d'une série sans sa fonction était ignoré sans un mot (maintenant `missing-module`) ;
+un tableau de données montré débordait d'une démo de hauteur fixe (la démo prend alors la hauteur automatique, et la
+page `dataTable` dit pourquoi).
+
+À décider par le propriétaire, en plus du lot 2 : les `messages` donnés remplacent un groupe de mots entier (`menu`,
+`exporting`, `drill`, `shapes`) au lieu de le compléter ; les commentaires de `DzChart` promettent encore « pass only
+those you use to ship less », ce qui est faux tant que `allTypes`/`allFeatures` sont ses valeurs par défaut.

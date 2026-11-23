@@ -34,9 +34,13 @@ export interface ChartSetup {
   /**
    * The features this chart may use (ADR 0006): `{ features: [timeAxis, zoom] }`, or `allFeatures`. An option whose
    * module is missing is reported as `missing-module`; without `canvas` every series is drawn in SVG.
+   * @default `[]`
    */
   readonly features?: readonly Feature[];
-  /** Words to use instead of the built-in ones (any language; English and French ship). */
+  /**
+   * Words to use instead of the built-in ones (any language; English and French ship).
+   * @default {pageLanguageWords}
+   */
   readonly messages?: Partial<Messages>;
   /** Drive the animations yourself (animation.md 6), GSAP for instance: called instead of DzGraph's own timing. */
   readonly animate?: (animation: AnimateHook) => void;
@@ -513,8 +517,12 @@ export const chart: CreateChart = (element, initial, setup) => {
       zoomPart?.place(l.plot, width, dir, range, messages.resetZoom);
     }
 
-    // Options of the DOM's own modules, asked without them (ADR 0006).
-    const missing: Problem[] = [...(m.menu && !features.menu ? [{ code: 'missing-module' as const, path: 'menu', detail: 'menu' }] : []), ...(m.drill && !features.drill ? [{ code: 'missing-module' as const, path: 'drilldown', detail: 'drilldown' }] : [])];
+    // Options of the DOM's own modules, asked without them (ADR 0006). A series' `drilldown` too (Phase 9: it was
+    // ignored without a word), by its place in the app's options.
+    const seriesDrills = (): Problem[] =>
+      // `series` as plain JavaScript may pass it: anything but a list is the core's to report (review 12).
+      (Array.isArray(options.series) ? options.series : []).flatMap((s, i) => ((s as { readonly drilldown?: unknown } | null)?.drilldown ? [{ code: 'missing-module' as const, path: `series[${i}].drilldown`, detail: 'drilldown' }] : []));
+    const missing: Problem[] = [...(m.menu && !features.menu ? [{ code: 'missing-module' as const, path: 'menu', detail: 'menu' }] : []), ...(m.drill && !features.drill ? [{ code: 'missing-module' as const, path: 'drilldown', detail: 'drilldown' }] : []), ...(features.drill ? [] : seriesDrills())];
     const next = [...found, ...l.problems, ...(callProblem ? [callProblem] : []), ...viewProblems, ...missing];
     if (JSON.stringify(next) !== JSON.stringify(problems)) {
       problems = next;

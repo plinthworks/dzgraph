@@ -1,0 +1,84 @@
+---
+title: "zone"
+description: "Le fuseau horaire dans lequel un axe de temps lit ses instants."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le fuseau horaire dans lequel un axe de temps lit ses instants.
+
+<OptionFacts axis="zone" />
+
+## Ce qu'elle fait
+
+Un nom IANA (`'Europe/Paris'`, `'UTC'`). Les graduations, les étiquettes, l'infobulle et le tableau de données
+lisent l'horloge de ce fuseau : une graduation de jour tombe à minuit local, même un jour de 23 ou 25 heures ; une
+heure que l'horloge répète a deux graduations, une heure qu'elle saute n'en a aucune. Les périodes d'agrégation suivent
+le calendrier du fuseau.
+
+Les x des données sont des instants : des millisecondes depuis 1970 UTC, ou des dates-heures ISO **avec** leur décalage
+(`…Z`, `…+01:00`). Un jour du calendrier (`'2026-03-29'`) se place à son minuit dans ce fuseau. Une date-heure sans
+décalage n'est jamais devinée : le point est un trou, signalé `ambiguous-instant` avec leur nombre. Un nom de fuseau
+inconnu est signalé (`invalid-option`) et le fuseau de la page est pris.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+chart(document.getElementById('tide')!, {
+  xAxis: { scale: 'time', zone: 'Europe/Paris' },
+  series: [{ type: 'line', id: 'tide', name: 'Marée (m)', data: [['2026-03-29T00:00:00Z', 1.2], ['2026-03-29T03:00:00+01:00', 3.8], ['2026-03-29', 2.1]] }],
+}, { types: [line], features: [timeAxis] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-tide',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Tide {
+  readonly types = [line];
+  readonly features = [timeAxis];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [{ type: 'line', id: 'tide', name: 'Marée (m)', data: [['2026-03-29T00:00:00Z', 1.2], ['2026-03-29T03:00:00+01:00', 3.8], ['2026-03-29', 2.1]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  features={['timeAxis']}
+  data={{ recipe: 'walk', count: 4320 }}
+  options={{
+    title: { text: 'Un capteur inventé, à l’heure de Tokyo' },
+    xAxis: { scale: 'time', zone: 'Asia/Tokyo' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`scale`](../scale/) : l'échelle de temps demande la fonction `timeAxis`.
+- [Axes et temps](../../../guides/axes-time/) : le temps.

@@ -1,0 +1,125 @@
+---
+title: "gauge"
+description: "Une jauge : une seule valeur sur un demi-anneau. Ses options propres : min, max, thresholds."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Une seule valeur sur un demi-anneau, de `min` à `max`.
+
+<OptionFacts seriesType="gauge" />
+
+## Ce qu'il dessine
+
+`data` est une seule valeur (`640`, ou `[640]`) ; tout le reste est signalé par `invalid-data` (`series[i].data`), et
+`null` montre une piste vide et « — ». Le demi-anneau se remplit de `min` à la valeur dans le sens de lecture ; la
+valeur est écrite en grand dessous, `min` et `max` à ses extrémités. Une valeur hors de l'échelle remplit l'arc, et le
+texte montre la vraie valeur. Un `min` qui n'est pas sous `max` est signalé (`invalid-option`, `series[i].min`) et
+l'échelle revient à 0–100.
+
+`thresholds` tracent un fin anneau de plages juste à l'extérieur de l'arc : chacune `{ from, to, label, color }`,
+`from` sous `to`. Le `label` de la plage où tombe la valeur est écrit sous la valeur, pour qu'elle ne se lise pas à la
+seule couleur. `color` nomme une couleur que vous définissez en CSS sous le nom `--dzgraph-color-<nom>` (ici
+`--dzgraph-color-low`) ; sans elle, la plage est neutre. Un seuil d'une autre forme donne `invalid-option`
+(`series[i].thresholds[0]`). Une jauge est seule et n'a pas de légende par défaut : son titre la nomme.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { gauge } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('tank')!,
+  {
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Réservoir (litres)',
+        data: 640,
+        min: 0,
+        max: 1000,
+        thresholds: [
+          { from: 0, to: 200, label: 'Bas', color: 'low' },
+          { from: 200, to: 800, label: 'Bien' },
+          { from: 800, to: 1000, label: 'Plein' },
+        ],
+      },
+    ],
+  },
+  { types: [gauge] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { gauge, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-tank',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Tank {
+  readonly types = [gauge];
+  readonly options: ChartOptions = {
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Réservoir (litres)',
+        data: 640,
+        min: 0,
+        max: 1000,
+        thresholds: [
+          { from: 0, to: 200, label: 'Bas', color: 'low' },
+          { from: 200, to: 800, label: 'Bien' },
+          { from: 800, to: 1000, label: 'Plein' },
+        ],
+      },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={280}
+  options={{
+    title: { text: 'Réservoir (inventé)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Réservoir (litres)',
+        data: 640,
+        min: 0,
+        max: 1000,
+        thresholds: [
+          { from: 0, to: 200, label: 'Bas' },
+          { from: 200, to: 800, label: 'Bien' },
+          { from: 800, to: 1000, label: 'Plein' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`color`](../../series/color/) : des couleurs définies en CSS.
+- [Types de séries](../../../guides/series-types/).

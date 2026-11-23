@@ -1,0 +1,85 @@
+---
+title: "crosshair"
+description: "Des lignes passant par le pointeur, avec ses valeurs sur les axes."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des lignes passant par le pointeur, avec ses valeurs sur les axes.
+
+<OptionFacts chart="crosshair" />
+
+## Ce qu'elle fait
+
+`true` trace une ligne verticale en pointillés qui suit exactement le pointeur, sans s'accrocher aux points, et une
+étiquette à son pied avec la valeur de x à cet endroit, écrite comme l'infobulle l'écrit. `{ horizontal: true }` ajoute
+une ligne horizontale et une étiquette sur chaque axe de valeurs. Au clavier, les lignes passent par le point qui a le
+focus. Les lignes restent dans les modes mesure et sélection, pour aider à viser. Pas sur un secteur, un anneau ni une
+jauge.
+
+Sans la fonction `crosshair`, l'option est signalée (`missing-module`) et rien n'est tracé.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('tide')!,
+  {
+    crosshair: { horizontal: true },
+    series: [{ type: 'line', id: 'tide', name: 'Marée (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6] }],
+  },
+  { types: [line], features: [crosshair] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-tide',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Tide {
+  readonly types = [line];
+  readonly features = [crosshair];
+  readonly options: ChartOptions = {
+    crosshair: { horizontal: true },
+    series: [{ type: 'line', id: 'tide', name: 'Marée (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Hauteur de la marée (inventée)' },
+    crosshair: { horizontal: true },
+    series: [{ type: 'line', id: 'tide', name: 'Marée (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6] }],
+  }}
+/>
+
+## Voir aussi
+
+- [Explorer](../../../guides/exploring/) : le viseur avec les autres façons de lire un graphique.
+- [`crosshair`](../../features/crosshair/), la fonction.

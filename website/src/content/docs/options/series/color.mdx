@@ -1,0 +1,97 @@
+---
+title: "color"
+description: "The series' colour: a place in the theme's palette, or a colour the app defines in CSS."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series' colour: a place in the theme's palette, or a colour of your own, defined in CSS.
+
+<OptionFacts series="color" />
+
+## What it does
+
+A number is a place in the theme's palette, counting from 1 (`--dzgraph-series-1`); past the eighth it starts again
+from the first. `{ token: 'brand' }` is a colour you define in CSS as `--dzgraph-color-brand` (the name a CSS
+identifier), so light and dark mode and your contrast checks hold:
+
+```css
+.sales-chart {
+  --dzgraph-color-brand: var(--my-brand-color);
+}
+```
+
+Colours are never written in the options. Anything else (`0`, `2.5`, a name that is not a CSS identifier) is
+reported as `invalid-option` (`series[i].color`), and the series keeps its place's colour. Colour is never the only
+way to tell series apart: each also has its marker symbol and its sign in the legend.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jam')!,
+  {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar'] },
+    series: [
+      { type: 'column', id: 'plum', name: 'Plum', color: 3, data: [14, 22, 19] },
+      { type: 'column', id: 'quince', name: 'Quince', color: { token: 'brand' }, data: [9, 12, 17] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jam',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jam {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar'] },
+    series: [
+      { type: 'column', id: 'plum', name: 'Plum', color: 3, data: [14, 22, 19] },
+      { type: 'column', id: 'quince', name: 'Quince', color: { token: 'brand' }, data: [9, 12, 17] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Jars of jam (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar'] },
+    series: [
+      { type: 'column', id: 'plum', name: 'Plum', color: 3, data: [14, 22, 19] },
+      { type: 'column', id: 'quince', name: 'Quince', color: 5, data: [9, 12, 17] },
+    ],
+  }}
+/>
+
+## See also
+
+- [Theming and right to left](../../../guides/theming-rtl/): the palette and its variables.
+- [Accessibility](../../../guides/accessibility/): never colour alone.

@@ -1,0 +1,81 @@
+---
+title: "bar"
+description: "Bars: columns turned across; the chart becomes horizontal. Its own option: stack."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Columns turned across: the chart becomes horizontal.
+
+<OptionFacts seriesType="bar" />
+
+## What it draws
+
+Bars are [columns](../column/) turned across. The categories run down from the top; the values grow along the reading
+direction, from the left in left to right, from the right in right to left. The x axis is upright and the value axis
+across, but they keep their names: categories are still `xAxis`, values `yAxis`. Lines, areas and scatters in the
+same chart follow the bars' orientation; columns in it are reported (`mixed-orientation`).
+
+`stack` works as on columns.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { bar } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jars')!,
+  {
+    xAxis: { scale: 'category', categories: ['Plum', 'Quince', 'Cherry'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Jars sold', data: [1250, 860, 2240] }],
+  },
+  { types: [bar] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { bar, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jars {
+  readonly types = [bar];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Plum', 'Quince', 'Cherry'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Jars sold', data: [1250, 860, 2240] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Jars sold (made up)' },
+    xAxis: { scale: 'category', categories: ['Plum', 'Quince', 'Cherry'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Jars sold', data: [1250, 860, 2240] }],
+  }}
+/>
+
+## See also
+
+- [`column`](../column/): the same, upright.
+- [Theming and right to left](../../../guides/theming-rtl/).

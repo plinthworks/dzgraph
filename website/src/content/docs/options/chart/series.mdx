@@ -1,0 +1,107 @@
+---
+title: "series"
+description: "The series the chart draws: the only option it needs."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series the chart draws: the only option it needs.
+
+<OptionFacts chart="series" />
+
+## What it does
+
+A list of series, drawn in order. Each one has a `type`, which must be one of the `types` given to `chart()`,
+and its `data`; the rest is optional. The keys every series has are under [Series](../../series/type/), and each
+type's own under [Series types](../../series-types/line/).
+
+Give each series an [`id`](../../series/id/) when series come and go: `update({ series })` matches the new list to
+the old one by id, so a series that keeps its id keeps what the user did to it (hidden, selected) and moves from where
+it was. `setData(id, data)` replaces one series' values without the rest.
+
+A chart holds one kind of drawing. Lines, areas, columns, bars and scatters share axes and mix freely, except that
+columns (upright) and bars (across) do not mix. A pie, a donut or a gauge is drawn alone.
+
+What the chart reports, by series (`series[i]`):
+
+- not a list: `invalid-option` at `series`, and nothing is drawn;
+- a type the chart was not given: `unknown-series-type` at `series[i].type`, its name as the detail;
+- a series of another kind than the first one: `invalid-option` at `series[i].type`; columns with bars:
+  `mixed-orientation`;
+- an id used twice, or starting with `#`: `duplicate-id` at `series[i].id`;
+- a key it does not know: `unknown-option` at `series[i].<key>`.
+
+A series reported this way is left out; the others are drawn.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('series')!,
+  {
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Jars sold', data: [42, 38, 51, 47, 63] },
+      { type: 'line', id: 'target', name: 'Target', data: [45, 45, 45, 50, 60] },
+    ],
+  },
+  { types: [column, line] },
+);
+
+c.setData('sold', [42, 38, 51, 47, 66]);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-series',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class SeriesChart {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Jars sold', data: [42, 38, 51, 47, 63] },
+      { type: 'line', id: 'target', name: 'Target', data: [45, 45, 45, 50, 60] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Jars sold and the target (made up)' },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Jars sold', data: [42, 38, 51, 47, 63] },
+      { type: 'line', id: 'target', name: 'Target', data: [45, 45, 45, 50, 60] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`id`](../../series/id/): how series are matched.
+- [Series types](../../../guides/series-types/): each type and when to use it.

@@ -1,0 +1,86 @@
+---
+title: "dir"
+description: "The reading direction: left to right, or right to left."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The reading direction: left to right, or right to left.
+
+<OptionFacts chart="dir" />
+
+## What it does
+
+`'rtl'` lays the chart out for right-to-left reading: the title, the legend and the value axis sit on the right,
+labels read from the right, the keyboard's arrows follow the reading direction. The x axis itself still runs left to
+right, as numbers and dates usually do in those languages, unless [`mirror`](../mirror/) is `true`. Bars grow from the
+right.
+
+Without it, the chart takes its element's direction: its `dir` attribute or its CSS `direction`, inherited from the
+page. A value other than `'ltr'` or `'rtl'` is reported (`invalid-option` at `dir`) and the element's direction is
+used.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('dir')!,
+  {
+    dir: 'rtl',
+    xAxis: { scale: 'category', categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [18, 24, 21, 30] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-dir',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class DirChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    dir: 'rtl',
+    xAxis: { scale: 'category', categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [18, 24, 21, 30] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Jars sold, right to left (made up)' },
+    dir: 'rtl',
+    xAxis: { scale: 'category', categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Jars', data: [18, 24, 21, 30] }],
+  }}
+/>
+
+## See also
+
+- [`mirror`](../mirror/): the x axis running right to left too.
+- [Theming and right to left](../../../guides/theming-rtl/): right to left, with an Arabic demo.

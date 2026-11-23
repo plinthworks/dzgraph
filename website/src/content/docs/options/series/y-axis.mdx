@@ -1,0 +1,92 @@
+---
+title: "yAxis"
+description: "The value axis the series is drawn against, by the axis's id."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The value axis the series is drawn against, named by the axis's id.
+
+<OptionFacts series="yAxis" />
+
+## What it does
+
+Two measures of different units go on two value axes: give the y axes ids and name one from each series. With two
+value axes in use, each axis shows the signs of its series, so the reader knows which axis a line is read on. Ids are
+`y`, `y2`… by position when the axes have none. An id no y axis has is reported as `unknown-axis`, with the id as
+detail, and the series goes on the first y axis.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('weather')!,
+  {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    yAxis: [{ id: 'rain', title: 'Rain (mm)' }, { id: 'warmth', title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', yAxis: 'rain', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'warmth', data: [4, 6, 9, 12] },
+    ],
+  },
+  { types: [column, line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-weather',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Weather {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    yAxis: [{ id: 'rain', title: 'Rain (mm)' }, { id: 'warmth', title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', yAxis: 'rain', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'warmth', data: [4, 6, 9, 12] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Rain and warmth (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    yAxis: [{ id: 'rain', title: 'Rain (mm)' }, { id: 'warmth', title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', yAxis: 'rain', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'warmth', data: [4, 6, 9, 12] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`xAxis`](../x-axis/): the x axis.
+- [`opposite`](../../axis/opposite/): an axis on the far side.
+- [Axes and time](../../../guides/axes-time/): two value axes.

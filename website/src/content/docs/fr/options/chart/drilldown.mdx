@@ -1,0 +1,97 @@
+---
+title: "drilldown"
+description: "Les années, puis les mois, puis les jours, par clic, sur un axe de temps."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les années, puis les mois, puis les jours, par clic, sur un axe de temps.
+
+<OptionFacts chart="drilldown" />
+
+## Ce qu'elle fait
+
+`'time'` regroupe un axe x de temps par année. Un clic, ou Entrée sur un point qui a le focus, montre les mois de
+cette année ; un autre, les jours de ce mois. Le niveau montre sa période entière, même au-delà de la fin des données.
+Un fil d'Ariane au-dessus du tracé revient à n'importe quel niveau, comme Retour arrière et Alt + ← (→ de droite à
+gauche) ; revenir rend le niveau tel qu'il était. Le niveau fait partie de la vue, et l'événement `drill` donne son
+chemin.
+
+Il part des années, quoi que dise l'[`aggregate`](../../axis/aggregate/) de l'axe. Chaque série garde sa propre
+[fonction d'agrégation](../../series/aggregate/) (une somme pour les colonnes, une moyenne pour les lignes).
+
+Il demande la fonction [`drilldown`](../../features/drilldown/), qui apporte
+[`aggregation`](../../features/aggregation/) : sans elle, `missing-module` sur `drilldown`. Hors d'un axe x de temps,
+ou avec une autre valeur, c'est `invalid-option` sur `drilldown`. Un détail par point, par clé ou chargé, est le
+[`drilldown`](../../series/drilldown/) propre d'une série.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, timeAxis, drilldown } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('drilldown')!,
+  {
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'rain', name: 'Pluie (mm)', data: [['2025-03-04', 12], ['2025-09-18', 30], ['2026-01-05', 9], ['2026-02-21', 14]] }],
+  },
+  { types: [column], features: [timeAxis, drilldown] },
+);
+
+c.on('drill', (e) => console.log(e.path));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { timeAxis, drilldown } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-drilldown',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class DrilldownChart {
+  readonly types = [column];
+  readonly features = [timeAxis, drilldown];
+  readonly options: ChartOptions = {
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'rain', name: 'Pluie (mm)', data: [['2025-03-04', 12], ['2025-09-18', 30], ['2026-01-05', 9], ['2026-02-21', 14]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={340}
+  features={['timeAxis', 'drilldown']}
+  data={{ recipe: 'walk', count: 600000 }}
+  options={{
+    title: { text: 'Un capteur inventé, moyenne par année' },
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'sensor', name: 'Mesure', aggregate: 'mean', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`drilldown`](../../series/drilldown/) : un détail par point.
+- [Explorer](../../../guides/exploring/) : agrégation et détail par clic.

@@ -1,0 +1,88 @@
+---
+title: "scale"
+description: "How the axis turns values into positions: linear, log, category or time."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+How the axis turns values into positions.
+
+<OptionFacts axis="scale" />
+
+## What it does
+
+- `'linear'`: numbers, equal steps for equal differences.
+- `'log'`: base ten, each power of ten the same length; for values spread over several orders of magnitude. On a value
+  axis (a y axis, or a scatter plot's x axis). A value of zero or below becomes a gap, reported
+  `non-positive-log-value` once per series with how many.
+- `'category'`: one band per category, in order ([`categories`](../categories/)).
+- `'time'`: instants on a zone's wall clock ([`zone`](../zone/)). It needs the
+  [`timeAxis`](../../features/time-axis/) feature: without it the axis is drawn linear and reported `missing-module`.
+
+Absent, the scale is guessed: category when the data's x values are strings, linear otherwise; time is never guessed.
+An unknown scale is reported (`invalid-option`). The keys of another scale are reported (`unknown-option`):
+`categories` on a time axis, `zone` on a linear one. The chart's [menu](../../chart/menu/) can offer the user linear or
+log, and the view keeps the choice.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('ants')!, {
+  title: { text: 'Ants in a made-up colony' },
+  xAxis: { title: 'Week' },
+  yAxis: { scale: 'log', title: 'Ants' },
+  series: [{ type: 'line', id: 'ants', name: 'Ants', data: [[1, 12], [2, 40], [3, 130], [4, 520], [5, 1900], [6, 7400], [7, 26000], [8, 90000]] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-ants',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Ants {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: { text: 'Ants in a made-up colony' },
+    xAxis: { title: 'Week' },
+    yAxis: { scale: 'log', title: 'Ants' },
+    series: [{ type: 'line', id: 'ants', name: 'Ants', data: [[1, 12], [2, 40], [3, 130], [4, 520], [5, 1900], [6, 7400], [7, 26000], [8, 90000]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Ants in a made-up colony' },
+    xAxis: { title: 'Week' },
+    yAxis: { scale: 'log', title: 'Ants' },
+    series: [{ type: 'line', id: 'ants', name: 'Ants', data: [[1, 12], [2, 40], [3, 130], [4, 520], [5, 1900], [6, 7400], [7, 26000], [8, 90000]] }],
+  }}
+/>
+
+## See also
+
+- [`zone`](../zone/): the time axis's clock.
+- [Axes and time](../../../guides/axes-time/): log scales and time.

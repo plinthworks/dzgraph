@@ -1,0 +1,103 @@
+---
+title: "donut"
+description: "Un anneau : un secteur avec un trou qui contient le total. Ses options propres : others, hole, center."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Un secteur avec un trou, qui contient le total.
+
+<OptionFacts seriesType="donut" />
+
+## Ce qu'il dessine
+
+Tout ce que fait un [secteur](../pie/), `others` compris, avec un trou au milieu. `hole` est sa taille en part du
+rayon, de 0 à 0,9 ; toute autre valeur est signalée (`invalid-option`, `series[i].hole`). Le trou montre le total et
+le mot « Total » ; `center: { label, value }` y écrit vos propres mots (deux chaînes), et `center: false` le laisse
+vide. Un `center` d'une autre forme donne `invalid-option` (`series[i].center`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { donut } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('seeds')!,
+  {
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Graines',
+        hole: 0.5,
+        center: { label: 'Sachets', value: '1 400' },
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  },
+  { types: [donut] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { donut, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-seeds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Seeds {
+  readonly types = [donut];
+  readonly options: ChartOptions = {
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Graines',
+        hole: 0.5,
+        center: { label: 'Sachets', value: '1 400' },
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Graines semées (inventées)' },
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Graines',
+        hole: 0.5,
+        center: { label: 'Sachets', value: '1 400' },
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`pie`](../pie/) : les parts, leurs étiquettes et « Autres ».
+- [Types de séries](../../../guides/series-types/).

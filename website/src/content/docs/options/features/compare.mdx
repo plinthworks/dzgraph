@@ -1,0 +1,98 @@
+---
+title: "compare"
+description: "Series shown against a baseline: as a difference, in percent, or as base 100."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Series shown against a baseline: as a difference, in percent, or as base 100.
+
+<OptionFacts feature="compare" />
+
+## What it does
+
+It lets a y axis's [`compare`](../../axis/compare/) draw, and lets the [`menu`](../menu/) offer
+« Comparison ». Each series on that axis is drawn against its baseline: `'value'` as the difference, `'percent'` as the
+change in percent, `'index'` as base 100. The baseline is each series' first point with a value in view, so zooming
+or panning moves it; [`compareTo`](../../axis/compare-to/) fixes it at an x.
+
+The axis writes signed values (« +10 », « +12 % »), and a line marks the reference. The tooltip gives the compared value
+first, then the raw one; the data table gives both. A series with no baseline in view (or a base of 0 in percent and
+base 100) is not drawn, and a `no-baseline` problem says so until the range gives it one. Stacked series and log axes
+are not compared (`invalid-option`). The user's choice is part of the view.
+
+Without it, `compare` is reported (`missing-module`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, compare } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('shops')!,
+  {
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'North shop', data: [120, 132, 128, 150, 161] },
+      { type: 'line', id: 'south', name: 'South shop', data: [80, 78, 90, 99, 97] },
+    ],
+  },
+  { types: [line], features: [compare] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { compare } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-shops',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Shops {
+  readonly types = [line];
+  readonly features = [compare];
+  readonly options: ChartOptions = {
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'North shop', data: [120, 132, 128, 150, 161] },
+      { type: 'line', id: 'south', name: 'South shop', data: [80, 78, 90, 99, 97] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['compare', 'zoom']}
+  options={{
+    title: { text: 'Two made-up shops, in percent of the first point in view' },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'North shop', data: [120, 132, 128, 150, 161, 158, 170] },
+      { type: 'line', id: 'south', name: 'South shop', data: [80, 78, 90, 99, 97, 104, 112] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`compare`](../../axis/compare/), the axis option.
+- [Exploring](../../../guides/exploring/): the guide.

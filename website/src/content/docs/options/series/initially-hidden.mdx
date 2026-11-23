@@ -1,0 +1,89 @@
+---
+title: "initiallyHidden"
+description: "Hidden when the series first appears; afterwards the legend and the view decide."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series starts hidden; the reader shows it from the legend.
+
+<OptionFacts series="initiallyHidden" />
+
+## What it does
+
+Read once per series id, when a series of that id first appears. Afterwards hiding is the user's: the legend, the
+view and `setSeriesVisible()` decide, and options given again (a signal rebuilding them, `update()`) never undo what
+the user did. A hidden series keeps its item in the legend, greyed, and its colour for when it comes back; it
+leaves the tooltip, the data table and the axes' ranges. A value that is not a boolean is reported as
+`invalid-option` (`series[i].initiallyHidden`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('beds')!,
+  {
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Beans', initiallyHidden: true, data: [2, 3, 3, 4] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-beds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Beds {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Beans', initiallyHidden: true, data: [2, 3, 3, 4] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Garden beds watered (made up)' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Beans', initiallyHidden: true, data: [2, 3, 3, 4] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`id`](../id/): what « first appears » is counted by.
+- [Interactions](../../../guides/interactions/): the legend.

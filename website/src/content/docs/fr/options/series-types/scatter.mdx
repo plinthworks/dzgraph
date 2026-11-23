@@ -1,0 +1,87 @@
+---
+title: "scatter"
+description: "Un nuage de points : un marqueur par point, placé par deux valeurs. Aucune option propre."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Un marqueur par point, placé par son x et son y.
+
+<OptionFacts seriesType="scatter" />
+
+## Ce qu'il dessine
+
+Les deux axes sont des axes de valeurs ajustés aux données, arrondis aux graduations ; zéro n'est pas imposé. Chaque
+point est un marqueur de 8 px du symbole de la série, un peu translucide pour que les amas de points paraissent plus
+sombres. Un point avec un trou dans l'une de ses valeurs est laissé de côté. Les x n'ont pas besoin d'être triés.
+Chaque marqueur a sa propre infobulle. Au-delà de 2 000 marqueurs, la série est peinte sur un Canvas (la fonction
+`canvas`), au-delà de 100 000 avec WebGL2 (`webgl`), avec la même allure.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { canvas, chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('leaves')!,
+  {
+    xAxis: { title: 'Longueur (cm)' },
+    yAxis: { title: 'Largeur (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [[4.2, 2.1], [5.0, 2.6], [6.3, 3.0], [3.8, 1.7]] }],
+  },
+  { types: [scatter], features: [canvas] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { canvas } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-leaves',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Leaves {
+  readonly types = [scatter];
+  readonly features = [canvas];
+  readonly options: ChartOptions = {
+    xAxis: { title: 'Longueur (cm)' },
+    yAxis: { title: 'Largeur (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [[4.2, 2.1], [5.0, 2.6], [6.3, 3.0], [3.8, 1.7]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={340}
+  features={['canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Longueur et largeur des feuilles (inventées)' },
+    xAxis: { title: 'Longueur (cm)' },
+    yAxis: { title: 'Largeur (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`canvas`](../../features/canvas/) et [`webgl`](../../features/webgl/) : les peintres pour beaucoup de points.
+- [Gros volumes](../../../guides/big-data/).

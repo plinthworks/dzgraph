@@ -1,0 +1,74 @@
+---
+title: "id"
+description: "Le nom par lequel les séries se placent sur cet axe."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le nom par lequel les séries se placent sur cet axe.
+
+<OptionFacts axis="id" />
+
+## Ce qu'elle fait
+
+Une série choisit ses axes par leur id : son [`xAxis`](../../series/x-axis/) et son [`yAxis`](../../series/y-axis/).
+Une série qui n'en nomme aucun se place sur le premier axe x et le premier axe y. Donnez des ids dès qu'il y a deux axes
+d'une même sorte : ils disent quelle série va où, quel que soit l'ordre de la liste.
+
+Deux axes d'une même sorte avec le même id : le second garde son id par défaut, signalé `duplicate-id`
+(`yAxis[1].id`). Une série qui nomme un axe inexistant est dessinée sur le premier, signalée `unknown-axis` avec l'id
+demandé. L'id de l'axe x le nomme aussi dans la vue : la plage visible est gardée par id d'axe.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('rain')!, {
+  xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+  yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+  series: [
+    { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+    { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+  ],
+}, { types: [column, line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [`opposite`](../opposite/) : le second axe de valeurs de l'autre côté.
+- [Axes et temps](../../../guides/axes-time/) : deux axes de valeurs.

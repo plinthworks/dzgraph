@@ -1,0 +1,97 @@
+---
+title: "selection"
+description: "Selecting points: a rectangle, a range of x or a lasso; Space on a focused point."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Selecting points: a rectangle, a range of x or a lasso; Space on a focused point.
+
+<OptionFacts feature="selection" />
+
+## What it does
+
+It lets the [`selection`](../../chart/selection/) option work. A drag selects with the current shape: by
+default a range of x on lines and areas, a rectangle on scatters and columns; `shapes` lists those offered, and with
+more than one the mode's button opens a choice. The lasso is exact, live while drawing, even at a million points. With
+[`zoom`](../zoom/) or [`measure`](../measure/) too, a mode bar chooses what a drag does.
+
+- A drag replaces the selection; with Shift it adds, with Alt it removes.
+- A click on a point selects it alone, Shift + click adds or removes it; a click on empty plot or Escape clears.
+- On a focused point, Space selects or unselects it, and Shift + ← → extends the selection along its series.
+- A pie or a donut selects by click, Shift + click and Space, with no mode bar.
+
+Selected points keep their colour and the others fade; a column, bar or slice gets a ring too, so colour is not the
+only sign. Screen readers hear how many points are selected, and the data table marks their rows. The selection is
+data, not pixels: it survives zoom, resize and hidden series. `selectionChange` gives the count and each series'
+indices and keys; `selectBy()` selects from the app; the view keeps it.
+
+Without it, `selection` is reported (`missing-module`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('leaves')!,
+  {
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [[4.1, 2.2], [5.3, 2.9], [6.0, 3.4], [7.2, 3.1], [3.8, 1.9]] }],
+  },
+  { types: [scatter], features: [selection] },
+);
+c.on('selectionChange', (e) => console.log(e.count));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { selection } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-leaves',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (selectionChange)="count = $event.count" />`,
+})
+export class Leaves {
+  readonly types = [scatter];
+  readonly features = [selection];
+  count = 0;
+  readonly options: ChartOptions = {
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [[4.1, 2.2], [5.3, 2.9], [6.0, 3.4], [7.2, 3.1], [3.8, 1.9]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={380}
+  features={['selection', 'zoom', 'canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Two made-up clouds: choose Select, then drag' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`selection`](../../chart/selection/), the option.
+- [Exploring](../../../guides/exploring/): the guide.

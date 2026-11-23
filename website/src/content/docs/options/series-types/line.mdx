@@ -1,0 +1,94 @@
+---
+title: "line"
+description: "A line: the points joined in x order. Its own option: marker."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Points joined in x order by straight segments.
+
+<OptionFacts seriesType="line" />
+
+## What it draws
+
+The points are joined in x order; a gap (`null`) breaks the line, and a point alone between two gaps shows as a
+marker. Markers show on every point when the points are far enough apart to read them; a denser line keeps one about
+every 80 px, each series at its own offset. `marker: true` puts one on every point, `false` none. Each series has its
+own marker symbol (circle, square, diamond, triangle…), so lines are told apart without colour.
+
+A line with more points than the plot has pixel columns is drawn from far fewer points that look the same (every
+column's highest and lowest point kept); the tooltip and the data table show the real points. x going backwards is
+drawn in the order given and reported once (`unsorted-x`). Lines do not stack: `stack` on a line is
+`unknown-option`. A `marker` that is not a boolean is `invalid-option` (`series[i].marker`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('bees')!,
+  {
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Hive B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Bees {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Hive B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Hive B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`area`](../area/): a line filled down to zero.
+- [`data`](../../series/data/): the shapes of the values.
+- [Series types](../../../guides/series-types/).

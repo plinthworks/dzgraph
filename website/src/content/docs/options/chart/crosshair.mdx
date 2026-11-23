@@ -1,0 +1,84 @@
+---
+title: "crosshair"
+description: "Lines through the pointer, with its values on the axes."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Lines through the pointer, with its values on the axes.
+
+<OptionFacts chart="crosshair" />
+
+## What it does
+
+`true` draws a dashed vertical line that follows the pointer exactly, not snapped to the points, and a tag at its foot
+with the x value there, written as the tooltip writes it. `{ horizontal: true }` adds a horizontal line and a tag on
+each value axis. With the keyboard the lines go through the focused point. The lines stay in the measure and selection
+modes, to help aim. Not on a pie, a donut or a gauge.
+
+Without the `crosshair` feature the option is reported (`missing-module`) and nothing is drawn.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('tide')!,
+  {
+    crosshair: { horizontal: true },
+    series: [{ type: 'line', id: 'tide', name: 'Tide (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6] }],
+  },
+  { types: [line], features: [crosshair] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-tide',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Tide {
+  readonly types = [line];
+  readonly features = [crosshair];
+  readonly options: ChartOptions = {
+    crosshair: { horizontal: true },
+    series: [{ type: 'line', id: 'tide', name: 'Tide (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Tide height (made up)' },
+    crosshair: { horizontal: true },
+    series: [{ type: 'line', id: 'tide', name: 'Tide (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6] }],
+  }}
+/>
+
+## See also
+
+- [Exploring](../../../guides/exploring/): the crosshair with the other ways to read a chart.
+- [`crosshair`](../../features/crosshair/), the feature.

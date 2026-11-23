@@ -204,6 +204,15 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   (outputs' detail; `types`/`features` do not shrink the bundle: `DzChart` imports `allTypes`/`allFeatures` as defaults
   — owner to decide). An Angular test proves the guide's linking of two charts (a `read` callback after the charts'
   own) on Angular 21. Committed.
+- **Batch 3 (one page per option) done.** 69 pages per language under `options/` (chart 20, series 10, series types
+  8, axes 14, setup 4, features 13) and the overview. The facts come from the sources: `@default` and `@feature` tags
+  in the option comments, `scripts/gen-options.mjs` → `website/src/generated/options.json`, shown by `<OptionFacts>`;
+  `website/test/options.test.ts` (facts up to date, every option a page in both languages, every token worded), and
+  `packages/dom/test/option-facts.test.ts` holds each `@feature` to the chart's own `missing-module`. That test found
+  a series' `drilldown` without its feature ignored without a word: now reported (`series[i].drilldown`). A demo with
+  the data table shown takes no fixed height (the table is inside the chart's element, past its height); the
+  `dataTable` page says so. Chrome: 142 pages, every demo drawn, no console message, every link answers. Gate green
+  (1 205). Committed.
 
 ## Working rules
 

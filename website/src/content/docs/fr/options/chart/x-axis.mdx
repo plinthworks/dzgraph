@@ -1,0 +1,92 @@
+---
+title: "xAxis"
+description: "L'axe le long duquel vont les valeurs x."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+L'axe le long duquel vont les valeurs x.
+
+<OptionFacts chart="xAxis" />
+
+## Ce qu'elle fait
+
+Un axe, ou une liste d'axes. Absent, le graphique en fait un, son échelle devinée d'après les données :
+`'category'` quand les valeurs x sont des chaînes, sinon `'linear'`. Les clés de chaque axe ont leur page sous
+[Axes](../../axis/scale/) : [`scale`](../../axis/scale/), [`min`](../../axis/min/) et [`max`](../../axis/max/),
+[`ticks`](../../axis/ticks/), [`title`](../../axis/title/), [`opposite`](../../axis/opposite/),
+[`reversed`](../../axis/reversed/), et les clés d'une seule échelle ([`categories`](../../axis/categories/),
+[`zone`](../../axis/zone/)).
+
+Avec plusieurs axes, le premier est `x`, le suivant `x2`, `x3`… sauf si un axe a un [`id`](../../axis/id/) ;
+une série nomme celui sur lequel elle est dessinée ([`xAxis`](../../series/x-axis/)). Les ids sont communs aux axes x et
+y : deux axes ne peuvent pas avoir le même (`duplicate-id`).
+
+Un axe x peut regrouper ses points par période ou par pas ([`aggregate`](../../axis/aggregate/)) ; les clés d'un
+axe de valeurs (`stacking`, `compare`) y sont refusées (`invalid-option`). Une échelle `'time'` demande la fonction
+[`timeAxis`](../../features/time-axis/).
+
+Les problèmes nomment l'axe par sa place, même quand un seul axe est donné : `xAxis[0]`. Un axe qui n'est pas un objet
+est `invalid-option` sur `xAxis[i]` ; une clé que l'échelle de l'axe n'a pas est `unknown-option` sur `xAxis[i].<clé>`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('x-axis')!,
+  {
+    xAxis: { scale: 'category', title: 'Mois', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'line', id: 'visits', name: 'Visites', data: [310, 340, 420, 510, 580, 640] }],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-x-axis',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class XAxisChart {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', title: 'Mois', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'line', id: 'visits', name: 'Visites', data: [310, 340, 420, 510, 580, 640] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visites du jardin (inventées)' },
+    xAxis: { scale: 'category', title: 'Mois', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'line', id: 'visits', name: 'Visites', data: [310, 340, 420, 510, 580, 640] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`yAxis`](../y-axis/) : les axes de valeurs.
+- [Axes et temps](../../../guides/axes-time/) : échelles, bornes, graduations et temps.

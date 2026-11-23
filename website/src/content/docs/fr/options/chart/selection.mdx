@@ -1,0 +1,94 @@
+---
+title: "selection"
+description: "Des points que le lecteur peut sélectionner, au rectangle, à la plage ou au lasso."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des points que le lecteur peut sélectionner, au rectangle, à la plage ou au lasso.
+
+<OptionFacts chart="selection" />
+
+## Ce qu'elle fait
+
+`true` ajoute un mode « Sélection » à la barre des modes du graphique. Dans ce mode, un glissé sélectionne avec la
+forme en cours : une plage de x sur les graphiques de lignes et d'aires, un rectangle sur les graphiques de marques
+(nuages, colonnes, barres). Un objet liste les formes proposées, dans `shapes` : `'rectangle'`, `'range'`, `'lasso'`
+(un contour libre, exact même sur un million de points) ; avec plus d'une, le bouton du mode ouvre un choix.
+
+Un glissé remplace la sélection, Maj ajoute, Alt retire ; un clic sélectionne un point, un clic sur le tracé vide ou
+Échap la vide. Au clavier, Espace sélectionne le point qui a le focus. Les points sélectionnés gardent leur couleur,
+les autres s'estompent ; une colonne ou une part reçoit un anneau, pour ne pas compter sur la couleur seule. La
+sélection est faite de données, pas de pixels : elle survit au zoom et au changement de taille, fait partie de la vue,
+et l'événement `selectionChange` donne son nombre, ses indices et ses clés.
+
+Il demande la fonction [`selection`](../../features/selection/) (`missing-module` sur `selection` sans elle). Une
+liste `shapes` vide ou qui nomme autre chose est `invalid-option` sur `selection`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('selection')!,
+  {
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [[2.1, 7.2], [2.8, 6.4], [3.5, 7.9], [5.9, 3.8], [6.4, 4.6], [7.1, 3.1]] }],
+  },
+  { types: [scatter], features: [selection] },
+);
+
+c.on('selectionChange', (e) => console.log(e.count));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { selection } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-selection',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class SelectionChart {
+  readonly types = [scatter];
+  readonly features = [selection];
+  readonly options: ChartOptions = {
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [[2.1, 7.2], [2.8, 6.4], [3.5, 7.9], [5.9, 3.8], [6.4, 4.6], [7.1, 3.1]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={360}
+  features={['selection']}
+  data={{ recipe: 'cloud', count: 1500 }}
+  options={{
+    title: { text: 'Deux nuages inventés' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`highlight`](../highlight/) : l'estompage du pointeur, qui ne dure pas.
+- [Explorer](../../../guides/exploring/) : modes, sélection et vue.

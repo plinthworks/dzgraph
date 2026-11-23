@@ -1,0 +1,81 @@
+---
+title: "categories"
+description: "A category axis's categories, in order."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A category axis's categories, in order.
+
+<OptionFacts axis="categories" />
+
+## What it does
+
+One band per category, its label centred under it. A series of plain values puts its first value in the first
+category, and so on; a series of `[name, value]` pairs or points with a string `x` finds its category by name. A
+category given twice is kept once.
+
+Without the list, the categories are collected from the data, in order of appearance. With it, a name the list does
+not hold gets a band of its own after the others, and a value past the last category a band named by its position;
+both are reported once per series (`invalid-data`). Labels that do not fit turn by 45°, then every second (third…)
+one shows, then a long one ends with « … » and shows whole in the tooltip.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('crates')!, {
+  title: { text: 'Crates picked (made up)' },
+  xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums', 'Cherries'] },
+  series: [{ type: 'column', id: 'crates', name: 'Crates', data: [52, 31, 18, 44] }],
+}, { types: [column] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-crates',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Crates {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    title: { text: 'Crates picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums', 'Cherries'] },
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [52, 31, 18, 44] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Crates picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums', 'Cherries'] },
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [52, 31, 18, 44] }],
+  }}
+/>
+
+## See also
+
+- [`scale`](../scale/): the category scale and the others.
+- [Data](../../../guides/data/): the shapes a series takes.

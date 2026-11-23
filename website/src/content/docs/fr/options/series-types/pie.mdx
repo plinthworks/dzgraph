@@ -1,0 +1,103 @@
+---
+title: "pie"
+description: "Un secteur : les parts d'un tout, en tranches. Son option propre : others."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les parts d'un tout, en tranches.
+
+<OptionFacts seriesType="pie" />
+
+## Ce qu'il dessine
+
+Les parts sont des paires (`['Carottes', 420]`), des points (`{ name, y, key }`) ou des valeurs seules, nommées par
+leur place (« Part 3 »), une seule forme par série. L'angle de chaque part est sa part du total ; la première commence en haut et les autres
+suivent dans le sens des aiguilles d'une montre, dans l'ordre des données. Zéro ne donne aucune part et `null` est un
+trou ; une valeur négative ne peut pas être une part d'un tout et est signalée (`invalid-data`). Chaque part est
+étiquetée à l'extérieur avec son nom et sa part, reliée par un trait ; quand les étiquettes ne tiennent pas, la
+légende se montre à la place.
+
+`others` : au-delà de sept parts, les six plus grandes restent et les autres rejoignent une part « Autres », dessinée
+en dernier dans une couleur neutre, avec toute part sous 2 % du total ; son infobulle liste ses parts. `others: false`
+garde chaque part. Un secteur est seul : un secteur, un anneau ou une jauge par graphique, sans axes.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { pie } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('seeds')!,
+  {
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Graines',
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  },
+  { types: [pie] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { pie, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-seeds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Seeds {
+  readonly types = [pie];
+  readonly options: ChartOptions = {
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Graines',
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Graines semées (inventées)' },
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Graines',
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`donut`](../donut/) : un secteur avec un trou.
+- [Types de séries](../../../guides/series-types/).

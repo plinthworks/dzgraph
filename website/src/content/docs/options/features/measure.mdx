@@ -1,0 +1,88 @@
+---
+title: "measure"
+description: "Measuring between two points: the Measure mode, and M on a focused point."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Measuring between two points: the Measure mode, and M on a focused point.
+
+<OptionFacts feature="measure" />
+
+## What it does
+
+There is no option: given the feature, the chart has a « Measure » mode. With [`zoom`](../zoom/) or
+[`selection`](../selection/) too, a mode bar at the start of the plot's top edge chooses what a drag does; alone, a drag
+measures. `setMode('measure')` sets the mode from the app, and `modeChange` tells it.
+
+In measure mode, pressing on the plot picks the nearest point; dragging, the end snaps to the nearest point; releasing
+keeps the measure. A line joins the two points, and a tag at its middle gives the difference in value, in percent of
+the start, and along x (a duration on a time axis, a count on a category axis). Two series may be measured. Escape, a
+click outside it, a new measure, a change of mode or new data remove it; a zoom keeps it on its points.
+
+With the keyboard, on a focused point, M starts a measure there in any mode; moving the focus moves its end; M again
+keeps it, and screen readers hear it. The `measure` event gives the two points, and `null` when it goes. A measure is
+not part of the view.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, measure, zoom } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('plant')!,
+  { series: [{ type: 'line', id: 'plant', name: 'Height (cm)', data: [3, 5, 8, 12, 17, 21, 24] }] },
+  { types: [line], features: [zoom, measure] },
+);
+c.setMode('measure');
+c.on('measure', (m) => console.log(m ? [m.from.index, m.to.index] : null));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions, type PointRef } from '@dzgraph/core';
+import { measure, zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-plant',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (measure)="measured = $event" />`,
+})
+export class Plant {
+  readonly types = [line];
+  readonly features = [zoom, measure];
+  measured: { readonly from: PointRef; readonly to: PointRef } | null = null;
+  readonly options: ChartOptions = {
+    series: [{ type: 'line', id: 'plant', name: 'Height (cm)', data: [3, 5, 8, 12, 17, 21, 24] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['zoom', 'measure']}
+  options={{
+    title: { text: 'A made-up bean plant: choose Measure, then drag' },
+    series: [{ type: 'line', id: 'plant', name: 'Height (cm)', data: [3, 5, 8, 12, 17, 21, 24, 26, 27] }],
+  }}
+/>
+
+## See also
+
+- [Exploring](../../../guides/exploring/): the guide.
+- [`selection`](../selection/), the other mode.

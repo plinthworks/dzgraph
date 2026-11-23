@@ -1,0 +1,93 @@
+---
+title: "column"
+description: "Columns: upright rectangles from zero, side by side in each category. Its own option: stack."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Upright rectangles from zero, side by side in each category's band.
+
+<OptionFacts seriesType="column" />
+
+## What it draws
+
+Each category has a band along the axis; the series' columns stand side by side in it, in series order. Columns start
+at zero, from a stronger zero line: positive ones rise, negative ones go down. A value that is not zero is at least
+1 px high, and zero draws no column. The free end is rounded, the base straight. Hidden series give their room back.
+A chart with columns is upright: bars in the same chart are reported (`mixed-orientation`).
+
+`stack` piles the column on the others of the same stack (`true`: the stack `default`); several stacks stand side
+by side in each band. Positive values pile upwards, negative ones downwards. With `aggregate` on the x axis, columns
+sum their points by default.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('harvest')!,
+  {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Apples', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Pears', data: [1, 2, 3, 4] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Apples', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Pears', data: [1, 2, 3, 4] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fruit picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Apples', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Pears', data: [1, 2, 3, 4] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`bar`](../bar/): the same, across.
+- [`stacking`](../../axis/stacking/): piles as shares.
+- [Series types](../../../guides/series-types/).

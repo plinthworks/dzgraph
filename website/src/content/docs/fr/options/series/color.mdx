@@ -1,0 +1,98 @@
+---
+title: "color"
+description: "La couleur de la série : une place dans la palette du thème, ou une couleur que l'app définit en CSS."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+La couleur de la série : une place dans la palette du thème, ou une couleur à vous, définie en CSS.
+
+<OptionFacts series="color" />
+
+## Ce qu'elle fait
+
+Un nombre est une place dans la palette du thème, en comptant depuis 1 (`--dzgraph-series-1`) ; après la huitième,
+on repart de la première. `{ token: 'brand' }` est une couleur que vous définissez en CSS sous le nom
+`--dzgraph-color-brand` (le nom, un identifiant CSS), si bien que le clair, le sombre et vos vérifications de contraste
+tiennent :
+
+```css
+.sales-chart {
+  --dzgraph-color-brand: var(--my-brand-color);
+}
+```
+
+Les couleurs ne s'écrivent jamais dans les options. Tout le reste (`0`, `2.5`, un nom qui n'est pas un identifiant
+CSS) est signalé par `invalid-option` (`series[i].color`), et la série garde la couleur de sa place. La couleur n'est
+jamais le seul moyen de distinguer les séries : chacune a aussi son symbole de marqueur et son signe dans la légende.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jam')!,
+  {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
+    series: [
+      { type: 'column', id: 'plum', name: 'Prune', color: 3, data: [14, 22, 19] },
+      { type: 'column', id: 'quince', name: 'Coing', color: { token: 'brand' }, data: [9, 12, 17] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jam',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jam {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
+    series: [
+      { type: 'column', id: 'plum', name: 'Prune', color: 3, data: [14, 22, 19] },
+      { type: 'column', id: 'quince', name: 'Coing', color: { token: 'brand' }, data: [9, 12, 17] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Pots de confiture (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
+    series: [
+      { type: 'column', id: 'plum', name: 'Prune', color: 3, data: [14, 22, 19] },
+      { type: 'column', id: 'quince', name: 'Coing', color: 5, data: [9, 12, 17] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [Thème et droite à gauche](../../../guides/theming-rtl/) : la palette et ses variables.
+- [Accessibilité](../../../guides/accessibility/) : jamais la couleur seule.

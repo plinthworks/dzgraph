@@ -1,0 +1,96 @@
+---
+title: "stacking"
+description: "Les piles d'un axe y tracées en parts de leur total, de 0 à 100 %."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les piles d'un axe y tracées en parts de leur total.
+
+<OptionFacts axis="stacking" />
+
+## Ce qu'elle fait
+
+`'percent'` sur un axe y : à chaque x, les valeurs de chaque pile deviennent des parts du total de la pile, et
+l'axe va de 0 à 100 %. Un x dont la pile fait zéro n'y dessine rien. Les séries s'empilent par leur option `stack`
+([colonne](../../series-types/column/), [barre](../../series-types/bar/), [aire](../../series-types/area/)) ;
+l'infobulle et le tableau de données donnent la part et la valeur.
+
+Signalé (`invalid-option` sur `yAxis[0].stacking`) et laissé de côté : sur un axe x, sur un axe logarithmique (les
+parts d'une pile ne s'y additionnent pas), ou sur un axe y qui ne porte aucune série empilée. Une comparaison ne se fait
+pas sur un axe empilé.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('harvest')!, {
+  title: { text: 'Récolte par parcelle, en parts (inventée)' },
+  xAxis: { scale: 'category', categories: ['juin', 'juillet', 'août', 'septembre'] },
+  yAxis: { stacking: 'percent' },
+  series: [
+    { type: 'column', id: 'beans', name: 'Haricots', stack: true, data: [40, 85, 120, 60] },
+    { type: 'column', id: 'peas', name: 'Pois', stack: true, data: [70, 55, 20, 10] },
+    { type: 'column', id: 'squash', name: 'Courges', stack: true, data: [0, 30, 95, 140] },
+  ],
+}, { types: [column] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    title: { text: 'Récolte par parcelle, en parts (inventée)' },
+    xAxis: { scale: 'category', categories: ['juin', 'juillet', 'août', 'septembre'] },
+    yAxis: { stacking: 'percent' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Haricots', stack: true, data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Pois', stack: true, data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Courges', stack: true, data: [0, 30, 95, 140] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Récolte par parcelle, en parts (inventée)' },
+    xAxis: { scale: 'category', categories: ['juin', 'juillet', 'août', 'septembre'] },
+    yAxis: { stacking: 'percent' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Haricots', stack: true, data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Pois', stack: true, data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Courges', stack: true, data: [0, 30, 95, 140] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`compare`](../compare/) : une autre façon de lire un changement.
+- [Types de séries](../../../guides/series-types/) : les piles.

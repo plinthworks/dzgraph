@@ -1,0 +1,92 @@
+---
+title: "zoom"
+description: "Zoom and pan by the user: drag, Shift + drag, Ctrl/⌘ + wheel, pinch, keys."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Zoom and pan by the user: drag, Shift + drag, Ctrl/⌘ + wheel, pinch, keys.
+
+<OptionFacts feature="zoom" />
+
+## What it does
+
+There is no option: given the feature, the user can zoom the x axis.
+
+- **Mouse or pen**: a drag across the plot draws a band over the x range it covers, and releasing zooms to it (a drag
+  shorter than 5 px is a click). Once zoomed, Shift + drag moves the range.
+- **Wheel**: the wheel scrolls the page, as on any page; Ctrl (⌘ on a Mac) + wheel zooms around the pointer.
+- **Touch**: pinching zooms around the fingers' middle; once zoomed, a one-finger slide moves the range.
+- **Keyboard**, on a focused point: + and − zoom around it, Shift + ← and → move the range, 0 shows everything.
+
+Zoomed, a « Reset zoom » button appears at the end of the plot's top edge. A zoom never goes past the data's ends, nor
+closer than two points across the plot; on a category axis it covers whole categories. The value axes fit the points
+in view, unless their bounds are fixed.
+
+The range is part of the view: `rangeChange` gives its bounds (`null` for the whole), `getView()` keeps it and
+`setView()` gives it back. With [`selection`](../selection/) or [`measure`](../measure/), a mode bar chooses what a
+drag does; Ctrl/⌘ + wheel zooms in every mode.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, zoom } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('sales')!,
+  { series: [{ type: 'line', id: 'sales', name: 'Sales', data: [12, 18, 15, 22, 30, 27, 35, 31, 40, 38] }] },
+  { types: [line], features: [zoom] },
+);
+c.on('rangeChange', (e) => console.log(e.range));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sales',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (rangeChange)="range = $event" />`,
+})
+export class Sales {
+  readonly types = [line];
+  readonly features = [zoom];
+  range: { readonly min: number; readonly max: number } | null = null;
+  readonly options: ChartOptions = {
+    series: [{ type: 'line', id: 'sales', name: 'Sales', data: [12, 18, 15, 22, 30, 27, 35, 31, 40, 38] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'zoom']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'A made-up sensor: drag across the plot to zoom' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+## See also
+
+- [Exploring](../../../guides/exploring/): the guide.
+- [`navigatorStrip`](../navigator-strip/): the navigator and the range buttons.

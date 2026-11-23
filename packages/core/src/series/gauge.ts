@@ -21,8 +21,14 @@ export interface GaugeThreshold {
 }
 
 export interface GaugeSeriesOptions extends SeriesBase<'gauge', number | null | readonly (number | null)[]> {
-  /** The scale (gauge.md 1). Default 0 to 100. */
+  /**
+   * The scale (gauge.md 1). Default 0 to 100.
+   * @default `0`
+   */
   readonly min?: number | undefined;
+  /**
+   * @default `100`
+   */
   readonly max?: number | undefined;
   readonly thresholds?: readonly GaugeThreshold[] | undefined;
 }

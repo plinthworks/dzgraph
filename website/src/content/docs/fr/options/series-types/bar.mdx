@@ -1,0 +1,82 @@
+---
+title: "bar"
+description: "Des barres : des colonnes en travers ; le graphique devient horizontal. Son option propre : stack."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des colonnes en travers : le graphique devient horizontal.
+
+<OptionFacts seriesType="bar" />
+
+## Ce qu'il dessine
+
+Les barres sont des [colonnes](../column/) en travers. Les catégories descendent depuis le haut ; les valeurs
+grandissent dans le sens de lecture, depuis la gauche de gauche à droite, depuis la droite de droite à gauche. L'axe x
+est vertical et l'axe des valeurs horizontal, mais ils gardent leurs noms : les catégories restent `xAxis`, les
+valeurs `yAxis`. Les lignes, aires et nuages du même graphique suivent l'orientation des barres ; des colonnes y sont
+signalées (`mixed-orientation`).
+
+`stack` fonctionne comme sur les colonnes.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { bar } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jars')!,
+  {
+    xAxis: { scale: 'category', categories: ['Prune', 'Coing', 'Cerise'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Pots vendus', data: [1250, 860, 2240] }],
+  },
+  { types: [bar] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { bar, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jars {
+  readonly types = [bar];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Prune', 'Coing', 'Cerise'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Pots vendus', data: [1250, 860, 2240] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Pots vendus (inventés)' },
+    xAxis: { scale: 'category', categories: ['Prune', 'Coing', 'Cerise'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Pots vendus', data: [1250, 860, 2240] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`column`](../column/) : la même, debout.
+- [Thème et droite à gauche](../../../guides/theming-rtl/).

@@ -1,0 +1,73 @@
+---
+title: "animation"
+description: "Animer l'apparition du graphique et ses mises à jour."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Animer l'apparition du graphique et ses mises à jour.
+
+<OptionFacts chart="animation" />
+
+## Ce qu'elle fait
+
+Quand le graphique apparaît (400 ms), lignes et aires se dévoilent depuis le début de l'axe x, colonnes et barres
+poussent depuis leur base, les marqueurs apparaissent en fondu. Quand il est mis à jour (250 ms) — nouvelles options,
+nouvelles données, une série masquée depuis la légende —, ce qui reste bouge depuis là où c'était, ce qui arrive pousse
+depuis la base, ce qui part s'efface. Un changement de taille n'est jamais animé.
+
+`false` coupe tout cela : le graphique montre aussitôt son état final. Le réglage du système du lecteur pour réduire
+les animations (`prefers-reduced-motion: reduce`) fait de même, quoi que dise cette option. Pour mener les animations
+vous-même (avec GSAP, par exemple), donnez à `chart()` une fonction [`animate`](../../setup/animate/).
+
+Une autre valeur qu'un booléen est signalée (`invalid-option` sur `animation`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('animation')!,
+  {
+    animation: false,
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [12, 19, 15, 22, 17] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-animation',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class AnimationChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    animation: false,
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [12, 19, 15, 22, 17] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [`animate`](../../setup/animate/) : des animations menées par l'app.
+- [Interactions](../../../guides/interactions/) : l'animation avec les autres interactions.

@@ -1,0 +1,127 @@
+---
+title: "drilldown"
+description: "Each point's detail, by the point's key or loaded by the app, shown in its place by a click."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Each point's detail: a click on the point shows it in its place.
+
+<OptionFacts series="drilldown" />
+
+## What it does
+
+`{ details: { [key]: series[] } }` gives the detail of each point by its [key](../data/); `{ load: (point) =>
+Promise<series[]> }` loads it when asked. A point with a detail shows a hand under the pointer, and screen readers
+hear « detail available ». A click, or Enter, replaces the chart's series by the detail's; a breadcrumb above the plot
+goes back, as do Backspace and Alt + ←, and the level comes back as it was. The event `drill` gives the path of keys,
+and the view keeps it. A load that fails, or takes more than 10 s, says so and offers to retry.
+
+Anything but exactly one of `details` (each a list of series) or `load` (a function) is reported as `invalid-option`
+(`series[i].drilldown`). Without the `drilldown` feature the option is reported (`missing-module`) and no point has a
+detail.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, drilldown } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('orchard')!,
+  {
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [
+      {
+        type: 'column',
+        id: 'fruit',
+        name: 'Crates',
+        data: { y: [52, 31], key: ['apples', 'pears'] },
+        drilldown: {
+          details: {
+            apples: [{ type: 'column', id: 'apples', name: 'Apples', data: [['Gala', 22], ['Russet', 17], ['Bramley', 13]] }],
+            pears: [{ type: 'column', id: 'pears', name: 'Pears', data: [['Comice', 19], ['Conference', 12]] }],
+          },
+        },
+      },
+    ],
+  },
+  { types: [column], features: [drilldown] },
+);
+c.on('drill', (e) => console.log(e.path));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { drilldown } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-orchard',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Orchard {
+  readonly types = [column];
+  readonly features = [drilldown];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [
+      {
+        type: 'column',
+        id: 'fruit',
+        name: 'Crates',
+        data: { y: [52, 31], key: ['apples', 'pears'] },
+        drilldown: {
+          details: {
+            apples: [{ type: 'column', id: 'apples', name: 'Apples', data: [['Gala', 22], ['Russet', 17], ['Bramley', 13]] }],
+            pears: [{ type: 'column', id: 'pears', name: 'Pears', data: [['Comice', 19], ['Conference', 12]] }],
+          },
+        },
+      },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Orchard harvest (made up)' },
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [
+      {
+        type: 'column',
+        id: 'fruit',
+        name: 'Crates',
+        data: { y: [52, 31], key: ['apples', 'pears'] },
+        drilldown: {
+          details: {
+            apples: [{ type: 'column', id: 'apples', name: 'Apples', data: [['Gala', 22], ['Russet', 17], ['Bramley', 13]] }],
+            pears: [{ type: 'column', id: 'pears', name: 'Pears', data: [['Comice', 19], ['Conference', 12]] }],
+          },
+        },
+      },
+    ],
+  }}
+/>
+
+## See also
+
+- [`drilldown`](../../chart/drilldown/) on the chart: years, months, days on a time axis.
+- [Exploring](../../../guides/exploring/): drilldown with the other ways to explore.

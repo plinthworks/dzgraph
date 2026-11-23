@@ -21,6 +21,9 @@ dzgraph-live-chart {
 dzgraph-live-chart .dzgraph-demo-host {
   block-size: var(--demo-height, 360px);
 }
+dzgraph-live-chart .dzgraph-demo-host[data-auto-height] {
+  block-size: auto;
+}
 dzgraph-live-chart .dzgraph-demo-caption {
   margin-block-start: 0.5rem;
   font-size: var(--sl-text-sm);
@@ -29,4 +32,18 @@ dzgraph-live-chart .dzgraph-demo-caption {
 /* A link around inline code (a file name): the accent on Starlight's code tint falls under 4.5:1, so no tint there. */
 .sl-markdown-content a > code {
   background-color: transparent;
+}
+/* An option's facts (<OptionFacts>): a compact two-column table, the headings in the muted ink. */
+.dzgraph-facts {
+  inline-size: 100%;
+}
+.dzgraph-facts th[scope='row'] {
+  inline-size: 11rem;
+  color: var(--sl-color-gray-2);
+  font-weight: 600;
+}
+.dzgraph-facts caption {
+  text-align: start;
+  font-weight: 600;
+  padding-block: 0.5rem;
 }

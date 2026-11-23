@@ -1,0 +1,79 @@
+---
+title: "dataTable"
+description: "The table of the chart's numbers: for screen readers, or shown under the chart."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The table of the chart's numbers: for screen readers, or shown under the chart.
+
+<OptionFacts chart="dataTable" />
+
+## What it does
+
+Every chart has a data table: a row per x, a column per visible series, the same numbers as the chart. By default
+it is hidden from sight and read by screen readers, after the chart. `true` shows it under the chart.
+
+The table shown is inside the chart's element, under the chart, and the element's height is the chart's alone. So
+give the element no fixed height: the chart takes its `aspectRatio` and the table follows it. With a fixed height,
+the table goes past the element and covers what comes next.
+
+An object gives `show` (the same choice) and `rows`. Zoomed, the table shows the visible range and says so in its
+caption, with a button to switch to all the data and back; `rows: 'all'` starts it with all the data. The CSV export
+follows the same choice. A table holds at most 1 000 rows: past that, its last row says how many were left out (the
+CSV gives them all).
+
+Something else than a boolean or an object is `invalid-option` at `dataTable`; another key `unknown-option` at
+`dataTable.<key>`; a wrong value `invalid-option` at `dataTable.show` or `dataTable.rows`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('data-table')!,
+  {
+    dataTable: { show: true, rows: 'all' },
+    xAxis: { scale: 'category', categories: ['May', 'Jun', 'Jul', 'Aug'] },
+    series: [{ type: 'line', id: 'plum', name: 'Plum jam', data: [14, 22, 41, 66] }],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-data-table',
+  imports: [DzChart],
+  template: `<dz-chart [options]="options" [types]="types" />`,
+})
+export class DataTableChart {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    dataTable: { show: true, rows: 'all' },
+    xAxis: { scale: 'category', categories: ['May', 'Jun', 'Jul', 'Aug'] },
+    series: [{ type: 'line', id: 'plum', name: 'Plum jam', data: [14, 22, 41, 66] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [Accessibility](../../../guides/accessibility/): the data table, with a demo.
+- [`exporting`](../exporting/): the CSV export.

@@ -1,0 +1,82 @@
+---
+title: "categories"
+description: "Les catégories d'un axe de catégories, dans l'ordre."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les catégories d'un axe de catégories, dans l'ordre.
+
+<OptionFacts axis="categories" />
+
+## Ce qu'elle fait
+
+Une bande par catégorie, son étiquette centrée dessous. Une série de simples valeurs met sa première valeur dans
+la première catégorie, et ainsi de suite ; une série de paires `[nom, valeur]` ou de points au `x` texte trouve sa
+catégorie par son nom. Une catégorie donnée deux fois n'est gardée qu'une fois.
+
+Sans la liste, les catégories sont prises dans les données, dans leur ordre d'apparition. Avec elle, un nom qu'elle ne
+contient pas reçoit sa propre bande après les autres, et une valeur au-delà de la dernière catégorie une bande nommée
+par sa position ; les deux sont signalés une fois par série (`invalid-data`). Des étiquettes qui ne tiennent pas
+tournent de 45°, puis une sur deux (trois…) s'affiche, puis une étiquette longue finit par « … » et se lit en entier
+dans l'infobulle.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('crates')!, {
+  title: { text: 'Cagettes cueillies (inventées)' },
+  xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes', 'Cerises'] },
+  series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [52, 31, 18, 44] }],
+}, { types: [column] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-crates',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Crates {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    title: { text: 'Cagettes cueillies (inventées)' },
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes', 'Cerises'] },
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [52, 31, 18, 44] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Cagettes cueillies (inventées)' },
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes', 'Cerises'] },
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [52, 31, 18, 44] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`scale`](../scale/) : l'échelle de catégories et les autres.
+- [Les données](../../../guides/data/) : les formes d'une série.

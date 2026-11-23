@@ -1,0 +1,97 @@
+---
+title: "timeAxis"
+description: "Les échelles de temps : instants et jours dans un fuseau, graduations sur le calendrier."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les échelles de temps : instants et jours dans un fuseau, graduations sur le calendrier.
+
+<OptionFacts feature="timeAxis" />
+
+## Ce qu'elle fait
+
+Avec elle, un axe prend `scale: 'time'` (voir [`scale`](../../axis/scale/)). Il lit des instants : des nombres
+(millisecondes depuis 1970 UTC) ou des dates-heures ISO avec un décalage (`2026-03-29T01:30:00+01:00`, `…Z`). Une
+date-heure sans décalage n'est jamais devinée : le point est un trou, signalé `ambiguous-instant`. Un jour du
+calendrier (`2026-03-29`) se place à son minuit local dans le [`zone`](../../axis/zone/) de l'axe, par défaut le
+fuseau de la page.
+
+Les graduations tombent sur des valeurs rondes de l'heure locale du fuseau : années, mois, jours, heures, minutes,
+secondes. Une étiquette ne dit que ce qui change à son unité (« 2026 », « mars », « 3 », « 14:00 »), et sous les jours
+ou les heures une seconde rangée nomme le mois ou la date là où ils changent. Une graduation de jour reste à minuit
+local un jour de 23 ou 25 heures. Le titre de l'infobulle et le tableau de données donnent la date et l'heure entières
+dans le fuseau.
+
+Elle lit aussi les valeurs de temps de [`setRange()`](../../../guides/exploring/), de
+[`compareTo`](../../axis/compare-to/) et du `min` et du `max` de l'axe, et c'est par elle que
+[`aggregation`](../aggregation/) regroupe par période du calendrier.
+
+Sans elle, `scale: 'time'` est signalé (`missing-module`) et l'axe est dessiné comme un axe linéaire.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('visits')!,
+  {
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [{ type: 'line', id: 'visits', name: 'Visiteurs', data: [['2026-03-27', 41], ['2026-03-28', 58], ['2026-03-29', 52], ['2026-03-30', 66]] }],
+  },
+  { types: [line], features: [timeAxis] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Visits {
+  readonly types = [line];
+  readonly features = [timeAxis];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [{ type: 'line', id: 'visits', name: 'Visiteurs', data: [['2026-03-27', 41], ['2026-03-28', 58], ['2026-03-29', 52], ['2026-03-30', 66]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'crosshair']}
+  data={{ recipe: 'walk', count: 4320 }}
+  options={{
+    title: { text: 'Un capteur inventé, une mesure par minute' },
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [Axes et temps](../../../guides/axes-time/) : le guide.
+- [`zone`](../../axis/zone/), le fuseau de l'axe.

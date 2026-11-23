@@ -1,0 +1,116 @@
+---
+title: "drilldown"
+description: "Le détail d'un point par clic ou Entrée, avec un fil d'Ariane pour revenir."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le détail d'un point par clic ou Entrée, avec un fil d'Ariane pour revenir.
+
+<OptionFacts feature="drilldown" />
+
+## Ce qu'elle fait
+
+Elle fait marcher deux options : le [`drilldown`](../../series/drilldown/) d'une série, qui donne le détail
+de chaque point par sa clé (`details`) ou le charge (`load`), et le [`drilldown: 'time'`](../../chart/drilldown/) du
+graphique, qui descend d'un axe de temps des années vers les mois, et d'un mois vers les jours.
+
+Un clic ou Entrée sur un point qui a un détail montre ce détail à sa place, animé. Un fil d'Ariane au-dessus du tracé
+nomme chaque niveau ; chacun sauf le dernier est un lien pour y revenir. Retour arrière, et Alt + ← (→ de droite à
+gauche), remontent d'un niveau, et remonter rend le niveau tel qu'il était : sa plage, ses séries masquées, sa
+sélection. Un chargement affiche « Chargement… » ; un chargement qui échoue ou dure plus de 10 s le dit et propose
+« Réessayer ».
+
+Le niveau fait partie de la vue : `getView()` donne le chemin des clés depuis la racine, `setView()` y va, et
+l'événement `drill` donne le chemin. Des graphiques liés partagent le niveau.
+
+Sans elle, les deux options sont signalées (`missing-module`) et un clic ne fait rien de plus.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, drilldown } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('fruit')!,
+  {
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruits cueillis',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: { apples: [{ type: 'column', id: 'apples', name: 'Variétés', data: [['Gala', 30], ['Reinette', 22]] }] } },
+    }],
+  },
+  { types: [column], features: [drilldown] },
+);
+c.on('drill', (e) => console.log(e.path));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { drilldown } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-fruit',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (drill)="path = $event.path" />`,
+})
+export class Fruit {
+  readonly types = [column];
+  readonly features = [drilldown];
+  path: readonly string[] = [];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruits cueillis',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: { apples: [{ type: 'column', id: 'apples', name: 'Variétés', data: [['Gala', 30], ['Reinette', 22]] }] } },
+    }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Fruits cueillis (inventés) : cliquez sur une colonne' },
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruits cueillis',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: {
+        apples: [{ type: 'column', id: 'apples', name: 'Variétés', data: [['Gala', 30], ['Reinette', 22]] }],
+        pears: [{ type: 'column', id: 'pears', name: 'Variétés', data: [['Conference', 19], ['Williams', 12]] }],
+      } },
+    }],
+  }}
+/>
+
+## Voir aussi
+
+- [`drilldown`](../../series/drilldown/), l'option de série.
+- [`drilldown`](../../chart/drilldown/), l'option du graphique.
+- [Explorer](../../../guides/exploring/) : le guide.

@@ -1,0 +1,80 @@
+---
+title: "dataTable"
+description: "Le tableau des nombres du graphique : pour les lecteurs d'écran, ou montré sous le graphique."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le tableau des nombres du graphique : pour les lecteurs d'écran, ou montré sous le graphique.
+
+<OptionFacts chart="dataTable" />
+
+## Ce qu'elle fait
+
+Chaque graphique a un tableau de données : une ligne par x, une colonne par série visible, les mêmes nombres que le
+graphique. Par défaut il est caché à la vue et lu par les lecteurs d'écran, après le graphique. `true` le montre sous
+le graphique.
+
+Le tableau montré est dans l'élément du graphique, sous le graphique, et la hauteur de l'élément est celle du seul
+graphique. Ne donnez donc pas de hauteur fixe à l'élément : le graphique prend son `aspectRatio` et le tableau le suit.
+Avec une hauteur fixe, le tableau dépasse de l'élément et couvre ce qui vient après.
+
+Un objet donne `show` (le même choix) et `rows`. Zoomé, le tableau montre la plage visible et le dit dans sa légende,
+avec un bouton pour passer à toutes les données et revenir ; `rows: 'all'` le fait commencer par toutes les données.
+L'export CSV suit le même choix. Un tableau tient au plus 1 000 lignes : au-delà, sa dernière ligne dit combien ont été
+laissées de côté (le CSV les donne toutes).
+
+Autre chose qu'un booléen ou un objet est `invalid-option` sur `dataTable` ; une autre clé `unknown-option` sur
+`dataTable.<clé>` ; une valeur erronée `invalid-option` sur `dataTable.show` ou `dataTable.rows`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('data-table')!,
+  {
+    dataTable: { show: true, rows: 'all' },
+    xAxis: { scale: 'category', categories: ['mai', 'juin', 'juil.', 'août'] },
+    series: [{ type: 'line', id: 'plum', name: 'Confiture de prune', data: [14, 22, 41, 66] }],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-data-table',
+  imports: [DzChart],
+  template: `<dz-chart [options]="options" [types]="types" />`,
+})
+export class DataTableChart {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    dataTable: { show: true, rows: 'all' },
+    xAxis: { scale: 'category', categories: ['mai', 'juin', 'juil.', 'août'] },
+    series: [{ type: 'line', id: 'plum', name: 'Confiture de prune', data: [14, 22, 41, 66] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [Accessibilité](../../../guides/accessibility/) : le tableau de données, avec une démo.
+- [`exporting`](../exporting/) : l'export CSV.

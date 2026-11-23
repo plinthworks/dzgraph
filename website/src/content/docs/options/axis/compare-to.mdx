@@ -1,0 +1,94 @@
+---
+title: "compareTo"
+description: "A fixed baseline for the comparison: an x value."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A fixed baseline for the comparison, at an x value.
+
+<OptionFacts axis="compareTo" />
+
+## What it does
+
+With [`compare`](../compare/) on the same y axis: each series is compared to its point at that x, or the last
+one before it. A fixed baseline does not move when the user zooms or pans. The x is a number, or on a time x axis an
+ISO date-time with an offset, read in the axis's [zone](../zone/).
+
+A value of another kind is reported (`invalid-option` at `yAxis[0].compareTo`). Without `compare`, the comparison has
+no mode: reported at `yAxis[0].compare`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, compare, timeAxis } from '@dzgraph/dom';
+
+chart(document.getElementById('jars')!, {
+  title: { text: 'Jars sold, compared with 4 March (made up)' },
+  xAxis: { scale: 'time', zone: 'UTC' },
+  yAxis: { compare: 'percent', compareTo: '2026-03-04T00:00:00Z' },
+  series: [
+    { type: 'line', id: 'plum', name: 'Plum', data: [['2026-03-02', 40], ['2026-03-03', 44], ['2026-03-04', 50], ['2026-03-05', 47], ['2026-03-06', 58], ['2026-03-07', 61]] },
+    { type: 'line', id: 'quince', name: 'Quince', data: [['2026-03-02', 22], ['2026-03-03', 21], ['2026-03-04', 20], ['2026-03-05', 26], ['2026-03-06', 25], ['2026-03-07', 29]] },
+  ],
+}, { types: [line], features: [timeAxis, compare] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { compare, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Jars {
+  readonly types = [line];
+  readonly features = [timeAxis, compare];
+  readonly options: ChartOptions = {
+    title: { text: 'Jars sold, compared with 4 March (made up)' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    yAxis: { compare: 'percent', compareTo: '2026-03-04T00:00:00Z' },
+    series: [
+      { type: 'line', id: 'plum', name: 'Plum', data: [['2026-03-02', 40], ['2026-03-03', 44], ['2026-03-04', 50], ['2026-03-05', 47], ['2026-03-06', 58], ['2026-03-07', 61]] },
+      { type: 'line', id: 'quince', name: 'Quince', data: [['2026-03-02', 22], ['2026-03-03', 21], ['2026-03-04', 20], ['2026-03-05', 26], ['2026-03-06', 25], ['2026-03-07', 29]] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'compare']}
+  options={{
+    title: { text: 'Jars sold, compared with 4 March (made up)' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    yAxis: { compare: 'percent', compareTo: '2026-03-04T00:00:00Z' },
+    series: [
+      { type: 'line', id: 'plum', name: 'Plum', data: [['2026-03-02', 40], ['2026-03-03', 44], ['2026-03-04', 50], ['2026-03-05', 47], ['2026-03-06', 58], ['2026-03-07', 61]] },
+      { type: 'line', id: 'quince', name: 'Quince', data: [['2026-03-02', 22], ['2026-03-03', 21], ['2026-03-04', 20], ['2026-03-05', 26], ['2026-03-06', 25], ['2026-03-07', 29]] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`compare`](../compare/): the modes.
+- [`zone`](../zone/): how a date-time is read.

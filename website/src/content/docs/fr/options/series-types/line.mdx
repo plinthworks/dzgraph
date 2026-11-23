@@ -1,0 +1,96 @@
+---
+title: "line"
+description: "Une ligne : les points reliés dans l'ordre des x. Son option propre : marker."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des points reliés dans l'ordre des x par des segments droits.
+
+<OptionFacts seriesType="line" />
+
+## Ce qu'il dessine
+
+Les points sont reliés dans l'ordre des x ; un trou (`null`) coupe la ligne, et un point seul entre deux trous se
+montre par un marqueur. Les marqueurs sont sur chaque point quand les points sont assez écartés pour être lus ; une
+ligne plus dense en garde un environ tous les 80 px, chaque série avec son propre décalage. `marker: true` en met un
+sur chaque point, `false` aucun. Chaque série a son symbole de marqueur (cercle, carré, losange, triangle…) : les
+lignes se distinguent sans la couleur.
+
+Une ligne qui a plus de points que le tracé n'a de colonnes de pixels est dessinée à partir de bien moins de points,
+qui ont la même allure (le point le plus haut et le plus bas de chaque colonne gardés) ; l'infobulle et le tableau de
+données montrent les vrais points. Des x qui reculent sont dessinés dans l'ordre donné et signalés une fois
+(`unsorted-x`). Les lignes ne s'empilent pas : `stack` sur une ligne donne `unknown-option`. Un `marker` qui n'est pas
+un booléen donne `invalid-option` (`series[i].marker`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('bees')!,
+  {
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Ruche B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Bees {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Ruche B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Ruche B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`area`](../area/) : une ligne remplie jusqu'à zéro.
+- [`data`](../../series/data/) : les formes des valeurs.
+- [Types de séries](../../../guides/series-types/).

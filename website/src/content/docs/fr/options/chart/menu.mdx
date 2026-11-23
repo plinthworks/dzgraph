@@ -1,0 +1,91 @@
+---
+title: "menu"
+description: "Un petit menu pour le lecteur : type, agrégation, échelle, comparaison, téléchargement, impression."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Un petit menu pour le lecteur : type, agrégation, échelle, comparaison, téléchargement, impression.
+
+<OptionFacts chart="menu" />
+
+## Ce qu'elle fait
+
+Un bouton au bout du bord haut du graphique (« Options du graphique ») ouvre un menu. `true` propose tous les
+éléments ; un objet liste ceux qui sont proposés, dans `items` : `'type'` (ligne, aire ou colonne pour une série),
+`'aggregation'` (par période, sur un axe de temps), `'scale'` (linéaire ou logarithmique, quand toutes les valeurs sont
+positives), `'compare'` (différence, pourcentage, base 100), `'export'` (un téléchargement en PNG, SVG ou CSV) et
+`'print'`. Un élément n'apparaît que s'il a un sens pour les données ; s'il n'en reste aucun, le bouton n'est pas
+montré. `'export'` et `'print'` demandent aussi la fonction [`exporting`](../../features/exporting/).
+
+Le menu suit le modèle du bouton de menu WAI-ARIA : Entrée, Espace ou ↓ l'ouvrent, les flèches se déplacent, Échap le
+ferme et rend le focus. Un choix s'applique aussitôt et fait partie de la [vue](../../../guides/exploring/) :
+enregistré et rendu avec elle.
+
+Il demande la fonction [`menu`](../../features/menu/) (`missing-module` sur `menu` sans elle). Une liste `items` vide
+ou qui nomme autre chose est `invalid-option` sur `menu`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, menu, exporting } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('menu')!,
+  {
+    menu: { items: ['type', 'scale', 'export'] },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles vues', data: [12, 30, 52, 61, 58, 44] }],
+  },
+  { types: [line], features: [menu, exporting] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { menu, exporting } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-menu',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class MenuChart {
+  readonly types = [line];
+  readonly features = [menu, exporting];
+  readonly options: ChartOptions = {
+    menu: { items: ['type', 'scale', 'export'] },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles vues', data: [12, 30, 52, 61, 58, 44] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    menu: { items: ['type', 'scale', 'export'] },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles vues', data: [12, 30, 52, 61, 58, 44] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`exporting`](../exporting/) : ce qu'écrit un téléchargement.
+- [Explorer](../../../guides/exploring/) : comparaison, agrégation et menu.

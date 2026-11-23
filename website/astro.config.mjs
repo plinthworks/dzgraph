@@ -32,6 +32,15 @@ function aliases() {
 }
 
 /** The guides, by task (batch 2), in reading order. */
+/** The option pages' groups (options/<dir>/): the chart's keys, every series', each series type, an axis's, `chart()`'s setup, the features. */
+export const OPTION_GROUPS = [
+  ['chart', 'Chart', 'Graphique'],
+  ['series', 'Series', 'Séries'],
+  ['series-types', 'Series types', 'Types de séries'],
+  ['axis', 'Axes', 'Axes'],
+  ['setup', 'Setup', 'Création'],
+  ['features', 'Features', 'Fonctions'],
+];
 export const GUIDES = ['data', 'series-types', 'axes-time', 'interactions', 'exploring', 'big-data', 'exporting', 'accessibility', 'theming-rtl', 'angular', 'dztooltip', 'dzgrid'];
 
 export default defineConfig({
@@ -58,8 +67,15 @@ export default defineConfig({
         { label: 'Getting started', translations: { fr: 'Prise en main' }, items: ['typescript', 'angular'].map((page) => ({ slug: `getting-started/${page}` })) },
         { label: 'Gallery', translations: { fr: 'Galerie' }, items: [{ autogenerate: { directory: 'gallery' } }] },
         { label: 'Guides', translations: { fr: 'Guides' }, items: GUIDES.map((page) => ({ slug: `guides/${page}` })) },
-        // One page per option (batch 3), the index first (sidebar.order 0).
-        { label: 'Options', translations: { fr: 'Options' }, items: [{ autogenerate: { directory: 'options' } }] },
+        // One page per option (batch 3): the overview, then a group per kind, each page's facts from the sources.
+        {
+          label: 'Options',
+          translations: { fr: 'Options' },
+          items: [
+            { slug: 'options' },
+            ...OPTION_GROUPS.map(([dir, label, fr]) => ({ label, translations: { fr }, collapsed: true, items: [{ autogenerate: { directory: `options/${dir}` } }] })),
+          ],
+        },
         // Generated from api/*.api.txt (batch 4).
         { label: 'API reference', translations: { fr: 'Référence de l’API' }, items: [{ autogenerate: { directory: 'api' } }] },
       ],

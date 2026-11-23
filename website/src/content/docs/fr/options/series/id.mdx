@@ -1,0 +1,72 @@
+---
+title: "id"
+description: "L'identité de la série, pour les mises à jour, la vue, les liens et les événements."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+L'identité de la série : ce qui la fait reconnaître des mises à jour, de la vue, des liens et des événements.
+
+<OptionFacts series="id" />
+
+## Ce qu'elle fait
+
+`update()` apparie les séries par `id` : une série qui garde son id garde ce que l'utilisateur lui a fait (masquée,
+points sélectionnés) et part de là où elle était. `setData()` et `setSeriesVisible()` la nomment ; les événements la
+donnent en `seriesId` ; la vue range sous lui les séries masquées et les sélections ; les graphiques liés et DzGrid
+retrouvent les points par lui.
+
+Absent, une série est `#1`, `#2`… selon sa position : une série qui bouge change donc d'identité. Donnez des ids quand
+des séries vont et viennent. `#` est réservé à ces ids. Un id qui commence par `#`, ou déjà pris, est signalé par
+`duplicate-id` (`series[i].id`), et la série prend l'id de sa position ; un id qui n'est pas une chaîne donne
+`invalid-option`. Tout autre problème de la série porte son id (`seriesId`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('jars')!,
+  {
+    series: [{ type: 'column', id: 'jars', name: 'Pots vendus', data: [14, 22, 19] }],
+  },
+  { types: [column] },
+);
+c.setData('jars', [14, 22, 19, 27]);
+c.setSeriesVisible('jars', false);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jars {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    series: [{ type: 'column', id: 'jars', name: 'Pots vendus', data: [14, 22, 19] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Voir aussi
+
+- [`name`](../name/) : ce que le lecteur voit.
+- [Explorer](../../../guides/exploring/) : la vue, rangée par id de série.

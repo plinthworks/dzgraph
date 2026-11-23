@@ -1,8 +1,74 @@
 ---
 title: "Options"
-description: "Chaque option d’un graphique, d’une série, d’un axe et d’un module, une page chacune."
+description: "Chaque option d'un graphique, d'une série, d'un axe, de la création par chart() et de chaque fonction, une page chacune, ses faits lus dans les sources."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [les types des options](https://github.com/plinthworks/dzgraph/blob/main/packages/core/src/options.ts) (en anglais).
-:::
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Une page par option, en six groupes. Chaque page commence par les faits de l'option, lus dans les sources de la
+bibliothèque, puis dit ce qu'elle fait, avec un exemple et souvent un graphique vivant.
+
+## Les groupes
+
+| Groupe | Ce qu'il contient | Par exemple |
+|---|---|---|
+| Graphique | les clés de premier niveau de `ChartOptions` | [`title`](chart/title/), [`aspectRatio`](chart/aspect-ratio/) |
+| Séries | les clés de toute série, quel que soit son type | [`data`](series/data/), [`id`](series/id/) |
+| Types de séries | chaque type de série, avec ses propres clés | [`line`](series-types/line/), [`donut`](series-types/donut/) |
+| Axes | les clés d'un axe, avec les échelles où chacune vaut | [`scale`](axis/scale/), [`zone`](axis/zone/) |
+| Création | le troisième argument de `chart()` : `types`, `features`, `messages`, `animate` | [`types`](setup/types/), [`features`](setup/features/) |
+| Fonctions | chaque fonction de `@dzgraph/dom`, et les options qui la demandent | [`zoom`](features/zoom/), [`timeAxis`](features/time-axis/) |
+
+Une option d'axe se donne dans `xAxis` ou `yAxis`, un axe ou une liste d'axes ; une option de série dans chaque
+entrée de `series`.
+
+## Lire un tableau de faits
+
+Voici le tableau de [`aspectRatio`](chart/aspect-ratio/) :
+
+<OptionFacts chart="aspectRatio" />
+
+- **Type** : tel que les types l'écrivent.
+- **Par défaut**, ou **Obligatoire** quand l'option n'en a pas.
+- **Demande** : la fonction à donner à `chart()` dans `features`. Sans elle, l'option est signalée (`missing-module`)
+  et le graphique se dessine sans elle.
+- **Mise à jour** : comment une nouvelle valeur atteint un graphique déjà dessiné.
+- **Angular** : comment `<dz-chart>` la prend.
+- **Déclarée dans** : la ligne des sources, sur GitHub.
+
+Un script lit ces faits dans les sources, et les tests du site les vérifient : que chaque page montre les siens, que
+chaque option a sa page, et que chaque « Demande » est bien la fonction que le graphique réclame.
+
+## Mettre à jour les options
+
+`update()` prend n'importe quel champ de premier niveau des options :
+
+- un champ donné remplace le précédent en entier : pas de fusion profonde à deviner ;
+- un champ donné à `undefined` revient à sa valeur par défaut ;
+- un champ absent est gardé ;
+- `series` est apparié par `id` : une série qui garde son id garde l'état que l'utilisateur lui a donné et s'anime
+  depuis là où elle était.
+
+Ce que l'utilisateur a fait — un zoom, une série masquée, une sélection — est la vue, et de nouvelles options ne
+l'écrasent jamais. `setData()` remplace les valeurs d'une série, le moyen le moins coûteux de montrer de nouveaux
+chiffres ; le prochain `update()` qui donne les données de cette série l'emporte. La création (`types`, `features`,
+`messages`, `animate`) est lue une fois, quand le graphique est fait ; avec Angular, une nouvelle valeur de ces entrées
+dessine un nouveau graphique.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { title: { text: 'Charge (inventée)' }, series: [{ type: 'line', id: 'load', data: [12, 15, 11] }] }, { types: [line] });
+
+c.update({ legend: false });
+c.update({ title: undefined });
+c.setData('load', [12, 15, 11, 18]);
+```
+
+## Les options que le graphique ne sait pas lire
+
+Une mauvaise option ne lève jamais d'exception. Une clé que le graphique ne connaît pas est signalée
+`unknown-option`, une valeur qu'il ne sait pas lire `invalid-option`, une option sans sa fonction `missing-module`,
+chacune avec son chemin (`yAxis[0].min`) ; le graphique dessine ce qu'il peut. Les problèmes sont dans `c.problems` et
+l'événement `problems`, et ne portent jamais vos données.

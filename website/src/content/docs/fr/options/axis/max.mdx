@@ -1,0 +1,82 @@
+---
+title: "max"
+description: "La borne haute de l'axe, fixée."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+La borne haute de l'axe, fixée.
+
+<OptionFacts axis="max" />
+
+## Ce qu'elle fait
+
+Gardée telle quelle, sans arrondi : une part tracée jusqu'à `100` montre à quelle distance elle est du plein.
+L'autre bout reste ajusté aux données et arrondi à une graduation. Un `max` en dessous de toutes les valeurs est
+signalé (`invalid-option`) et laissé de côté. Un zoom reste dans les bornes.
+
+Sur un axe de temps, une borne est un nombre de millisecondes, une date-heure ISO avec son décalage, ou un
+jour (`'2026-03-01'`, son minuit dans le [fuseau](../zone/) de l'axe) ; une date-heure sans décalage est signalée
+`ambiguous-instant` et laissée de côté. Sur un axe logarithmique, une borne nulle ou négative est signalée
+(`invalid-option`) et laissée de côté. Un `min` supérieur ou égal à `max` est signalé sur `min`, et les deux sont
+laissés de côté. Un axe de catégories n'a pas de bornes : elles sont signalées (`unknown-option`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('charge')!, {
+  title: { text: 'Une batterie inventée' },
+  yAxis: { max: 100, title: 'Charge (%)' },
+  series: [{ type: 'line', id: 'charge', name: 'Charge', data: [48, 41, 33, 27, 19, 12] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-charge',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Charge {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: { text: 'Une batterie inventée' },
+    yAxis: { max: 100, title: 'Charge (%)' },
+    series: [{ type: 'line', id: 'charge', name: 'Charge', data: [48, 41, 33, 27, 19, 12] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Une batterie inventée' },
+    yAxis: { max: 100, title: 'Charge (%)' },
+    series: [{ type: 'line', id: 'charge', name: 'Charge', data: [48, 41, 33, 27, 19, 12] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`min`](../min/) : la borne basse.
+- [Axes et temps](../../../guides/axes-time/).

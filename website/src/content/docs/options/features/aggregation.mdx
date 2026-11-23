@@ -1,0 +1,92 @@
+---
+title: "aggregation"
+description: "Points grouped by period of the calendar or by bucket of x."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Points grouped by period of the calendar or by bucket of x.
+
+<OptionFacts feature="aggregation" />
+
+## What it does
+
+It lets the x axis's [`aggregate`](../../axis/aggregate/) work, and lets the [`menu`](../menu/) offer
+« Aggregation ». Each series is drawn as one point per period (`'hour'` to `'year'`, on the axis's zone's calendar; a
+week starts on Monday) or per bucket of a numeric x (`{ step }`). Its value is the series' function of the points in it,
+set by the series' [`aggregate`](../../series/aggregate/): a sum for columns and bars, a mean otherwise. A period
+without points is a gap, not a zero.
+
+The axis keeps its own ticks and each point stands at its period's start. The tooltip's heading names the period and
+says how many points it holds; the data table lists the groups. Selecting a group selects every point it holds.
+Stacked series aggregate before they stack. A category axis or a pie has nothing to aggregate (`invalid-option`). The
+user's choice from the menu is part of the view. [`drilldown`](../drilldown/) brings it for `drilldown: 'time'`.
+
+Without it, `aggregate` is reported (`missing-module`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { aggregation, chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('rain')!,
+  {
+    xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'week' },
+    series: [{ type: 'column', id: 'rain', name: 'Rain (mm)', data: [['2026-03-02', 4], ['2026-03-04', 9], ['2026-03-10', 2], ['2026-03-12', 7], ['2026-03-18', 12]] }],
+  },
+  { types: [column], features: [timeAxis, aggregation] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { aggregation, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Rain {
+  readonly types = [column];
+  readonly features = [timeAxis, aggregation];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'week' },
+    series: [{ type: 'column', id: 'rain', name: 'Rain (mm)', data: [['2026-03-02', 4], ['2026-03-04', 9], ['2026-03-10', 2], ['2026-03-12', 7], ['2026-03-18', 12]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'aggregation']}
+  data={{ recipe: 'walk', count: 200000 }}
+  options={{
+    title: { text: 'A made-up sensor, its highest reading each month' },
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'month' },
+    series: [{ type: 'column', id: 'sensor', name: 'Highest reading', aggregate: 'max', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`aggregate`](../../axis/aggregate/), the axis option.
+- [`aggregate`](../../series/aggregate/), the series option.
+- [Exploring](../../../guides/exploring/): the guide.

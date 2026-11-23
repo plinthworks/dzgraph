@@ -1,0 +1,87 @@
+---
+title: "title"
+description: "Le titre du graphique, avec un sous-titre en dessous."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le titre du graphique, avec un sous-titre en dessous.
+
+<OptionFacts chart="title" />
+
+## Ce qu'elle fait
+
+Une chaîne est le titre. Un objet donne `text`, le titre ; `subtitle`, une ligne plus petite en dessous ; et `align`,
+`'start'` (par défaut), `'center'` ou `'end'`, dans le sens de lecture : de droite à gauche, `'start'` est à droite.
+
+Le titre est plus qu'un en-tête. Il nomme le graphique pour les lecteurs d'écran (le graphique est une figure nommée
+par son titre), il coiffe une image exportée, et il nomme un fichier téléchargé (lettres, chiffres et tirets gardés),
+sauf si [`exporting`](../exporting/) donne un `filename`.
+
+Un titre qui n'est ni une chaîne ni un objet avec une chaîne `text` est signalé (`invalid-option` sur `title`) et
+laissé de côté. Une autre clé que ces trois-là est signalée (`unknown-option` sur `title.<clé>`), de même qu'un
+`subtitle` ou un `align` erronés (`invalid-option` sur `title.subtitle`, `title.align`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('title')!,
+  {
+    title: { text: 'Pots de miel vendus (inventés)', subtitle: 'Premier semestre', align: 'center' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'column', id: 'jars', name: 'Pots', data: [14, 22, 19, 27, 31, 26] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-title',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class TitleChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    title: { text: 'Pots de miel vendus (inventés)', subtitle: 'Premier semestre', align: 'center' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'column', id: 'jars', name: 'Pots', data: [14, 22, 19, 27, 31, 26] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Pots de miel vendus (inventés)', subtitle: 'Premier semestre', align: 'center' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'column', id: 'jars', name: 'Pots', data: [14, 22, 19, 27, 31, 26] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`description`](../description/) : la phrase que les lecteurs d'écran entendent après le résumé.
+- [Export et impression](../../../guides/exporting/) : le titre dans les images et les noms de fichier.

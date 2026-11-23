@@ -14,14 +14,23 @@ import { isPointShown } from '../view.js';
 import { PathBuilder, sceneId } from './shared.js';
 
 interface PieBase {
-  /** Group the smallest slices into « Autres » (pie-donut.md 7). Default `true`. */
+  /**
+   * Group the smallest slices into « Autres » (pie-donut.md 7). Default `true`.
+   * @default `true`
+   */
   readonly others?: boolean | undefined;
 }
 export interface PieSeriesOptions extends SeriesBase<'pie', PieData>, PieBase {}
 export interface DonutSeriesOptions extends SeriesBase<'donut', PieData>, PieBase {
-  /** The hole, as a share of the radius, from 0 to 0.9. Default 0.6 (pie-donut.md 3). */
+  /**
+   * The hole, as a share of the radius, from 0 to 0.9. Default 0.6 (pie-donut.md 3).
+   * @default `0.6`
+   */
   readonly hole?: number | undefined;
-  /** What the hole says: by default the total and « Total »; `false`: nothing. */
+  /**
+   * What the hole says: by default the total and « Total »; `false`: nothing.
+   * @default {totalCenter}
+   */
   readonly center?: false | { readonly label?: string | undefined; readonly value?: string | undefined } | undefined;
 }
 

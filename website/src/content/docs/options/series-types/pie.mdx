@@ -1,0 +1,102 @@
+---
+title: "pie"
+description: "A pie: the parts of one whole, as slices. Its own option: others."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The parts of one whole, as slices.
+
+<OptionFacts seriesType="pie" />
+
+## What it draws
+
+Slices are pairs (`['Carrots', 420]`), points (`{ name, y, key }`) or values alone, named by their place (« Slice
+3 »), one shape per series. Each slice's angle is its share of the total; the first starts at the top and the others follow clockwise, in
+data order. Zero gives no slice and `null` is a gap; a negative value cannot be a part of a whole and is reported
+(`invalid-data`). Each slice is labelled outside with its name and its share, joined by a leader line; when the labels
+do not fit, the legend shows instead.
+
+`others`: past seven slices, the six largest stay and the rest join one slice « Others », drawn last in a neutral
+colour, with any slice under 2 % of the total; its tooltip lists its slices. `others: false` keeps every slice. A pie
+stands alone: one pie, donut or gauge per chart, without axes.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { pie } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('seeds')!,
+  {
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Seeds',
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  },
+  { types: [pie] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { pie, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-seeds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Seeds {
+  readonly types = [pie];
+  readonly options: ChartOptions = {
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Seeds',
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Seeds sown (made up)' },
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Seeds',
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  }}
+/>
+
+## See also
+
+- [`donut`](../donut/): a pie with a hole.
+- [Series types](../../../guides/series-types/).

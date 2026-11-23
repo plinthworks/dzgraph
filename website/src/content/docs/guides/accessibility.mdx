@@ -94,7 +94,7 @@ import { DzChart } from '@dzgraph/angular';
 @Component({
   selector: 'app-jam',
   imports: [DzChart],
-  template: `<dz-chart style="block-size: 480px" [options]="options()" [types]="types" />`,
+  template: `<dz-chart [options]="options()" [types]="types" />`,
 })
 export class Jam {
   readonly types = [line];

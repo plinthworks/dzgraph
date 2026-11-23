@@ -1,0 +1,86 @@
+---
+title: "crosshair"
+description: "Des lignes passant par le pointeur, avec ses valeurs sur les axes."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des lignes passant par le pointeur, avec ses valeurs sur les axes.
+
+<OptionFacts feature="crosshair" />
+
+## Ce qu'elle fait
+
+Elle permet à l'option [`crosshair`](../../chart/crosshair/) de dessiner : une ligne verticale en pointillés qui
+suit exactement le pointeur, avec une étiquette à son pied donnant la valeur de x à cet endroit, et avec
+`{ horizontal: true }` une ligne horizontale et une étiquette sur chaque axe de valeurs. Les étiquettes restent dans
+les bords du graphique. Au clavier, les lignes passent par le point qui a le focus ; au toucher, elles suivent le
+doigt tant qu'il est posé. Quitter le tracé les retire. Elles restent dans les modes mesure et sélection, pour aider à
+viser. Les lecteurs d'écran n'entendent rien de plus : les valeurs sont celles du point qui a le focus, déjà dites.
+
+Des graphiques liés peuvent le partager ([`linkCharts()`](../../../guides/exploring/)), et `showX()` le trace à une
+valeur de x donnée par l'app. Pas sur un secteur, un anneau ni une jauge.
+
+Sans elle, `crosshair` est signalé (`missing-module`) et rien n'est tracé.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, crosshair } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('bees')!,
+  { crosshair: true, series: [{ type: 'column', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }] },
+  { types: [column], features: [crosshair] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Bees {
+  readonly types = [column];
+  readonly features = [crosshair];
+  readonly options: ChartOptions = {
+    crosshair: true,
+    series: [{ type: 'column', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    crosshair: { horizontal: true },
+    series: [{ type: 'column', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`crosshair`](../../chart/crosshair/), l'option.
+- [Interactions](../../../guides/interactions/) : le guide.

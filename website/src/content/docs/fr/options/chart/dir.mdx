@@ -1,0 +1,85 @@
+---
+title: "dir"
+description: "Le sens de lecture : de gauche à droite, ou de droite à gauche."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le sens de lecture : de gauche à droite, ou de droite à gauche.
+
+<OptionFacts chart="dir" />
+
+## Ce qu'elle fait
+
+`'rtl'` dispose le graphique pour une lecture de droite à gauche : le titre, la légende et l'axe des valeurs sont à
+droite, les libellés se lisent depuis la droite, les flèches du clavier suivent le sens de lecture. L'axe x va
+toujours de gauche à droite, comme les nombres et les dates le font d'habitude dans ces langues, sauf si
+[`mirror`](../mirror/) vaut `true`. Les barres partent de la droite.
+
+Sans elle, le graphique prend le sens de son élément : son attribut `dir` ou sa `direction` en CSS, héritée de la page.
+Une autre valeur que `'ltr'` ou `'rtl'` est signalée (`invalid-option` sur `dir`) et le sens de l'élément est pris.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('dir')!,
+  {
+    dir: 'rtl',
+    xAxis: { scale: 'category', categories: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Pots', data: [18, 24, 21, 30] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-dir',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class DirChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    dir: 'rtl',
+    xAxis: { scale: 'category', categories: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Pots', data: [18, 24, 21, 30] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Pots vendus, de droite à gauche (inventés)' },
+    dir: 'rtl',
+    xAxis: { scale: 'category', categories: ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'] },
+    series: [{ type: 'column', id: 'jars', name: 'Pots', data: [18, 24, 21, 30] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`mirror`](../mirror/) : l'axe x de droite à gauche lui aussi.
+- [Thème et droite à gauche](../../../guides/theming-rtl/) : la droite à gauche, avec une démo en arabe.

@@ -1,0 +1,90 @@
+---
+title: "aggregate"
+description: "Un axe x montré en un point par période ou par tranche de valeurs."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Un point par période, ou par tranche de valeurs, sur un axe x.
+
+<OptionFacts axis="aggregate" />
+
+## Ce qu'elle fait
+
+Sur un axe x, avec la fonction [`aggregation`](../../features/aggregation/) :
+
+- sur un axe de temps, une période du calendrier du fuseau : `'hour'`, `'day'`, `'week'` (à partir du lundi),
+  `'month'`, `'quarter'` ou `'year'` ;
+- sur un axe numérique, `{ step }` : des tranches de cette largeur (`{ step: 10 }` : 0–10, 10–20…).
+
+Chaque série devient un point par groupe, au début du groupe, sa valeur la fonction
+[`aggregate`](../../series/aggregate/) de la série sur ses points (somme pour les colonnes et les barres, moyenne
+sinon). Une période sans points est un trou. L'axe garde ses propres graduations. L'infobulle nomme la période et
+compte ses points ; le tableau de données liste les groupes ; sélectionner un groupe sélectionne tous ses points.
+
+Signalé (`invalid-option` sur `xAxis[0].aggregate`) et laissé de côté : sur un axe y, sur un axe de catégories, une
+période sur un axe numérique, un pas sur un axe de temps. Le [menu](../../chart/menu/) du graphique peut proposer les
+périodes ; la vue garde le choix, qui l'emporte sur l'option. [`drilldown: 'time'`](../../chart/drilldown/) part des
+années quoi que dise cette option.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, aggregation, timeAxis } from '@dzgraph/dom';
+
+chart(document.getElementById('rain')!, {
+  xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'week' },
+  series: [{ type: 'column', id: 'rain', name: 'Pluie (mm)', aggregate: 'sum', data: [['2026-03-02', 4], ['2026-03-04', 11], ['2026-03-10', 7], ['2026-03-18', 2]] }],
+}, { types: [column], features: [timeAxis, aggregation] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { aggregation, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Rain {
+  readonly types = [column];
+  readonly features = [timeAxis, aggregation];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'week' },
+    series: [{ type: 'column', id: 'rain', name: 'Pluie (mm)', aggregate: 'sum', data: [['2026-03-02', 4], ['2026-03-04', 11], ['2026-03-10', 7], ['2026-03-18', 2]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'aggregation']}
+  data={{ recipe: 'walk', count: 200000 }}
+  options={{
+    title: { text: 'Un capteur inventé, moyenne par semaine' },
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'week' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`aggregate`](../../series/aggregate/), la fonction de la série.
+- [Explorer](../../../guides/exploring/) : agrégation et détail par clic.

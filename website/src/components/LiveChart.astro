@@ -20,7 +20,7 @@ interface Props {
   data?: { readonly recipe: string; readonly count: number };
   /** The chart's language when it is not the page's: `ar` for a right-to-left demo. */
   language?: 'ar';
-  /** The chart's height in pixels. Default 360. */
+  /** The chart's height in pixels. Default 360; with the data table shown, the chart's `aspectRatio` instead. */
   height?: number;
   /** A line under the chart. */
   caption?: string;
@@ -28,10 +28,14 @@ interface Props {
 const { options, features = [], data, language, height = 360, caption } = Astro.props;
 const lang = language ?? (Astro.currentLocale === 'fr' ? 'fr' : 'en');
 const json = JSON.stringify({ options, features, data: data ?? null });
+// A data table shown under the chart is inside its element, past the chart's height: the element then takes no fixed
+// height (the chart takes its `aspectRatio`, the table follows), or the table would cover what comes next.
+const table = options['dataTable'] as boolean | { show?: boolean } | undefined;
+const tableShown = table === true || (typeof table === 'object' && table?.show === true);
 ---
 
 <dzgraph-live-chart class="not-content" data-demo={json}>
-  <div class="dzgraph-demo-host" style={`--demo-height: ${height}px`} lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}></div>
+  <div class="dzgraph-demo-host" style={tableShown ? undefined : `--demo-height: ${height}px`} data-auto-height={tableShown ? '' : undefined} lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}></div>
   {caption && <p class="dzgraph-demo-caption">{caption}</p>}
 </dzgraph-live-chart>
 

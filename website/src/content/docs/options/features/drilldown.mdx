@@ -1,0 +1,115 @@
+---
+title: "drilldown"
+description: "A point's detail by click or Enter, with a breadcrumb to go back."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A point's detail by click or Enter, with a breadcrumb to go back.
+
+<OptionFacts feature="drilldown" />
+
+## What it does
+
+It lets two options work: a series' [`drilldown`](../../series/drilldown/), which gives each point's detail by
+its key (`details`) or loads it (`load`), and the chart's [`drilldown: 'time'`](../../chart/drilldown/), which drills a
+time axis from years into months, and from a month into days.
+
+A click or Enter on a point that has a detail shows the detail in its place, animated. A breadcrumb above the plot names
+each level; each but the last is a link back. Backspace, and Alt + ← (→ in right to left), go up one level, and going
+up restores the level as it was: its range, its hidden series, its selection. A load shows « Loading… »; one that fails
+or takes more than 10 s says so and offers « Try again ».
+
+The level is part of the view: `getView()` gives the path of keys from the root, `setView()` goes there, and the `drill`
+event gives the path. Linked charts share the level.
+
+Without it, both options are reported (`missing-module`) and a click does nothing more.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, drilldown } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('fruit')!,
+  {
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruit picked',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: { apples: [{ type: 'column', id: 'apples', name: 'Varieties', data: [['Gala', 30], ['Reinette', 22]] }] } },
+    }],
+  },
+  { types: [column], features: [drilldown] },
+);
+c.on('drill', (e) => console.log(e.path));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { drilldown } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-fruit',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (drill)="path = $event.path" />`,
+})
+export class Fruit {
+  readonly types = [column];
+  readonly features = [drilldown];
+  path: readonly string[] = [];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruit picked',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: { apples: [{ type: 'column', id: 'apples', name: 'Varieties', data: [['Gala', 30], ['Reinette', 22]] }] } },
+    }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Fruit picked (made up): click a column' },
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruit picked',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: {
+        apples: [{ type: 'column', id: 'apples', name: 'Varieties', data: [['Gala', 30], ['Reinette', 22]] }],
+        pears: [{ type: 'column', id: 'pears', name: 'Varieties', data: [['Conference', 19], ['Williams', 12]] }],
+      } },
+    }],
+  }}
+/>
+
+## See also
+
+- [`drilldown`](../../series/drilldown/), the series option.
+- [`drilldown`](../../chart/drilldown/), the chart option.
+- [Exploring](../../../guides/exploring/): the guide.

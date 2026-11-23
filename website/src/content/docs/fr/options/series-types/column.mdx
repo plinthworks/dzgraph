@@ -1,0 +1,94 @@
+---
+title: "column"
+description: "Des colonnes : des rectangles debout depuis zéro, côte à côte dans chaque catégorie. Son option propre : stack."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Des rectangles debout depuis zéro, côte à côte dans la bande de chaque catégorie.
+
+<OptionFacts seriesType="column" />
+
+## Ce qu'il dessine
+
+Chaque catégorie a une bande le long de l'axe ; les colonnes des séries s'y tiennent côte à côte, dans l'ordre des
+séries. Les colonnes partent de zéro, depuis une ligne de zéro plus marquée : les positives montent, les négatives
+descendent. Une valeur non nulle fait au moins 1 px de haut, et zéro ne dessine aucune colonne. Le bout libre est
+arrondi, la base droite. Les séries masquées rendent leur place. Un graphique de colonnes est vertical : des barres
+dans le même graphique sont signalées (`mixed-orientation`).
+
+`stack` empile la colonne sur les autres de la même pile (`true` : la pile `default`) ; plusieurs piles se tiennent
+côte à côte dans chaque bande. Les valeurs positives s'empilent vers le haut, les négatives vers le bas. Avec
+`aggregate` sur l'axe x, les colonnes additionnent leurs points par défaut.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('harvest')!,
+  {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Pommes', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Poires', data: [1, 2, 3, 4] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Pommes', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Poires', data: [1, 2, 3, 4] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fruits cueillis (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Pommes', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Poires', data: [1, 2, 3, 4] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`bar`](../bar/) : la même, en travers.
+- [`stacking`](../../axis/stacking/) : des piles en parts.
+- [Types de séries](../../../guides/series-types/).

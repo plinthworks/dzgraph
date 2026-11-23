@@ -1,0 +1,102 @@
+---
+title: "data"
+description: "The series' values: values alone, pairs, points written out, or typed columns."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series' values, in one of four shapes.
+
+<OptionFacts series="data" />
+
+## What it does
+
+- **Values alone**, `[3, 5, null, 4]`: x is each value's place, or the axis's categories in order.
+- **Pairs**, `[[x, y], …]`: x a number, a string (a category, or a date-time on a time axis), y a number.
+- **Points**, `[{ x, y, key, name }, …]`: `key` is the point's identity (for a drilldown, a DzGrid row, a linked
+  chart); `name` replaces x in the tooltip and the data table.
+- **Columns**, `{ x, y, key }`: one array per field, the same length; the fastest shape for a big series. A typed `y`
+  (`Float64Array`) is read without a copy, and `NaN` in it is a gap.
+
+`null` is a gap: a line breaks there, a column is missing. A pie takes slices (`[['Apples', 120], …]`) and a gauge
+one value (`72`): see [`pie`](../../series-types/pie/) and [`gauge`](../../series-types/gauge/).
+
+Bad values never throw: each kind of fault becomes a gap, reported once for the series with its first place and its
+count, never the value. A value that is not a number is `invalid-data` (`series[i].data[3]`, `count=2`); `Infinity`
+is `non-finite-value`; a repeated key is `duplicate-key`; columns of different lengths are `invalid-data` with
+`length`. On a line or an area, x going backwards is drawn as given and reported (`unsorted-x`). `setData()` replaces
+the values alone, the cheapest update.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('shapes')!,
+  {
+    series: [
+      { type: 'line', id: 'values', name: 'Values', data: [3, 5, null, 4, 6] },
+      { type: 'line', id: 'pairs', name: 'Pairs', data: [[0, 2], [1, 3], [3, 2.5], [4, 4]] },
+      { type: 'line', id: 'points', name: 'Points', data: [{ x: 0, y: 1, key: 'start' }, { x: 2, y: 1.5, name: 'Middle' }, { x: 4, y: 2 }] },
+      { type: 'line', id: 'columns', name: 'Columns', data: { x: new Float64Array([0, 1, 2, 3, 4]), y: new Float64Array([6, 6.5, 7, 6, 7.5]) } },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-shapes',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Shapes {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    series: [
+      { type: 'line', id: 'values', name: 'Values', data: [3, 5, null, 4, 6] },
+      { type: 'line', id: 'pairs', name: 'Pairs', data: [[0, 2], [1, 3], [3, 2.5], [4, 4]] },
+      { type: 'line', id: 'points', name: 'Points', data: [{ x: 0, y: 1, key: 'start' }, { x: 2, y: 1.5, name: 'Middle' }, { x: 4, y: 2 }] },
+      { type: 'line', id: 'columns', name: 'Columns', data: { x: new Float64Array([0, 1, 2, 3, 4]), y: new Float64Array([6, 6.5, 7, 6, 7.5]) } },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Four shapes of data (made up)' },
+    series: [
+      { type: 'line', id: 'values', name: 'Values', data: [3, 5, null, 4, 6] },
+      { type: 'line', id: 'pairs', name: 'Pairs', data: [[0, 2], [1, 3], [3, 2.5], [4, 4]] },
+      { type: 'line', id: 'points', name: 'Points', data: [{ x: 0, y: 1, key: 'start' }, { x: 2, y: 1.5, name: 'Middle' }, { x: 4, y: 2 }] },
+      { type: 'line', id: 'columns', name: 'Columns', data: { x: [0, 1, 2, 3, 4], y: [6, 6.5, 7, 6, 7.5] } },
+    ],
+  }}
+/>
+
+## See also
+
+- [Data](../../../guides/data/): every shape, gaps and keys, in detail.
+- [Big data](../../../guides/big-data/): typed columns at a million points.

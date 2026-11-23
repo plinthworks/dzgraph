@@ -1,0 +1,101 @@
+---
+title: "menu"
+description: "The chart menu: a series' type, the aggregation, the scale, the comparison, export and print."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The chart menu: a series' type, the aggregation, the scale, the comparison, export and print.
+
+<OptionFacts feature="menu" />
+
+## What it does
+
+It lets the [`menu`](../../chart/menu/) option draw: a small « Chart options » button at the end of the chart's
+top edge, which opens a menu of the items the app lists (`true`: all of them) and that make sense for the data.
+
+- **Type**: a series' type among those that suit its data (line, area, column).
+- **Aggregation**: none, or a period with its function, on a time axis (with [`aggregation`](../aggregation/)).
+- **Scale**: linear or logarithmic for the value axis; logarithmic only when every value is positive.
+- **Comparison**: none, difference, percent, base 100 (with [`compare`](../compare/)).
+- **Download** (PNG, SVG, CSV) and **Print**, with [`exporting`](../exporting/).
+
+It follows the menu button pattern: Enter, Space or ↓ open it on its first item; the arrows move; Enter or Space choose;
+Escape closes it and gives the focus back; → and ← open and close a submenu. A choice applies at once, animated, and is
+part of the view. A menu with nothing to offer shows no button.
+
+Without it, `menu` is reported (`missing-module`) and no button is shown.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart, menu } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jars')!,
+  {
+    menu: { items: ['type', 'scale'] },
+    series: [
+      { type: 'column', id: 'honey', name: 'Honey', data: [14, 22, 19, 27] },
+      { type: 'line', id: 'jam', name: 'Jam', data: [9, 12, 16, 15] },
+    ],
+  },
+  { types: [column, line], features: [menu] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { menu } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Jars {
+  readonly types = [column, line];
+  readonly features = [menu];
+  readonly options: ChartOptions = {
+    menu: { items: ['type', 'scale'] },
+    series: [
+      { type: 'column', id: 'honey', name: 'Honey', data: [14, 22, 19, 27] },
+      { type: 'line', id: 'jam', name: 'Jam', data: [9, 12, 16, 15] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Jars sold (made up): open the menu at the top end' },
+    menu: true,
+    series: [
+      { type: 'column', id: 'honey', name: 'Honey', data: [14, 22, 19, 27, 31, 26] },
+      { type: 'line', id: 'jam', name: 'Jam', data: [9, 12, 16, 15, 18, 21] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`menu`](../../chart/menu/), the option.
+- [`exporting`](../exporting/), for Download and Print.

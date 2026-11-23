@@ -1,0 +1,91 @@
+---
+title: "menu"
+description: "A small menu for the reader: type, aggregation, scale, comparison, download, print."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A small menu for the reader: type, aggregation, scale, comparison, download, print.
+
+<OptionFacts chart="menu" />
+
+## What it does
+
+A button at the end of the chart's top edge (« Chart options ») opens a menu. `true` offers every item; an object
+lists those offered, in `items`: `'type'` (line, area or column for one series), `'aggregation'` (by period, on a time
+axis), `'scale'` (linear or logarithmic, when every value is positive), `'compare'` (difference, percent, base 100),
+`'export'` (a download as PNG, SVG or CSV) and `'print'`. An item shows only when it makes sense for the data; with
+none left, the button is not shown. `'export'` and `'print'` need the [`exporting`](../../features/exporting/)
+feature too.
+
+The menu follows the WAI-ARIA menu button pattern: Enter, Space or ↓ open it, the arrows move, Escape closes it and
+gives the focus back. A choice applies at once and is part of the [view](../../../guides/exploring/): saved and given
+back with it.
+
+It needs the [`menu`](../../features/menu/) feature (`missing-module` at `menu` without it). An `items` list that is
+empty or names something else is `invalid-option` at `menu`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, menu, exporting } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('menu')!,
+  {
+    menu: { items: ['type', 'scale', 'export'] },
+    series: [{ type: 'line', id: 'bees', name: 'Bees seen', data: [12, 30, 52, 61, 58, 44] }],
+  },
+  { types: [line], features: [menu, exporting] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { menu, exporting } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-menu',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class MenuChart {
+  readonly types = [line];
+  readonly features = [menu, exporting];
+  readonly options: ChartOptions = {
+    menu: { items: ['type', 'scale', 'export'] },
+    series: [{ type: 'line', id: 'bees', name: 'Bees seen', data: [12, 30, 52, 61, 58, 44] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    menu: { items: ['type', 'scale', 'export'] },
+    series: [{ type: 'line', id: 'bees', name: 'Bees seen', data: [12, 30, 52, 61, 58, 44] }],
+  }}
+/>
+
+## See also
+
+- [`exporting`](../exporting/): what a download writes.
+- [Exploring](../../../guides/exploring/): comparison, aggregation and the menu.

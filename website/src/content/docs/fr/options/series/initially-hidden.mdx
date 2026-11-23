@@ -1,0 +1,89 @@
+---
+title: "initiallyHidden"
+description: "Masquée quand la série apparaît pour la première fois ; ensuite, la légende et la vue décident."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+La série commence masquée ; le lecteur la montre depuis la légende.
+
+<OptionFacts series="initiallyHidden" />
+
+## Ce qu'elle fait
+
+Lue une fois par id de série, quand une série de cet id apparaît pour la première fois. Ensuite, masquer appartient à
+l'utilisateur : la légende, la vue et `setSeriesVisible()` décident, et des options redonnées (un signal qui les
+reconstruit, `update()`) ne défont jamais ce que l'utilisateur a fait. Une série masquée garde son élément dans la
+légende, grisé, et sa couleur pour son retour ; elle quitte l'infobulle, le tableau de données et l'étendue des axes.
+Une valeur qui n'est pas un booléen est signalée par `invalid-option` (`series[i].initiallyHidden`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('beds')!,
+  {
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Aromates', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Haricots', initiallyHidden: true, data: [2, 3, 3, 4] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-beds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Beds {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Aromates', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Haricots', initiallyHidden: true, data: [2, 3, 3, 4] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Massifs arrosés (inventés)' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Aromates', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Haricots', initiallyHidden: true, data: [2, 3, 3, 4] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`id`](../id/) : ce qui compte la « première fois ».
+- [Interactions](../../../guides/interactions/) : la légende.

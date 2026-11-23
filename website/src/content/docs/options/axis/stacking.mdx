@@ -1,0 +1,95 @@
+---
+title: "stacking"
+description: "A y axis's piles drawn as shares of their totals, from 0 to 100 %."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A y axis's piles drawn as shares of their totals.
+
+<OptionFacts axis="stacking" />
+
+## What it does
+
+`'percent'` on a y axis: at each x, each pile's values become shares of that pile's total, and the axis runs
+from 0 to 100 %. An x whose pile totals zero draws nothing there. The series pile up with their `stack` option
+([column](../../series-types/column/), [bar](../../series-types/bar/), [area](../../series-types/area/)); the tooltip
+and the data table give the share and the value.
+
+Reported (`invalid-option` at `yAxis[0].stacking`) and left out: on an x axis, on a log axis (a pile's parts do not
+add up along it), or on a y axis that carries no stacked series. A comparison is not made on a stacked axis.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('harvest')!, {
+  title: { text: 'Harvest by plot, as shares (made up)' },
+  xAxis: { scale: 'category', categories: ['June', 'July', 'August', 'September'] },
+  yAxis: { stacking: 'percent' },
+  series: [
+    { type: 'column', id: 'beans', name: 'Beans', stack: true, data: [40, 85, 120, 60] },
+    { type: 'column', id: 'peas', name: 'Peas', stack: true, data: [70, 55, 20, 10] },
+    { type: 'column', id: 'squash', name: 'Squash', stack: true, data: [0, 30, 95, 140] },
+  ],
+}, { types: [column] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    title: { text: 'Harvest by plot, as shares (made up)' },
+    xAxis: { scale: 'category', categories: ['June', 'July', 'August', 'September'] },
+    yAxis: { stacking: 'percent' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Beans', stack: true, data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Peas', stack: true, data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Squash', stack: true, data: [0, 30, 95, 140] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Harvest by plot, as shares (made up)' },
+    xAxis: { scale: 'category', categories: ['June', 'July', 'August', 'September'] },
+    yAxis: { stacking: 'percent' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Beans', stack: true, data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Peas', stack: true, data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Squash', stack: true, data: [0, 30, 95, 140] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`compare`](../compare/): another way to read change.
+- [Series types](../../../guides/series-types/): stacks.

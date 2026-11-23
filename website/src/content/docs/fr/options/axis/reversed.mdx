@@ -1,0 +1,80 @@
+---
+title: "reversed"
+description: "L'axe tracé de sa fin vers son début."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+L'axe tracé de sa fin vers son début.
+
+<OptionFacts axis="reversed" />
+
+## Ce qu'elle fait
+
+Les valeurs croissent vers l'origine : sur un axe y, vers le bas (une profondeur, un rang où 1 est le meilleur) ;
+sur un axe x, de la fin du sens de lecture vers son début. Toutes les autres règles restent : bouts arrondis,
+graduations, zéro gardé pour les colonnes et les aires, qui poussent alors depuis le haut. Sur un axe logarithmique,
+c'est pareil.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { area } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('lake')!, {
+  title: { text: 'Un lac inventé, traversé' },
+  xAxis: { title: 'Distance au bord (m)' },
+  yAxis: { title: 'Profondeur (m)', reversed: true },
+  series: [{ type: 'area', id: 'depth', name: 'Profondeur', data: [[0, 0], [20, 3.5], [40, 8.2], [60, 12.4], [80, 9.1], [100, 2.6], [120, 0]] }],
+}, { types: [area] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { area, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-lake',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Lake {
+  readonly types = [area];
+  readonly options: ChartOptions = {
+    title: { text: 'Un lac inventé, traversé' },
+    xAxis: { title: 'Distance au bord (m)' },
+    yAxis: { title: 'Profondeur (m)', reversed: true },
+    series: [{ type: 'area', id: 'depth', name: 'Profondeur', data: [[0, 0], [20, 3.5], [40, 8.2], [60, 12.4], [80, 9.1], [100, 2.6], [120, 0]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Un lac inventé, traversé' },
+    xAxis: { title: 'Distance au bord (m)' },
+    yAxis: { title: 'Profondeur (m)', reversed: true },
+    series: [{ type: 'area', id: 'depth', name: 'Profondeur', data: [[0, 0], [20, 3.5], [40, 8.2], [60, 12.4], [80, 9.1], [100, 2.6], [120, 0]] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`opposite`](../opposite/) : l'axe de l'autre côté.
+- [Axes et temps](../../../guides/axes-time/).

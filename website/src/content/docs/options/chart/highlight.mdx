@@ -1,0 +1,92 @@
+---
+title: "highlight"
+description: "Fading the other series while one is pointed at."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Fading the other series while one is pointed at.
+
+<OptionFacts chart="highlight" />
+
+## What it does
+
+While the pointer is on a column, a bar or a scatter point, the other series fade to 35 %, so the one pointed at
+stands out; the tooltip names it. A chart of lines, whose shared tooltip lists every series, fades nothing. `false`
+turns the fading off: every series stays as it is.
+
+The highlight is the pointer's only. The fading of a [`selection`](../selection/) is another thing and lasts. A value
+other than a boolean is reported (`invalid-option` at `highlight`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('highlight')!,
+  {
+    highlight: false,
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums'] },
+    series: [
+      { type: 'column', id: 'y2025', name: '2025', data: [52, 31, 18] },
+      { type: 'column', id: 'y2026', name: '2026', data: [47, 35, 22] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-highlight',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class HighlightChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    highlight: false,
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums'] },
+    series: [
+      { type: 'column', id: 'y2025', name: '2025', data: [52, 31, 18] },
+      { type: 'column', id: 'y2026', name: '2026', data: [47, 35, 22] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fruit picked, no highlight (made up)' },
+    highlight: false,
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums'] },
+    series: [
+      { type: 'column', id: 'y2025', name: '2025', data: [52, 31, 18] },
+      { type: 'column', id: 'y2026', name: '2026', data: [47, 35, 22] },
+    ],
+  }}
+/>
+
+## See also
+
+- [Interactions](../../../guides/interactions/): the tooltip and the highlight.

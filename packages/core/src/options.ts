@@ -62,26 +62,44 @@ export interface SeriesBase<T extends string, D = DataInput> {
   /**
    * Stable identity: what `update()`, the view and links use to recognise the series. Absent: `#1`, `#2`… by
    * position (`#` is reserved for these defaults). Give ids when series come and go.
+   * @default {byPosition}
    */
   readonly id?: string | undefined;
-  /** Shown in the legend, the tooltip and the data table. */
+  /**
+   * Shown in the legend, the tooltip and the data table.
+   * @default {seriesN}
+   */
   readonly name?: string | undefined;
   readonly data: D;
-  /** The axes the series is drawn against, by axis id; the first x and y axes by default. */
+  /**
+   * The axes the series is drawn against, by axis id; the first x and y axes by default.
+   * @default {firstAxis}
+   */
   readonly xAxis?: string | undefined;
+  /**
+   * @default {firstAxis}
+   */
   readonly yAxis?: string | undefined;
+  /**
+   * @default {paletteOrder}
+   */
   readonly color?: SeriesColor | undefined;
   /**
    * Hidden when the series first appears; read once per series id. Afterwards the legend and the view decide
    * (GLOSSARY: Hidden series), so options rebuilt by a signal never undo what the user did.
+   * @default `false`
    */
   readonly initiallyHidden?: boolean | undefined;
   /**
    * Each point's detail (drilldown.md), by the point's key, or loaded by the app; needs the `drilldown` module. The
    * series given replace the chart's while the detail is shown.
+   * @feature drilldown
    */
   readonly drilldown?: { readonly details: Readonly<Record<string, readonly SeriesOptions[]>> } | { readonly load: (point: PointRef) => Promise<readonly SeriesOptions[]> } | undefined;
-  /** Its function when the x axis aggregates (aggregation.md 1). Default: sum for columns and bars, mean otherwise. */
+  /**
+   * Its function when the x axis aggregates (aggregation.md 1). Default: sum for columns and bars, mean otherwise.
+   * @default {aggregateByType}
+   */
   readonly aggregate?: 'sum' | 'mean' | 'min' | 'max' | 'count' | undefined;
 }
 
@@ -128,31 +146,56 @@ export interface TicksOptions<V> {
 
 /** What every axis has, whatever its scale. */
 interface AxisBase {
-  /** How series refer to this axis. Defaults: `x`, `y`, then `x2`, `y2`… */
+  /**
+   * How series refer to this axis. Defaults: `x`, `y`, then `x2`, `y2`…
+   * @default {axisIds}
+   */
   readonly id?: string | undefined;
   readonly title?: string | undefined;
   /**
    * On the far side: an x axis at the top instead of the bottom, a y axis at the end of the reading direction instead
    * of its start. Holds whatever the orientation (bars across turn the x axis upright).
+   * @default `false`
    */
   readonly opposite?: boolean | undefined;
-  /** Draws the axis from its end to its start (values grow towards the origin). */
+  /**
+   * Draws the axis from its end to its start (values grow towards the origin).
+   * @default `false`
+   */
   readonly reversed?: boolean | undefined;
 }
 
 export interface LinearAxisOptions extends AxisBase {
+  /**
+   * @default {scaleGuessed}
+   */
   readonly scale?: 'linear' | undefined;
-  /** Fixed bounds; otherwise from the data, rounded to ticks. */
+  /**
+   * Fixed bounds; otherwise from the data, rounded to ticks.
+   * @default {fromData}
+   */
   readonly min?: number | undefined;
+  /**
+   * @default {fromData}
+   */
   readonly max?: number | undefined;
   readonly ticks?: TicksOptions<number> | undefined;
   /** On a y axis: its piles drawn as shares of their totals, from 0 to 100 % (stacking.md 9). */
   readonly stacking?: 'percent' | undefined;
-  /** On a y axis: each series shown against a baseline (compare.md); needs the `compare` module. */
+  /**
+   * On a y axis: each series shown against a baseline (compare.md); needs the `compare` module.
+   * @feature compare
+   */
   readonly compare?: 'value' | 'percent' | 'index' | undefined;
-  /** The baseline's x (a number, or an ISO date-time on a time x axis); default: the first point in view. */
+  /**
+   * The baseline's x (a number, or an ISO date-time on a time x axis); default: the first point in view.
+   * @default {firstInView}
+   */
   readonly compareTo?: number | string | undefined;
-  /** On an x axis: one point per bucket of this step (aggregation.md); needs the `aggregation` module. */
+  /**
+   * On an x axis: one point per bucket of this step (aggregation.md); needs the `aggregation` module.
+   * @feature aggregation
+   */
   readonly aggregate?: { readonly step: number } | undefined;
 }
 
@@ -167,20 +210,32 @@ export interface LogAxisOptions extends AxisBase {
 
 export interface CategoryAxisOptions extends AxisBase {
   readonly scale: 'category';
-  /** Categories, in order; otherwise collected from the data in order of appearance. */
+  /**
+   * Categories, in order; otherwise collected from the data in order of appearance.
+   * @default {fromDataOrder}
+   */
   readonly categories?: readonly string[] | undefined;
   readonly ticks?: TicksOptions<string> | undefined;
 }
 
 export interface TimeAxisOptions extends AxisBase {
+  /**
+   * @feature timeAxis
+   */
   readonly scale: 'time';
-  /** The zone the axis reads instants in (ADR 0004). Default: the page's. */
+  /**
+   * The zone the axis reads instants in (ADR 0004). Default: the page's.
+   * @default {pageZone}
+   */
   readonly zone?: ZoneName | undefined;
   /** Milliseconds, or ISO date-times with an offset. */
   readonly min?: number | string | undefined;
   readonly max?: number | string | undefined;
   readonly ticks?: TicksOptions<InstantMs> | undefined;
-  /** One point per period of the zone's calendar, or per bucket (aggregation.md); needs the `aggregation` module. */
+  /**
+   * One point per period of the zone's calendar, or per bucket (aggregation.md); needs the `aggregation` module.
+   * @feature aggregation
+   */
   readonly aggregate?: 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year' | { readonly step: number } | undefined;
 }
 
@@ -209,47 +264,99 @@ export interface LegendOptions {
 export interface ChartOptions {
   readonly title?: string | TitleOptions | undefined;
   readonly series: readonly SeriesOptions[];
-  /** One axis or several; absent: one of each, guessed from the data. */
+  /**
+   * One axis or several; absent: one of each, guessed from the data.
+   * @default {guessedAxis}
+   */
   readonly xAxis?: AxisOptions | readonly AxisOptions[] | undefined;
+  /**
+   * @default {guessedAxis}
+   */
   readonly yAxis?: AxisOptions | readonly AxisOptions[] | undefined;
-  /** `false` hides it. Default: shown when there are two series or more. */
+  /**
+   * `false` hides it. Default: shown when there are two series or more.
+   * @default {legendTwo}
+   */
   readonly legend?: LegendOptions | boolean | undefined;
-  /** For numbers and dates (Intl). Default: the page's language. */
+  /**
+   * For numbers and dates (Intl). Default: the page's language.
+   * @default {pageLanguage}
+   */
   readonly locale?: string | undefined;
-  /** Reading direction. Default: the element's (`dir` attribute or CSS `direction`). */
+  /**
+   * Reading direction. Default: the element's (`dir` attribute or CSS `direction`).
+   * @default {elementDirection}
+   */
   readonly dir?: 'ltr' | 'rtl' | undefined;
-  /** Mirror the x axis in RTL (D.10): default `false`, time and categories flow left to right everywhere. */
+  /**
+   * Mirror the x axis in RTL (D.10): default `false`, time and categories flow left to right everywhere.
+   * @default `false`
+   */
   readonly mirror?: boolean | undefined;
-  /** Width ÷ height, used only when the container has no height of its own (D.11). */
+  /**
+   * Width ÷ height, used only when the container has no height of its own (D.11).
+   * @default `16 / 9`
+   */
   readonly aspectRatio?: number | undefined;
   /** A sentence describing the chart for screen readers, after the generated summary (screen-reader.md 1). */
   readonly description?: string | undefined;
-  /** Fade the other series while one is pointed at (GLOSSARY: Highlight; hover-tooltip.md 5). Default `true`. */
+  /**
+   * Fade the other series while one is pointed at (GLOSSARY: Highlight; hover-tooltip.md 5). Default `true`.
+   * @default `true`
+   */
   readonly highlight?: boolean | undefined;
-  /** Animate appearing and updates (animation.md). Default `true`; never under `prefers-reduced-motion`. */
+  /**
+   * Animate appearing and updates (animation.md). Default `true`; never under `prefers-reduced-motion`.
+   * @default `true`
+   */
   readonly animation?: boolean | undefined;
   /**
    * The data table (data-table.md 2, 5): `true` shows it under the chart (default `false`: it is there for screen
    * readers only); `{ show, rows }` also chooses which rows it starts with when zoomed, the visible range (default) or all.
+   * @default `false`
    */
   readonly dataTable?: boolean | { readonly show?: boolean | undefined; readonly rows?: 'visible' | 'all' | undefined } | undefined;
-  /** A strip under the plot showing the whole x range and the visible window (navigator.md). Default `false`. */
+  /**
+   * A strip under the plot showing the whole x range and the visible window (navigator.md). Default `false`.
+   * @default `false`
+   * @feature navigatorStrip
+   */
   readonly navigator?: boolean | undefined;
-  /** Buttons for usual time spans (range-buttons.md). Default: shown with the navigator on a time axis. */
+  /**
+   * Buttons for usual time spans (range-buttons.md). Default: shown with the navigator on a time axis.
+   * @default {withNavigator}
+   * @feature navigatorStrip
+   */
   readonly rangeButtons?: boolean | undefined;
-  /** Lines through the pointer and its values on the axes (crosshair.md); needs the `crosshair` module. */
+  /**
+   * Lines through the pointer and its values on the axes (crosshair.md); needs the `crosshair` module.
+   * @default `false`
+   * @feature crosshair
+   */
   readonly crosshair?: boolean | { readonly horizontal?: boolean | undefined } | undefined;
-  /** A small menu for the user: type, aggregation, scale, comparison (menu.md); needs the `menu` module. */
+  /**
+   * A small menu for the user: type, aggregation, scale, comparison (menu.md); needs the `menu` module.
+   * @default `false`
+   * @feature menu
+   */
   readonly menu?: boolean | { readonly items: readonly ('type' | 'aggregation' | 'scale' | 'compare' | 'export' | 'print')[] } | undefined;
   /**
    * The exports' defaults (export.md, csv.md); the export itself needs the `exporting` module. `filename`: the
    * downloaded file's name, without extension (default: from the title); `theme`: the pictures' colours (default: as
    * on screen); `csv.locale`: semicolons and a decimal comma where the language writes one.
+   * @feature exporting
    */
   readonly exporting?: { readonly filename?: string | undefined; readonly theme?: 'light' | 'dark' | undefined; readonly csv?: { readonly locale?: boolean | undefined } | undefined } | undefined;
-  /** `'time'`: years, then months, then days, by click (drilldown.md 6); needs `drilldown` and `aggregation`. */
+  /**
+   * `'time'`: years, then months, then days, by click (drilldown.md 6); needs `drilldown` and `aggregation`.
+   * @feature drilldown
+   */
   readonly drilldown?: 'time' | undefined;
-  /** Points the user can select (selection.md); needs the `selection` module. `shapes`: those offered. */
+  /**
+   * Points the user can select (selection.md); needs the `selection` module. `shapes`: those offered.
+   * @default `false`
+   * @feature selection
+   */
   readonly selection?: boolean | { readonly shapes?: readonly ('rectangle' | 'range' | 'lasso')[] | undefined } | undefined;
 }
 

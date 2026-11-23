@@ -1,0 +1,93 @@
+---
+title: "webgl"
+description: "WebGL2 for scatters past 100 000 points."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+WebGL2 for scatters past 100 000 points.
+
+<OptionFacts feature="webgl" />
+
+## What it does
+
+There is no option: given the feature, a scatter of more than 100 000 points (the threshold the benches set)
+is drawn by WebGL2. It looks the same as on Canvas: the same colours from the theme, the same symbols and sizes, the
+same translucency (piles read darker), on the device-pixel grid, under the axes and the labels. Zooming and panning
+cost almost no script: the points stay on the graphics card, and a frame only changes where they go, exact to the
+pixel however deep the zoom. Hovering still finds the nearest point within 24 px.
+
+A chart opens a WebGL context only when it first draws such a scatter, and frees it at once when destroyed: a browser
+allows only about sixteen per page. Without WebGL2 (an old browser, too many contexts, the graphics card lost), the
+same picture is drawn on [`canvas`](../canvas/), without a word to the user; WebGL2 draws again when the card comes
+back.
+
+Without the feature, such a scatter is drawn on Canvas, or in SVG without `canvas` either.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, webgl, zoom } from '@dzgraph/dom';
+
+const n = 500_000;
+const x = new Float64Array(n);
+const y = new Float64Array(n);
+for (let i = 0; i < n; i++) {
+  x[i] = (i * 7919) % 10_000;
+  y[i] = (i * 104_729) % 10_000;
+}
+chart(
+  document.getElementById('dots')!,
+  { series: [{ type: 'scatter', id: 'dots', name: 'Dots', data: { x, y } }] },
+  { types: [scatter], features: [webgl, zoom] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { webgl, zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-dots',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Dots {
+  readonly types = [scatter];
+  readonly features = [webgl, zoom];
+  readonly options: ChartOptions = {
+    series: [{ type: 'scatter', id: 'dots', name: 'Dots', data: { x: Float64Array.from({ length: 500_000 }, (_, i) => (i * 7919) % 10_000), y: Float64Array.from({ length: 500_000 }, (_, i) => (i * 104_729) % 10_000) } }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={420}
+  features={['webgl', 'zoom']}
+  data={{ recipe: 'cloud', count: 200000 }}
+  options={{
+    title: { text: 'Two made-up clouds, 200 000 points drawn by WebGL2' },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## See also
+
+- [Big data](../../../guides/big-data/): the guide, with the measured costs.
+- [`canvas`](../canvas/), which it brings.

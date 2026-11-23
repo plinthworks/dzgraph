@@ -9,11 +9,17 @@ import type { RectPrimitive } from '../scene.js';
 import { isGap, rangeOf, sceneId, withZero } from './shared.js';
 
 export interface ColumnSeriesOptions extends SeriesBase<'column'> {
-  /** Stacks the column on the other columns of the same stack (stacking.md 1); `true`: the stack `default`. */
+  /**
+   * Stacks the column on the other columns of the same stack (stacking.md 1); `true`: the stack `default`.
+   * @default `false`
+   */
   readonly stack?: boolean | string | undefined;
 }
 export interface BarSeriesOptions extends SeriesBase<'bar'> {
-  /** Stacks the bar on the other bars of the same stack (stacking.md 1); `true`: the stack `default`. */
+  /**
+   * Stacks the bar on the other bars of the same stack (stacking.md 1); `true`: the stack `default`.
+   * @default `false`
+   */
   readonly stack?: boolean | string | undefined;
 }
 

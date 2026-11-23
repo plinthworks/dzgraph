@@ -1,0 +1,108 @@
+---
+title: "series"
+description: "Les séries que dessine le graphique : la seule option obligatoire."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Les séries que dessine le graphique : la seule option obligatoire.
+
+<OptionFacts chart="series" />
+
+## Ce qu'elle fait
+
+Une liste de séries, dessinées dans l'ordre. Chacune a un `type`, qui doit être l'un des `types` donnés à `chart()`,
+et ses `data` ; le reste est facultatif. Les clés de toute série sont sous [Séries](../../series/type/), et celles de
+chaque type sous [Types de séries](../../series-types/line/).
+
+Donnez à chaque série un [`id`](../../series/id/) quand des séries vont et viennent : `update({ series })` apparie la
+nouvelle liste à l'ancienne par id, si bien qu'une série qui garde son id garde ce que l'utilisateur lui a fait
+(masquée, sélectionnée) et part d'où elle était. `setData(id, data)` remplace les valeurs d'une seule série.
+
+Un graphique tient un seul genre de dessin. Lignes, aires, colonnes, barres et nuages partagent des axes et se
+mélangent librement, sauf les colonnes (debout) et les barres (couchées). Un secteur, un anneau ou une jauge est
+dessiné seul.
+
+Ce que le graphique signale, par série (`series[i]`) :
+
+- pas une liste : `invalid-option` sur `series`, et rien n'est dessiné ;
+- un type que le graphique n'a pas reçu : `unknown-series-type` sur `series[i].type`, son nom en détail ;
+- une série d'un autre genre que la première : `invalid-option` sur `series[i].type` ; des colonnes avec des barres :
+  `mixed-orientation` ;
+- un id employé deux fois, ou commençant par `#` : `duplicate-id` sur `series[i].id` ;
+- une clé qu'il ne connaît pas : `unknown-option` sur `series[i].<clé>`.
+
+Une série ainsi signalée est laissée de côté ; les autres sont dessinées.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('series')!,
+  {
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Pots vendus', data: [42, 38, 51, 47, 63] },
+      { type: 'line', id: 'target', name: 'Objectif', data: [45, 45, 45, 50, 60] },
+    ],
+  },
+  { types: [column, line] },
+);
+
+c.setData('sold', [42, 38, 51, 47, 66]);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-series',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class SeriesChart {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Pots vendus', data: [42, 38, 51, 47, 63] },
+      { type: 'line', id: 'target', name: 'Objectif', data: [45, 45, 45, 50, 60] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Pots vendus et objectif (inventés)' },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Pots vendus', data: [42, 38, 51, 47, 63] },
+      { type: 'line', id: 'target', name: 'Objectif', data: [45, 45, 45, 50, 60] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`id`](../../series/id/) : comment les séries sont appariées.
+- [Types de séries](../../../guides/series-types/) : chaque type et quand l'employer.

@@ -1,0 +1,86 @@
+---
+title: "aggregate"
+description: "Comment la série résume ses points quand l'axe x les regroupe : somme, moyenne, min, max ou nombre."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Comment la série résume ses points, quand l'axe x les regroupe par période ou par tranche.
+
+<OptionFacts series="aggregate" />
+
+## Ce qu'elle fait
+
+Utilisée seulement quand l'axe x agrège : par son option [`aggregate`](../../axis/aggregate/), ou par le choix de
+l'utilisateur dans le [menu](../../chart/menu/). Chaque période, ou tranche, devient un point : la somme (`'sum'`) de
+ses valeurs, leur moyenne (`'mean'`), leur minimum (`'min'`), leur maximum (`'max'`) ou le nombre (`'count'`) de ses
+points. Les trous ne comptent pas, et une période sans points est un trou, pas un zéro. L'infobulle nomme la période
+et dit combien de points elle contient. Une autre valeur est signalée par `invalid-option` (`series[i].aggregate`) et
+la valeur par défaut s'applique.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { aggregation, chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('sensor')!,
+  {
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' },
+    series: [{ type: 'column', id: 'sensor', name: 'Mesure la plus haute', aggregate: 'max', data: [['2026-01-01T09:00Z', 4], ['2026-01-01T15:00Z', 7], ['2026-01-02T11:00Z', 5]] }],
+  },
+  { types: [column], features: [aggregation, timeAxis] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { aggregation, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sensor',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Sensor {
+  readonly types = [column];
+  readonly features = [aggregation, timeAxis];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' },
+    series: [{ type: 'column', id: 'sensor', name: 'Mesure la plus haute', aggregate: 'max', data: [['2026-01-01T09:00Z', 4], ['2026-01-01T15:00Z', 7], ['2026-01-02T11:00Z', 5]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  features={['timeAxis', 'aggregation']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'Un capteur inventé, mesure la plus haute par jour' },
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' },
+    series: [{ type: 'column', id: 'sensor', name: 'Mesure la plus haute', aggregate: 'max', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`aggregate`](../../axis/aggregate/) sur l'axe : les périodes ou les tranches.
+- [`aggregation`](../../features/aggregation/), la fonction.
+- [Explorer](../../../guides/exploring/) : l'agrégation.

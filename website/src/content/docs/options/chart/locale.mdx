@@ -1,0 +1,87 @@
+---
+title: "locale"
+description: "The language numbers, dates and the chart's words are written in."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The language numbers, dates and the chart's words are written in.
+
+<OptionFacts chart="locale" />
+
+## What it does
+
+A language tag (`'de-DE'`, `'fr'`, `'ar-EG'`), given to `Intl`: it writes the ticks, the tooltip, the data table
+and the screen readers' labels — digits, separators, month names. It also chooses the chart's own words (« No data »,
+the menu, the summary): English and French are built in, another language takes English unless `chart()` is given
+[`messages`](../../setup/messages/).
+
+Without it, the chart takes the `lang` of its element or of the closest parent that has one, else the browser's
+language. A tag `Intl` does not accept is reported (`invalid-option` at `locale`) and the page's language is used.
+
+The locale does not choose the time zone ([`zone`](../../axis/zone/)) nor the reading direction ([`dir`](../dir/)).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('locale')!,
+  {
+    locale: 'de-DE',
+    xAxis: { scale: 'category', categories: ['North', 'South', 'East'] },
+    series: [{ type: 'column', id: 'honey', name: 'Honey (kg)', data: [1234.5, 2875.25, 1980.75] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-locale',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class LocaleChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    locale: 'de-DE',
+    xAxis: { scale: 'category', categories: ['North', 'South', 'East'] },
+    series: [{ type: 'column', id: 'honey', name: 'Honey (kg)', data: [1234.5, 2875.25, 1980.75] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Honey by hive, in German (made up)' },
+    locale: 'de-DE',
+    xAxis: { scale: 'category', categories: ['North', 'South', 'East'] },
+    series: [{ type: 'column', id: 'honey', name: 'Honey (kg)', data: [1234.5, 2875.25, 1980.75] }],
+  }}
+/>
+
+## See also
+
+- [`dir`](../dir/): the reading direction.
+- [Theming and right to left](../../../guides/theming-rtl/): the chart's words and right to left.

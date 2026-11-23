@@ -1,0 +1,86 @@
+---
+title: "ticks"
+description: "How many ticks, how they are written, and their gridlines."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+How many ticks, how they are written, and their gridlines.
+
+<OptionFacts axis="ticks" />
+
+## What it does
+
+- `target`: about how many ticks to aim for, 2 or more (rounded). The axis still picks round steps (1, 2, 2.5 or 5
+  times a power of ten; round units of time) near it. Without it, about one tick every 64 px upright and every 100 px
+  across. Labels that would overlap first make fewer ticks; a `target` given is kept.
+- `format(value, context)`: the label of a tick, as a string. `value` is the scale's own kind: a number, an instant in
+  milliseconds on a time axis, the category's name. `context` gives the chart's `locale` and the `step` between two
+  ticks, to choose a precision. A formatter that throws or returns something else than a string: the default label,
+  and one `callback-failed` problem at its path (`yAxis[0].ticks.format`).
+- `grid`: gridlines across the plot from each tick. On by default for value axes, off for the x axis. Only the first
+  value axis draws them; a second one's ticks fall on them.
+
+Without `format`, numbers follow the locale, with the same decimals on every label of an axis, and are shortened past
+10 000 (`12K`); a time axis writes only what changes at its unit.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('harvest')!, {
+  xAxis: { scale: 'linear', ticks: { grid: true } },
+  yAxis: { scale: 'linear', ticks: { target: 4, format: (v, { locale }) => `${new Intl.NumberFormat(locale).format(v)} kg` } },
+  series: [{ type: 'line', id: 'harvest', name: 'Harvest', data: [[1, 120], [2, 180], [3, 260], [4, 310], [5, 280]] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'linear', ticks: { grid: true } },
+    yAxis: { scale: 'linear', ticks: { target: 4, format: (v, { locale }) => `${new Intl.NumberFormat(locale).format(v)} kg` } },
+    series: [{ type: 'line', id: 'harvest', name: 'Harvest', data: [[1, 120], [2, 180], [3, 260], [4, 310], [5, 280]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Harvest by week (made up)' },
+    xAxis: { ticks: { grid: true } },
+    yAxis: { ticks: { target: 4 } },
+    series: [{ type: 'line', id: 'harvest', name: 'Harvest', data: [[1, 120], [2, 180], [3, 260], [4, 310], [5, 280]] }],
+  }}
+/>
+
+## See also
+
+- [`min`](../min/) and [`max`](../max/): bounds the ticks fall inside.
+- [`locale`](../../chart/locale/): the language of numbers and dates.

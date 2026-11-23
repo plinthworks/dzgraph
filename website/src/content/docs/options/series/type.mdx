@@ -1,0 +1,92 @@
+---
+title: "type"
+description: "The series' type: how it is drawn and which options of its own it takes."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series' type: how it is drawn, and which options of its own it takes.
+
+<OptionFacts series="type" />
+
+## What it does
+
+`'line'`, `'area'`, `'column'`, `'bar'`, `'scatter'`, `'pie'`, `'donut'` or `'gauge'`: the name of a type given to the
+chart in `types` (`allTypes` gives them all). Each type has its page, with its own options:
+[`line`](../../series-types/line/), [`column`](../../series-types/column/), [`pie`](../../series-types/pie/)…
+
+A name the chart was not given leaves the series out, reported as `unknown-series-type` with the name as detail. A
+chart has one coordinate system, its first series': lines, areas, columns, bars and scatters mix on axes, while a
+pie, a donut or a gauge stands alone. A series that does not fit is left out and reported (`invalid-option` on
+`series[i].type`). Columns and bars set the chart's orientation: one of each is `mixed-orientation`.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('rain')!,
+  {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain (mm)', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'trend', name: 'Trend (mm)', data: [58, 54, 50, 47] },
+    ],
+  },
+  { types: [column, line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain (mm)', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'trend', name: 'Trend (mm)', data: [58, 54, 50, 47] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Rain and its trend (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain (mm)', data: [62, 48, 51, 44] },
+      { type: 'line', id: 'trend', name: 'Trend (mm)', data: [58, 54, 50, 47] },
+    ],
+  }}
+/>
+
+## See also
+
+- [`types`](../../setup/types/): the types a chart may draw.
+- [Series types](../../../guides/series-types/): every type, with live charts.

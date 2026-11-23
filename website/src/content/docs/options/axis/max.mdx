@@ -1,0 +1,81 @@
+---
+title: "max"
+description: "The axis's upper bound, fixed."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The axis's upper bound, fixed.
+
+<OptionFacts axis="max" />
+
+## What it does
+
+Kept exactly, not rounded: a share drawn up to `100` shows how far it is from full. The other end is still
+fitted to the data and rounded to a tick. A `max` below every value of the data is reported (`invalid-option`) and
+left out. A zoom stays within the bounds.
+
+On a time axis a bound is milliseconds, an ISO date-time with an offset, or a day (`'2026-03-01'`, its
+midnight in the axis's [zone](../zone/)); a date-time without an offset is reported `ambiguous-instant` and left out.
+On a log axis a bound of zero or below is reported (`invalid-option`) and left out. A `min` at or above `max` is
+reported at `min`, and both are left out. A category axis has no bounds: they are reported (`unknown-option`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('charge')!, {
+  title: { text: 'A made-up battery' },
+  yAxis: { max: 100, title: 'Charge (%)' },
+  series: [{ type: 'line', id: 'charge', name: 'Charge', data: [48, 41, 33, 27, 19, 12] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-charge',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Charge {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: { text: 'A made-up battery' },
+    yAxis: { max: 100, title: 'Charge (%)' },
+    series: [{ type: 'line', id: 'charge', name: 'Charge', data: [48, 41, 33, 27, 19, 12] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'A made-up battery' },
+    yAxis: { max: 100, title: 'Charge (%)' },
+    series: [{ type: 'line', id: 'charge', name: 'Charge', data: [48, 41, 33, 27, 19, 12] }],
+  }}
+/>
+
+## See also
+
+- [`min`](../min/): the lower bound.
+- [Axes and time](../../../guides/axes-time/).

@@ -1,0 +1,89 @@
+---
+title: "title"
+description: "Le nom de l'axe, écrit à côté de lui."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le nom de l'axe, écrit à côté de lui.
+
+<OptionFacts axis="title" />
+
+## Ce qu'elle fait
+
+Le titre se place au-delà des étiquettes de l'axe : sous un axe x, à côté d'un axe y, tourné pour se lire de bas
+en haut. Sa place est prise sur le tracé. Avec deux axes de valeurs en usage, chaque titre montre aussi les signes des
+séries tracées contre lui : on sait quelle ligne se lit sur quel axe sans passer par la couleur.
+
+Dites-y l'unité (`'Pluie (mm)'`) : les graduations restent alors de simples nombres. Un titre qui n'est pas une chaîne
+est signalé (`invalid-option`) et laissé de côté.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('rain')!, {
+  xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+  yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+  series: [
+    { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+    { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+  ],
+}, { types: [column, line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Pluie et douceur (inventées)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`opposite`](../opposite/) : l'autre côté.
+- [`title`](../../chart/title/), celui du graphique.

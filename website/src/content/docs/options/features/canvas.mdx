@@ -1,0 +1,91 @@
+---
+title: "canvas"
+description: "A Canvas plane for series of many marks."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+A Canvas plane for series of many marks.
+
+<OptionFacts feature="canvas" />
+
+## What it does
+
+There is no option: given the feature, a series that draws more than 2 000 marks (markers, columns) is painted
+on a Canvas, under the axes and the labels. It looks the same as in SVG: the same colours read from the theme, the
+same sizes, aligned to the pixel. Hovering, the focus ring and the tooltip do not change. A series of fewer marks
+stays in SVG, and so do lines and areas of any length: they are thinned to what the plot can show (decimated) and stay
+crisp.
+
+Without it, every series is drawn in SVG: the same picture, with an element per mark. The PNG export draws the
+Canvas marks too; the SVG export writes each mark as an element, but only those that can show in the plot.
+[`webgl`](../webgl/) goes further for scatters past 100 000 points, and falls back on this Canvas when WebGL2 is not
+there.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { canvas, chart } from '@dzgraph/dom';
+
+const n = 20_000;
+const x = new Float64Array(n);
+const y = new Float64Array(n);
+for (let i = 0; i < n; i++) {
+  x[i] = (i * 7919) % 1000;
+  y[i] = (i * 104_729) % 1000;
+}
+chart(
+  document.getElementById('dots')!,
+  { series: [{ type: 'scatter', id: 'dots', name: 'Dots', data: { x, y } }] },
+  { types: [scatter], features: [canvas] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { canvas } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-dots',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Dots {
+  readonly types = [scatter];
+  readonly features = [canvas];
+  readonly options: ChartOptions = {
+    series: [{ type: 'scatter', id: 'dots', name: 'Dots', data: { x: Float64Array.from({ length: 20_000 }, (_, i) => (i * 7919) % 1000), y: Float64Array.from({ length: 20_000 }, (_, i) => (i * 104_729) % 1000) } }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={380}
+  features={['canvas', 'zoom']}
+  data={{ recipe: 'cloud', count: 20000 }}
+  options={{
+    title: { text: 'Two made-up clouds, 20 000 points on a Canvas' },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## See also
+
+- [Big data](../../../guides/big-data/): the guide, with the measured costs.
+- [`webgl`](../webgl/), for the densest scatters.

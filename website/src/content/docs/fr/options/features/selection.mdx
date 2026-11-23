@@ -1,0 +1,101 @@
+---
+title: "selection"
+description: "Sélectionner des points : un rectangle, une plage de x ou un lasso ; Espace sur un point qui a le focus."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Sélectionner des points : un rectangle, une plage de x ou un lasso ; Espace sur un point qui a le focus.
+
+<OptionFacts feature="selection" />
+
+## Ce qu'elle fait
+
+Elle fait marcher l'option [`selection`](../../chart/selection/). Un glisser sélectionne avec la forme en
+cours : par défaut une plage de x sur les lignes et les aires, un rectangle sur les nuages et les colonnes ; `shapes`
+liste celles qui sont offertes, et avec plus d'une le bouton du mode ouvre un choix. Le lasso est exact, en direct
+pendant le tracé, même sur un million de points. Avec [`zoom`](../zoom/) ou [`measure`](../measure/) aussi, une barre
+de modes choisit ce que fait un glisser.
+
+- Un glisser remplace la sélection ; avec Maj il ajoute, avec Alt il retire.
+- Un clic sur un point le sélectionne seul, Maj + clic l'ajoute ou le retire ; un clic dans le vide du tracé ou Échap
+  efface.
+- Sur un point qui a le focus, Espace le sélectionne ou le désélectionne, et Maj + ← → étend la sélection le long de sa
+  série.
+- Un secteur ou un anneau sélectionne par clic, Maj + clic et Espace, sans barre de modes.
+
+Les points sélectionnés gardent leur couleur et les autres pâlissent ; une colonne, une barre ou une part reçoit aussi
+un anneau, pour que la couleur ne soit pas le seul signe. Les lecteurs d'écran entendent combien de points sont
+sélectionnés, et le tableau de données marque leurs lignes. La sélection est faite de données, pas de pixels : elle
+survit au zoom, au redimensionnement et aux séries masquées. `selectionChange` donne le nombre et les indices et clés
+de chaque série ; `selectBy()` sélectionne depuis l'app ; la vue la garde.
+
+Sans elle, `selection` est signalé (`missing-module`).
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('leaves')!,
+  {
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [[4.1, 2.2], [5.3, 2.9], [6.0, 3.4], [7.2, 3.1], [3.8, 1.9]] }],
+  },
+  { types: [scatter], features: [selection] },
+);
+c.on('selectionChange', (e) => console.log(e.count));
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { selection } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-leaves',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" (selectionChange)="count = $event.count" />`,
+})
+export class Leaves {
+  readonly types = [scatter];
+  readonly features = [selection];
+  count = 0;
+  readonly options: ChartOptions = {
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [[4.1, 2.2], [5.3, 2.9], [6.0, 3.4], [7.2, 3.1], [3.8, 1.9]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={380}
+  features={['selection', 'zoom', 'canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Deux nuages inventés : choisissez Sélection, puis glissez' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`selection`](../../chart/selection/), l'option.
+- [Explorer](../../../guides/exploring/) : le guide.

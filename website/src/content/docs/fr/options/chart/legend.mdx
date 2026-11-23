@@ -1,0 +1,97 @@
+---
+title: "legend"
+description: "La liste des séries sous le graphique, chacune un bouton qui la masque ou la montre."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+La liste des séries sous le graphique, chacune un bouton qui la masque ou la montre.
+
+<OptionFacts chart="legend" />
+
+## Ce qu'elle fait
+
+Chaque élément est le signe de la série (sa couleur et son marqueur, pour ne pas compter sur la couleur seule) et son
+nom ; une série sans nom est « Série 1 », « Série 2 »… Les éléments sont des boutons : un clic masque la série, qui
+reste dans la légende, grisée, et un second clic la remontre. Les éléments passent sur autant de lignes qu'il faut.
+
+`false` masque la légende ; `true` la montre même pour une série. Un objet la place : `position`, `'bottom'` (par
+défaut), `'top'`, `'start'` ou `'end'` (une colonne à côté du tracé, au début ou à la fin du sens de lecture) ; et
+`align`, `'start'`, `'center'` (par défaut) ou `'end'`.
+
+Un secteur ou un anneau liste plutôt ses parts, et ne montre sa légende par défaut que quand les étiquettes à côté des
+parts ne tiennent pas.
+
+Autre chose qu'un booléen ou un objet est `invalid-option` sur `legend` ; une autre clé `unknown-option` sur
+`legend.<clé>` ; une valeur erronée `invalid-option` sur `legend.position` ou `legend.align`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('legend')!,
+  {
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5, 6] },
+      { type: 'line', id: 'herbs', name: 'Herbes', data: [6, 5, 7, 6, 8] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-legend',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class LegendChart {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5, 6] },
+      { type: 'line', id: 'herbs', name: 'Herbes', data: [6, 5, 7, 6, 8] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Massifs arrosés (inventés)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5, 6] },
+      { type: 'line', id: 'herbs', name: 'Herbes', data: [6, 5, 7, 6, 8] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`initiallyHidden`](../../series/initially-hidden/) : une série masquée à sa première apparition.
+- [Interactions](../../../guides/interactions/) : la légende avec l'infobulle et le clavier.

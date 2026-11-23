@@ -1,0 +1,85 @@
+---
+title: "crosshair"
+description: "Lines through the pointer, with its values on the axes."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Lines through the pointer, with its values on the axes.
+
+<OptionFacts feature="crosshair" />
+
+## What it does
+
+It lets the [`crosshair`](../../chart/crosshair/) option draw: a dashed vertical line that follows the pointer
+exactly, with a tag at its foot giving the x value there, and with `{ horizontal: true }` a horizontal line and a tag on
+each value axis. The tags are kept inside the chart's edges. With the keyboard the lines go through the focused point;
+on touch they follow the finger while it is down. Leaving the plot removes them. They stay in the measure and selection
+modes, to help aim. Screen readers hear nothing more: the values are the focused point's, already said.
+
+Linked charts can share it ([`linkCharts()`](../../../guides/exploring/)), and `showX()` draws it at an x value from the
+app. Not on a pie, a donut or a gauge.
+
+Without it, `crosshair` is reported (`missing-module`) and nothing is drawn.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, crosshair } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('bees')!,
+  { crosshair: true, series: [{ type: 'column', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }] },
+  { types: [column], features: [crosshair] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Bees {
+  readonly types = [column];
+  readonly features = [crosshair];
+  readonly options: ChartOptions = {
+    crosshair: true,
+    series: [{ type: 'column', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={300}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    crosshair: { horizontal: true },
+    series: [{ type: 'column', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }],
+  }}
+/>
+
+## See also
+
+- [`crosshair`](../../chart/crosshair/), the option.
+- [Interactions](../../../guides/interactions/): the guide.

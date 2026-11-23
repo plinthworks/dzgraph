@@ -1,0 +1,87 @@
+---
+title: "name"
+description: "Le nom de la série, dans la légende, l'infobulle, le tableau de données et pour les lecteurs d'écran."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le nom de la série, montré dans la légende, l'infobulle et le tableau de données, et lu par les lecteurs d'écran.
+
+<OptionFacts series="name" />
+
+## Ce qu'elle fait
+
+Du texte, écrit tel quel. Un nom dans une autre écriture garde son propre sens (« مبيعات » se lit de droite à gauche
+dans un graphique de gauche à droite). Absent, le graphique nomme la série par sa place, dans sa langue : « Série 2 »
+ici, « Series 2 » sur une page anglaise ; les mots `seriesName` de `messages` changent cela. Un nom qui n'est pas une
+chaîne est signalé par `invalid-option` (`series[i].name`).
+
+Le nom est ce que voit le lecteur, pas une identité : [`id`](../id/) est ce qu'utilisent les mises à jour et la vue.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('bees')!,
+  {
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 18, 26, 31] },
+      { type: 'line', id: 'hiveB', data: [8, 11, 19, 24] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Bees {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 18, 26, 31] },
+      { type: 'line', id: 'hiveB', data: [8, 11, 19, 24] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Abeilles vues (inventées)' },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 18, 26, 31] },
+      { type: 'line', id: 'hiveB', data: [8, 11, 19, 24] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`id`](../id/) : l'identité de la série.
+- [`messages`](../../setup/messages/) : les mots du graphique.

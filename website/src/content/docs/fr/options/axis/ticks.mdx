@@ -1,0 +1,87 @@
+---
+title: "ticks"
+description: "Combien de graduations, comment elles s'écrivent, et leurs lignes de grille."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Combien de graduations, comment elles s'écrivent, et leurs lignes de grille.
+
+<OptionFacts axis="ticks" />
+
+## Ce qu'elle fait
+
+- `target` : environ combien de graduations viser, 2 ou plus (arrondi). L'axe choisit toujours des pas ronds (1, 2,
+  2,5 ou 5 fois une puissance de dix ; des unités de temps rondes) près de lui. Sans lui, environ une graduation tous
+  les 64 px à la verticale et tous les 100 px à l'horizontale. Des étiquettes qui se chevaucheraient donnent d'abord
+  moins de graduations ; un `target` donné est gardé.
+- `format(value, context)` : l'étiquette d'une graduation, en chaîne. `value` est du genre de l'échelle : un nombre, un
+  instant en millisecondes sur un axe de temps, le nom de la catégorie. `context` donne la `locale` du graphique et le
+  `step` entre deux graduations, pour choisir une précision. Une fonction qui lève une erreur ou ne rend pas une
+  chaîne : l'étiquette par défaut, et un problème `callback-failed` à son chemin (`yAxis[0].ticks.format`).
+- `grid` : des lignes de grille à travers le tracé depuis chaque graduation. Présentes par défaut sur les axes de
+  valeurs, absentes sur l'axe x. Seul le premier axe de valeurs les trace ; les graduations d'un second tombent dessus.
+
+Sans `format`, les nombres suivent la langue, avec autant de décimales sur toutes les étiquettes d'un axe, et sont
+abrégés au-delà de 10 000 (`12 k`) ; un axe de temps n'écrit que ce qui change à son unité.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('harvest')!, {
+  xAxis: { scale: 'linear', ticks: { grid: true } },
+  yAxis: { scale: 'linear', ticks: { target: 4, format: (v, { locale }) => `${new Intl.NumberFormat(locale).format(v)} kg` } },
+  series: [{ type: 'line', id: 'harvest', name: 'Récolte', data: [[1, 120], [2, 180], [3, 260], [4, 310], [5, 280]] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'linear', ticks: { grid: true } },
+    yAxis: { scale: 'linear', ticks: { target: 4, format: (v, { locale }) => `${new Intl.NumberFormat(locale).format(v)} kg` } },
+    series: [{ type: 'line', id: 'harvest', name: 'Récolte', data: [[1, 120], [2, 180], [3, 260], [4, 310], [5, 280]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Récolte par semaine (inventée)' },
+    xAxis: { ticks: { grid: true } },
+    yAxis: { ticks: { target: 4 } },
+    series: [{ type: 'line', id: 'harvest', name: 'Récolte', data: [[1, 120], [2, 180], [3, 260], [4, 310], [5, 280]] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`min`](../min/) et [`max`](../max/) : des bornes où tombent les graduations.
+- [`locale`](../../chart/locale/) : la langue des nombres et des dates.

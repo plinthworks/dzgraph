@@ -1,0 +1,94 @@
+---
+title: "webgl"
+description: "WebGL2 pour les nuages de plus de 100 000 points."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+WebGL2 pour les nuages de plus de 100 000 points.
+
+<OptionFacts feature="webgl" />
+
+## Ce qu'elle fait
+
+Il n'y a pas d'option : la fonction donnée, un nuage de plus de 100 000 points (le seuil fixé par les bancs
+d'essai) est dessiné par WebGL2. Il a le même aspect que sur Canvas : les mêmes couleurs du thème, les mêmes symboles
+et tailles, la même transparence (les amas paraissent plus sombres), sur la grille des pixels de l'écran, sous les axes
+et les étiquettes. Zoomer et se déplacer ne coûtent presque aucun script : les points restent sur la carte graphique,
+et une image ne change que l'endroit où ils vont, exact au pixel quelle que soit la profondeur du zoom. Le survol
+trouve toujours le point le plus proche à moins de 24 px.
+
+Un graphique n'ouvre un contexte WebGL que lorsqu'il dessine un tel nuage pour la première fois, et le libère dès sa
+destruction : un navigateur n'en permet qu'environ seize par page. Sans WebGL2 (un vieux navigateur, trop de contextes,
+la carte graphique perdue), le même dessin est fait sur [`canvas`](../canvas/), sans un mot à l'utilisateur ; WebGL2
+redessine quand la carte revient.
+
+Sans la fonction, un tel nuage est dessiné sur Canvas, ou en SVG sans `canvas` non plus.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, webgl, zoom } from '@dzgraph/dom';
+
+const n = 500_000;
+const x = new Float64Array(n);
+const y = new Float64Array(n);
+for (let i = 0; i < n; i++) {
+  x[i] = (i * 7919) % 10_000;
+  y[i] = (i * 104_729) % 10_000;
+}
+chart(
+  document.getElementById('dots')!,
+  { series: [{ type: 'scatter', id: 'dots', name: 'Points', data: { x, y } }] },
+  { types: [scatter], features: [webgl, zoom] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { webgl, zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-dots',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Dots {
+  readonly types = [scatter];
+  readonly features = [webgl, zoom];
+  readonly options: ChartOptions = {
+    series: [{ type: 'scatter', id: 'dots', name: 'Points', data: { x: Float64Array.from({ length: 500_000 }, (_, i) => (i * 7919) % 10_000), y: Float64Array.from({ length: 500_000 }, (_, i) => (i * 104_729) % 10_000) } }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={420}
+  features={['webgl', 'zoom']}
+  data={{ recipe: 'cloud', count: 200000 }}
+  options={{
+    title: { text: 'Deux nuages inventés, 200 000 points dessinés par WebGL2' },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+## Voir aussi
+
+- [Gros volumes](../../../guides/big-data/) : le guide, avec les coûts mesurés.
+- [`canvas`](../canvas/), qu'elle apporte.

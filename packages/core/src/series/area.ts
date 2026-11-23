@@ -5,8 +5,14 @@ import { lineMarks } from './line.js';
 import { rangeOf, withZero } from './shared.js';
 
 export interface AreaSeriesOptions extends SeriesBase<'area'> {
+  /**
+   * @default {markerRoom}
+   */
   readonly marker?: boolean | undefined;
-  /** Stacks the area on the other areas of the same stack (stacking.md 1); `true`: the stack `default`. */
+  /**
+   * Stacks the area on the other areas of the same stack (stacking.md 1); `true`: the stack `default`.
+   * @default `false`
+   */
   readonly stack?: boolean | string | undefined;
 }
 

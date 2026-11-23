@@ -1,0 +1,94 @@
+---
+title: "timeAxis"
+description: "Time scales: instants and days in a zone, ticks on the calendar."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Time scales: instants and days in a zone, ticks on the calendar.
+
+<OptionFacts feature="timeAxis" />
+
+## What it does
+
+With it, an axis takes `scale: 'time'` (see [`scale`](../../axis/scale/)). It reads instants: numbers
+(milliseconds since 1970 UTC) or ISO date-times with an offset (`2026-03-29T01:30:00+01:00`, `…Z`). A date-time
+without an offset is never guessed: the point is a gap, reported `ambiguous-instant`. A calendar day (`2026-03-29`)
+stands at its local midnight in the axis's [`zone`](../../axis/zone/), the page's zone by default.
+
+Ticks fall on round values of the zone's wall clock: years, months, days, hours, minutes, seconds. A label says only
+what changes at its unit (« 2026 », « Mar », « 3 », « 14:00 »), and under days or hours a second row names the month
+or the date where it changes. A day tick stays at local midnight on a day of 23 or 25 hours. The tooltip's heading and
+the data table give the full date and time in the zone.
+
+It also reads the time values of [`setRange()`](../../../guides/exploring/), [`compareTo`](../../axis/compare-to/) and
+the axis's `min` and `max`, and it is what [`aggregation`](../aggregation/) groups by calendar period.
+
+Without it, `scale: 'time'` is reported (`missing-module`) and the axis is drawn as a linear one.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('visits')!,
+  {
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [{ type: 'line', id: 'visits', name: 'Visitors', data: [['2026-03-27', 41], ['2026-03-28', 58], ['2026-03-29', 52], ['2026-03-30', 66]] }],
+  },
+  { types: [line], features: [timeAxis] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Visits {
+  readonly types = [line];
+  readonly features = [timeAxis];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [{ type: 'line', id: 'visits', name: 'Visitors', data: [['2026-03-27', 41], ['2026-03-28', 58], ['2026-03-29', 52], ['2026-03-30', 66]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'crosshair']}
+  data={{ recipe: 'walk', count: 4320 }}
+  options={{
+    title: { text: 'A made-up sensor, one reading a minute' },
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+## See also
+
+- [Axes and time](../../../guides/axes-time/): the guide.
+- [`zone`](../../axis/zone/), the axis's zone.

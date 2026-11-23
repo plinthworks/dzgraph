@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 const SITE = fileURLToPath(new URL('..', import.meta.url));
 const DOCS = join(SITE, 'src/content/docs');
 /** The pages written so far, batch by batch (docs/phase-9-steps/plan.md); every other page is still a stub. */
-const WRITTEN = ['index', 'getting-started/typescript', 'getting-started/angular', ...['data', 'series-types', 'axes-time', 'interactions', 'exploring', 'big-data', 'exporting', 'accessibility', 'theming-rtl', 'angular', 'dztooltip', 'dzgrid'].map((g) => `guides/${g}`)];
+const WRITTEN_BY_NAME = ['index', 'getting-started/typescript', 'getting-started/angular', 'options/index', ...['data', 'series-types', 'axes-time', 'interactions', 'exploring', 'big-data', 'exporting', 'accessibility', 'theming-rtl', 'angular', 'dztooltip', 'dzgrid'].map((g) => `guides/${g}`)];
 /** The sidebar's sections: a page lives in one of them (or is the home page). */
 const SECTIONS = ['getting-started', 'gallery', 'guides', 'options', 'api'];
 /** A stub's one note: its title, and its sentence around the link to what stands in for the page meanwhile. */
@@ -38,6 +38,8 @@ for (const file of walk(DOCS)) {
   const lang: Lang = rel.startsWith('fr/') ? 'fr' : 'en';
   pages[lang].set(rel.replace(/^fr\//, '').replace(/\.mdx?$/, ''), file);
 }
+/** The written pages: those named, and every option page (batch 3: written from the start, never a stub). */
+const WRITTEN = [...WRITTEN_BY_NAME, ...[...pages.en.keys()].filter((s) => s.startsWith('options/') && s !== 'options/index')];
 const read = (lang: Lang, slug: string) => readFileSync(pages[lang].get(slug)!, 'utf8');
 const front = (text: string) => /^---\n([\s\S]*?)\n---\n/.exec(text)?.[1] ?? '';
 const body = (text: string) => text.replace(/^---\n[\s\S]*?\n---\n/, '');
@@ -134,7 +136,11 @@ describe('the site’s pages', () => {
     const guides = /const GUIDES = \[([\s\S]*?)\];/.exec(config)![1]!.match(/'([a-z-]+)'/g)!.map((s) => `guides/${s.slice(1, -1)}`);
     const started = /\[('typescript'[^\]]*)\]\.map\(\(page\) => \(\{ slug: `getting-started\//.exec(config)![1]!.match(/'([a-z-]+)'/g)!.map((s) => `getting-started/${s.slice(1, -1)}`);
     const dirs = [...config.matchAll(/autogenerate: \{ directory: '([a-z-]+)' \}/g)].map((m) => m[1]!);
-    expect(dirs.sort()).toEqual(SECTIONS.filter((s) => s !== 'getting-started' && s !== 'guides').sort());
+    expect(dirs.sort()).toEqual(SECTIONS.filter((s) => s !== 'getting-started' && s !== 'guides' && s !== 'options').sort());
+    // Options: the overview, then a group per folder of options/ (OPTION_GROUPS), none left out.
+    const groups = [.../const OPTION_GROUPS = \[([\s\S]*?)\n\];/.exec(config)![1]!.matchAll(/\['([a-z-]+)'/g)].map((m) => m[1]!);
+    const folders = new Set([...pages.en.keys()].filter((s) => s.startsWith('options/') && s !== 'options/index').map((s) => s.split('/')[1]!));
+    expect([...folders].sort()).toEqual([...groups].sort());
     for (const slug of [...guides, ...started]) for (const lang of ['en', 'fr'] as const) expect(pages[lang].has(slug), `${lang} ${slug}`).toBe(true);
     // And the other way: no guide or getting-started page left out of the sidebar.
     expect([...pages.en.keys()].filter((s) => /^(guides|getting-started)\//.test(s)).sort()).toEqual([...guides, ...started].sort());

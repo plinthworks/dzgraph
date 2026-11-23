@@ -1,0 +1,73 @@
+---
+title: "animation"
+description: "Animating the chart's appearing and its updates."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+Animating the chart's appearing and its updates.
+
+<OptionFacts chart="animation" />
+
+## What it does
+
+When the chart appears (400 ms), lines and areas are revealed from the start of the x axis, columns and bars
+grow from their baseline, markers fade in. When it is updated (250 ms) — new options, new data, a series hidden from
+the legend — what stays moves from where it was, what comes grows from the baseline, what goes fades out. A resize is
+never animated.
+
+`false` turns all of it off: the chart shows its end state at once. So does the reader's system setting for reduced
+motion (`prefers-reduced-motion: reduce`), whatever this option says. To drive the animations yourself (GSAP, for
+instance), give `chart()` an [`animate`](../../setup/animate/) function.
+
+A value other than a boolean is reported (`invalid-option` at `animation`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('animation')!,
+  {
+    animation: false,
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [12, 19, 15, 22, 17] }],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-animation',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class AnimationChart {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    animation: false,
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [12, 19, 15, 22, 17] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [`animate`](../../setup/animate/): animations driven by the app.
+- [Interactions](../../../guides/interactions/): animation with the other interactions.

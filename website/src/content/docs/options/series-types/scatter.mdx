@@ -1,0 +1,86 @@
+---
+title: "scatter"
+description: "A scatter plot: one marker per point, placed by two values. No option of its own."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+One marker per point, placed by its x and its y.
+
+<OptionFacts seriesType="scatter" />
+
+## What it draws
+
+Both axes are value axes fitted to the data, rounded to ticks; zero is not forced in. Each point is an 8 px marker
+of the series' symbol, slightly translucent so that piles of points read darker. A point with a gap in either value is
+left out. x need not be sorted. Each marker has its own tooltip. Past 2 000 markers the series is painted on a Canvas
+(the `canvas` feature), past 100 000 with WebGL2 (`webgl`), with the same look.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { canvas, chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('leaves')!,
+  {
+    xAxis: { title: 'Length (cm)' },
+    yAxis: { title: 'Width (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [[4.2, 2.1], [5.0, 2.6], [6.3, 3.0], [3.8, 1.7]] }],
+  },
+  { types: [scatter], features: [canvas] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { scatter, type ChartOptions } from '@dzgraph/core';
+import { canvas } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-leaves',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Leaves {
+  readonly types = [scatter];
+  readonly features = [canvas];
+  readonly options: ChartOptions = {
+    xAxis: { title: 'Length (cm)' },
+    yAxis: { title: 'Width (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [[4.2, 2.1], [5.0, 2.6], [6.3, 3.0], [3.8, 1.7]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={340}
+  features={['canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Leaf length and width (made up)' },
+    xAxis: { title: 'Length (cm)' },
+    yAxis: { title: 'Width (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`canvas`](../../features/canvas/) and [`webgl`](../../features/webgl/): the painters for many points.
+- [Big data](../../../guides/big-data/).

@@ -1,0 +1,89 @@
+---
+title: "opposite"
+description: "L'axe de l'autre côté du tracé."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+L'axe de l'autre côté du tracé.
+
+<OptionFacts axis="opposite" />
+
+## Ce qu'elle fait
+
+Un axe x passe en haut au lieu d'en bas ; un axe y à la fin du sens de lecture au lieu de son début : à droite
+dans une page de gauche à droite, à gauche dans une page de droite à gauche. Cela vaut quelle que soit l'orientation :
+avec des barres, l'axe x est vertical et `opposite` le passe du côté de la fin.
+
+Son usage courant est un second axe de valeurs. Les graduations du second tombent alors sur les lignes de grille du
+premier (autant de graduations, son propre pas rond) : une seule grille sert aux deux, et seul le premier la trace.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('rain')!, {
+  xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+  yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+  series: [
+    { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+    { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+  ],
+}, { types: [column, line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Pluie et douceur (inventées)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: [{ id: 'rain', title: 'Pluie (mm)' }, { id: 'heat', title: 'Douceur (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'heat', name: 'Douceur', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`id`](../id/) : quelle série va sur quel axe.
+- [Axes et temps](../../../guides/axes-time/) : deux axes de valeurs.

@@ -1,0 +1,104 @@
+---
+title: "exporting"
+description: "L'export et l'impression : SVG, PNG et CSV, un téléchargement, l'impression."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+L'export et l'impression : SVG, PNG et CSV, un téléchargement, l'impression.
+
+<OptionFacts feature="exporting" />
+
+## Ce qu'elle fait
+
+Elle fait marcher les méthodes d'export du graphique, et donne au [`menu`](../menu/) ses entrées
+« Télécharger » et « Imprimer » :
+
+| Méthode | Ce qu'elle donne |
+|---|---|
+| `exportSvg(options?)` | la vue en document SVG autonome (une chaîne) |
+| `exportPng(options?)` | la vue en PNG (une promesse de `Blob`) |
+| `exportCsv(options?)` | les données en CSV (une chaîne), les lignes que montre le tableau |
+| `download(format, options?)` | l'enregistrement par le navigateur de `'png'`, `'svg'` ou `'csv'`, nommé d'après le titre |
+| `print(options?)` | le graphique seul, imprimé en couleurs claires ; `table: true` ajoute son tableau de données |
+
+Une image est la vue comme à l'écran (la plage visible, sans les séries masquées, la sélection, la comparaison) avec
+le titre, les axes et la légende, mais sans les commandes, l'infobulle ni l'anneau de focus. Ses couleurs sont celles
+de l'écran sauf si `theme` demande `'light'` ou `'dark'` ; `width` et `height` recomposent le graphique à cette
+taille ; un PNG est dessiné à `scale` pixels de l'écran par pixel CSS, au moins 2 par défaut. Le SVG porte ses couleurs
+et ses polices, un titre et une description. Le CSV écrit les valeurs brutes, les temps en ISO 8601 avec leur décalage,
+et protège les cellules contre les formules ; `locale: true` prend les séparateurs de la langue. L'option
+[`exporting`](../../chart/exporting/) fixe les réglages par défaut.
+
+Sans elle, les méthodes donnent `null` ou ne font rien, et signalent `missing-module`.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, exporting } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('crates')!,
+  { title: { text: 'Cageots cueillis (inventés)' }, series: [{ type: 'column', id: 'crates', name: 'Cageots', data: [12, 19, 15, 22, 17] }] },
+  { types: [column], features: [exporting] },
+);
+document.getElementById('save')!.addEventListener('click', () => void c.download('png', { theme: 'light' }));
+const csv = c.exportCsv();
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, viewChild } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { exporting } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-crates',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />
+    <button type="button" (click)="save()">Enregistrer en PNG</button>`,
+})
+export class Crates {
+  readonly types = [column];
+  readonly features = [exporting];
+  readonly chart = viewChild.required(DzChart);
+
+  async save(): Promise<void> {
+    await this.chart().chart?.download('png', { theme: 'light' });
+  }
+
+  readonly options: ChartOptions = {
+    title: { text: 'Cageots cueillis (inventés)' },
+    series: [{ type: 'column', id: 'crates', name: 'Cageots', data: [12, 19, 15, 22, 17] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Cageots cueillis (inventés)' },
+    menu: { items: ['export', 'print'] },
+    series: [{ type: 'column', id: 'crates', name: 'Cageots', data: [12, 19, 15, 22, 17] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`exporting`](../../chart/exporting/), l'option.
+- [Export et impression](../../../guides/exporting/) : le guide.

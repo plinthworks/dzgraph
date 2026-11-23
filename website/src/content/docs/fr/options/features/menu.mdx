@@ -1,0 +1,103 @@
+---
+title: "menu"
+description: "Le menu du graphique : le type d'une série, l'agrégation, l'échelle, la comparaison, l'export et l'impression."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Le menu du graphique : le type d'une série, l'agrégation, l'échelle, la comparaison, l'export et l'impression.
+
+<OptionFacts feature="menu" />
+
+## Ce qu'elle fait
+
+Elle permet à l'option [`menu`](../../chart/menu/) de dessiner : un petit bouton « Options du graphique » au
+bout du bord haut du graphique, qui ouvre un menu des entrées que l'app liste (`true` : toutes) et qui ont un sens pour
+les données.
+
+- **Type** : le type d'une série parmi ceux qui conviennent à ses données (ligne, aire, colonne).
+- **Agrégation** : aucune, ou une période avec sa fonction, sur un axe de temps (avec [`aggregation`](../aggregation/)).
+- **Échelle** : linéaire ou logarithmique pour l'axe de valeurs ; logarithmique seulement si toutes les valeurs sont
+  positives.
+- **Comparaison** : aucune, écart, pourcentage, base 100 (avec [`compare`](../compare/)).
+- **Télécharger** (PNG, SVG, CSV) et **Imprimer**, avec [`exporting`](../exporting/).
+
+Il suit le modèle du bouton de menu : Entrée, Espace ou ↓ l'ouvrent sur sa première entrée ; les flèches se déplacent ;
+Entrée ou Espace choisissent ; Échap le ferme et rend le focus ; → et ← ouvrent et ferment un sous-menu. Un choix
+s'applique tout de suite, animé, et fait partie de la vue. Un menu qui n'a rien à offrir n'affiche pas de bouton.
+
+Sans elle, `menu` est signalé (`missing-module`) et aucun bouton n'est affiché.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart, menu } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jars')!,
+  {
+    menu: { items: ['type', 'scale'] },
+    series: [
+      { type: 'column', id: 'honey', name: 'Miel', data: [14, 22, 19, 27] },
+      { type: 'line', id: 'jam', name: 'Confiture', data: [9, 12, 16, 15] },
+    ],
+  },
+  { types: [column, line], features: [menu] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { menu } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Jars {
+  readonly types = [column, line];
+  readonly features = [menu];
+  readonly options: ChartOptions = {
+    menu: { items: ['type', 'scale'] },
+    series: [
+      { type: 'column', id: 'honey', name: 'Miel', data: [14, 22, 19, 27] },
+      { type: 'line', id: 'jam', name: 'Confiture', data: [9, 12, 16, 15] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={320}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Pots vendus (inventés) : ouvrez le menu en haut au bout' },
+    menu: true,
+    series: [
+      { type: 'column', id: 'honey', name: 'Miel', data: [14, 22, 19, 27, 31, 26] },
+      { type: 'line', id: 'jam', name: 'Confiture', data: [9, 12, 16, 15, 18, 21] },
+    ],
+  }}
+/>
+
+## Voir aussi
+
+- [`menu`](../../chart/menu/), l'option.
+- [`exporting`](../exporting/), pour Télécharger et Imprimer.

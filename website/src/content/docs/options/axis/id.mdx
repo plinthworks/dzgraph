@@ -1,0 +1,74 @@
+---
+title: "id"
+description: "The name series use to sit on this axis."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The name series use to sit on this axis.
+
+<OptionFacts axis="id" />
+
+## What it does
+
+A series picks its axes by id: its [`xAxis`](../../series/x-axis/) and [`yAxis`](../../series/y-axis/). A
+series that names none sits on the first x axis and the first y axis. Give ids as soon as there are two axes of a
+kind: the ids say which series goes where, whatever the order of the list.
+
+Two axes of one kind with the same id: the second keeps its default id, reported `duplicate-id` (`yAxis[1].id`). A
+series naming an axis that does not exist is drawn on the first one, reported `unknown-axis` with the id it asked for.
+The x axis's id also names it in the view: the visible range is kept by axis id.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('rain')!, {
+  xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  yAxis: [{ id: 'rain', title: 'Rain (mm)' }, { id: 'heat', title: 'Warmth (°C)', opposite: true }],
+  series: [
+    { type: 'column', id: 'rain', name: 'Rain', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+    { type: 'line', id: 'heat', name: 'Warmth', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+  ],
+}, { types: [column, line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: [{ id: 'rain', title: 'Rain (mm)' }, { id: 'heat', title: 'Warmth (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', yAxis: 'rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'heat', name: 'Warmth', yAxis: 'heat', data: [4, 6, 9, 13, 17, 21] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [`opposite`](../opposite/): the second value axis on the far side.
+- [Axes and time](../../../guides/axes-time/): two value axes.

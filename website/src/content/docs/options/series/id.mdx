@@ -1,0 +1,71 @@
+---
+title: "id"
+description: "The series' identity, for updates, the view, links and events."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series' identity: how updates, the view, links and events recognise it.
+
+<OptionFacts series="id" />
+
+## What it does
+
+`update()` matches series by `id`: a series that keeps its id keeps what the user did to it (hidden, selected
+points) and moves from where it was. `setData()` and `setSeriesVisible()` name it; events give it as `seriesId`; the
+view saves hidden series and selections under it; linked charts and DzGrid find points through it.
+
+Absent, a series is `#1`, `#2`… by its position, so a series that moves changes identity: give ids when series come
+and go. `#` is reserved for these. An id that starts with `#`, or one already used, is reported as `duplicate-id`
+(`series[i].id`), and the series takes its position's id; an id that is not a string is `invalid-option`. Every other
+problem of the series carries its id (`seriesId`).
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('jars')!,
+  {
+    series: [{ type: 'column', id: 'jars', name: 'Jars sold', data: [14, 22, 19] }],
+  },
+  { types: [column] },
+);
+c.setData('jars', [14, 22, 19, 27]);
+c.setSeriesVisible('jars', false);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jars {
+  readonly types = [column];
+  readonly options: ChartOptions = {
+    series: [{ type: 'column', id: 'jars', name: 'Jars sold', data: [14, 22, 19] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [`name`](../name/): what the reader sees.
+- [Exploring](../../../guides/exploring/): the view, saved by series id.

@@ -1,0 +1,78 @@
+---
+title: "types"
+description: "The series types a chart may draw."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The series types a chart may draw.
+
+<OptionFacts setup="types" />
+
+## What it does
+
+Each series type is its own import from `@dzgraph/core` (`line`, `area`, `column`, `bar`, `scatter`, `pie`,
+`donut`, `gauge`), so a page ships only the types it draws. `allTypes` gives every one, for an app that does not count
+bytes. A series of a type the chart was not given is left out and reported `unknown-series-type` at its `type`, with
+the type's name.
+
+`<dz-chart>` takes them as its `[types]` input, every type by default: the component imports `allTypes` for that
+default, so every type is in the app's bundle whatever it passes. Passing fewer still limits what the chart draws.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('jars')!,
+  {
+    title: { text: 'Jars sold (made up)' },
+    series: [
+      { type: 'column', id: 'jars', name: 'Jars', data: [42, 38, 51, 47] },
+      { type: 'line', id: 'target', name: 'Target', data: [45, 45, 50, 50] },
+      { type: 'pie', id: 'shares', name: 'Shares', data: [3, 2, 1] },
+    ],
+  },
+  { types: [column, line] },
+);
+for (const p of c.problems) console.warn(p.code, p.path); // unknown-series-type series[2].type
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jars',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Jars {
+  readonly types = [column, line];
+  readonly options: ChartOptions = {
+    title: { text: 'Jars sold (made up)' },
+    series: [
+      { type: 'column', id: 'jars', name: 'Jars', data: [42, 38, 51, 47] },
+      { type: 'line', id: 'target', name: 'Target', data: [45, 45, 50, 50] },
+    ],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## See also
+
+- [`features`](../features/): what the chart may do.
+- [Getting started](../../../getting-started/typescript/#series-types-and-features): series types and features.

@@ -1,0 +1,95 @@
+---
+title: "features"
+description: "The features a chart may use: time axes, zoom, the navigator, Canvas, WebGL2 and more."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The features a chart may use.
+
+<OptionFacts setup="features" />
+
+## What it does
+
+Each feature is its own import from `@dzgraph/dom`: [`timeAxis`](../../features/time-axis/), [`zoom`](../../features/zoom/), [`navigatorStrip`](../../features/navigator-strip/), [`canvas`](../../features/canvas/), [`webgl`](../../features/webgl/), [`crosshair`](../../features/crosshair/), [`compare`](../../features/compare/), [`measure`](../../features/measure/), [`selection`](../../features/selection/), [`aggregation`](../../features/aggregation/), [`drilldown`](../../features/drilldown/), [`menu`](../../features/menu/), [`exporting`](../../features/exporting/). A chart does only what its features
+allow, and a page ships only the features it imports; `allFeatures` gives every one. Some bring another with them:
+`navigatorStrip` brings `zoom`, `webgl` brings `canvas`, `drilldown` brings `aggregation`.
+
+An option that needs a feature the chart was not given is not an error: the chart draws without it and reports
+`missing-module`, the feature's name in the problem's detail (a time axis is then drawn linear). Without `canvas`,
+every series is drawn in SVG, however many points it has.
+
+`<dz-chart>` takes them as its `[features]` input, every feature by default: the component imports `allFeatures` for
+that default, so every feature is in the app's bundle whatever it passes. Passing fewer still limits what the chart
+does.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, navigatorStrip, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('sensor')!,
+  {
+    title: { text: 'A made-up sensor, one reading a minute' },
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [[1767225600000, 101], [1767225660000, 99.6], [1767225720000, 100.4]] }],
+  },
+  { types: [line], features: [timeAxis, navigatorStrip] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { navigatorStrip, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-sensor',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 360px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Sensor {
+  readonly types = [line];
+  readonly features = [timeAxis, navigatorStrip];
+  readonly options: ChartOptions = {
+    title: { text: 'A made-up sensor, one reading a minute' },
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [[1767225600000, 101], [1767225660000, 99.6], [1767225720000, 100.4]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={380}
+  features={['timeAxis', 'navigatorStrip']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'A made-up sensor, one reading a minute' },
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`types`](../types/): what the chart may draw.
+- [Getting started](../../../getting-started/typescript/#series-types-and-features): series types and features.

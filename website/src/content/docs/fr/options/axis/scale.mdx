@@ -1,0 +1,88 @@
+---
+title: "scale"
+description: "Comment l'axe change les valeurs en positions : linéaire, logarithmique, catégories ou temps."
+---
+
+import CodeTabs from '../../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../../components/OptionFacts.astro';
+
+Comment l'axe change les valeurs en positions.
+
+<OptionFacts axis="scale" />
+
+## Ce qu'elle fait
+
+- `'linear'` : des nombres, des pas égaux pour des écarts égaux.
+- `'log'` : base dix, chaque puissance de dix de même longueur ; pour des valeurs étalées sur plusieurs ordres de
+  grandeur. Sur un axe de valeurs (un axe y, ou l'axe x d'un nuage de points). Une valeur nulle ou négative devient un
+  trou, signalé `non-positive-log-value` une fois par série, avec leur nombre.
+- `'category'` : une bande par catégorie, dans l'ordre ([`categories`](../categories/)).
+- `'time'` : des instants sur l'horloge d'un fuseau ([`zone`](../zone/)). Il demande la fonction
+  [`timeAxis`](../../features/time-axis/) : sans elle, l'axe est tracé linéaire et signalé `missing-module`.
+
+Absente, l'échelle est devinée : catégories quand les x des données sont des chaînes, linéaire sinon ; le temps n'est
+jamais deviné. Une échelle inconnue est signalée (`invalid-option`). Les clés d'une autre échelle sont signalées
+(`unknown-option`) : `categories` sur un axe de temps, `zone` sur un axe linéaire. Le [menu](../../chart/menu/) du
+graphique peut proposer linéaire ou logarithmique, et la vue garde le choix.
+
+## Exemple
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('ants')!, {
+  title: { text: 'Fourmis d’une colonie inventée' },
+  xAxis: { title: 'Semaine' },
+  yAxis: { scale: 'log', title: 'Fourmis' },
+  series: [{ type: 'line', id: 'ants', name: 'Fourmis', data: [[1, 12], [2, 40], [3, 130], [4, 520], [5, 1900], [6, 7400], [7, 26000], [8, 90000]] }],
+}, { types: [line] });
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-ants',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options" [types]="types" />`,
+})
+export class Ants {
+  readonly types = [line];
+  readonly options: ChartOptions = {
+    title: { text: 'Fourmis d’une colonie inventée' },
+    xAxis: { title: 'Semaine' },
+    yAxis: { scale: 'log', title: 'Fourmis' },
+    series: [{ type: 'line', id: 'ants', name: 'Fourmis', data: [[1, 12], [2, 40], [3, 130], [4, 520], [5, 1900], [6, 7400], [7, 26000], [8, 90000]] }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Démo
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fourmis d’une colonie inventée' },
+    xAxis: { title: 'Semaine' },
+    yAxis: { scale: 'log', title: 'Fourmis' },
+    series: [{ type: 'line', id: 'ants', name: 'Fourmis', data: [[1, 12], [2, 40], [3, 130], [4, 520], [5, 1900], [6, 7400], [7, 26000], [8, 90000]] }],
+  }}
+/>
+
+## Voir aussi
+
+- [`zone`](../zone/) : l'horloge de l'axe de temps.
+- [Axes et temps](../../../guides/axes-time/) : échelles logarithmiques et temps.

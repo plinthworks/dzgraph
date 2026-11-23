@@ -1,0 +1,97 @@
+---
+title: "navigatorStrip"
+description: "The navigator strip under the plot, and the range buttons above it."
+---
+
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+import OptionFacts from '../../../../components/OptionFacts.astro';
+
+The navigator strip under the plot, and the range buttons above it.
+
+<OptionFacts feature="navigatorStrip" />
+
+## What it does
+
+It lets two options draw: [`navigator`](../../chart/navigator/) and
+[`rangeButtons`](../../chart/range-buttons/). It is not named `navigator`: that name would hide the browser's global
+of the same name in your module.
+
+- **The navigator**: a strip under the plot draws the visible series over their whole x range, thin, with its own
+  light labels. A window marks the visible range, the rest is shaded, and a handle sits on each edge. Dragging the
+  window moves the range, dragging a handle moves that end, and a click outside the window moves it there. With the
+  keyboard the handles are sliders (« Start of range », « End of range »): the arrows move them by a hundredth of the
+  whole, Page Up and Page Down by a tenth. The chart and the strip follow each other.
+- **The range buttons**, on a time axis: « 1m », « 3m », « YTD », « 1y », « All », above the plot at the start of the
+  reading direction. Each shows a span ending at the last point, on the axis's calendar; a span longer than the data is
+  disabled, and the button matching the range is pressed.
+
+Without it, `navigator` and `rangeButtons` are reported (`missing-module`) and nothing is drawn.
+
+## Example
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, navigatorStrip, timeAxis } from '@dzgraph/dom';
+
+const days = Array.from({ length: 400 }, (_, i) => [Date.UTC(2026, 0, 1) + i * 86_400_000, 50 + (i % 30)] as [number, number]);
+chart(
+  document.getElementById('visits')!,
+  { navigator: true, rangeButtons: true, xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'line', id: 'visits', name: 'Visitors', data: days }] },
+  { types: [line], features: [timeAxis, navigatorStrip] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { navigatorStrip, timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 380px" [options]="options" [types]="types" [features]="features" />`,
+})
+export class Visits {
+  readonly types = [line];
+  readonly features = [timeAxis, navigatorStrip];
+  readonly options: ChartOptions = {
+    navigator: true,
+    rangeButtons: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'visits', name: 'Visitors', data: Array.from({ length: 400 }, (_, i) => [Date.UTC(2026, 0, 1) + i * 86_400_000, 50 + (i % 30)] as [number, number]) }],
+  };
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Live demo
+
+<LiveChart
+  height={420}
+  features={['timeAxis', 'navigatorStrip', 'crosshair']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'A made-up sensor, 100 000 readings' },
+    navigator: true,
+    rangeButtons: true,
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+## See also
+
+- [`navigator`](../../chart/navigator/), the option.
+- [`rangeButtons`](../../chart/range-buttons/), the option.
+- [Exploring](../../../guides/exploring/): the guide.
