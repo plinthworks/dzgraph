@@ -14,7 +14,15 @@ const pkg = (name) => join(root, 'packages', name);
 const read = (file) => JSON.parse(readFileSync(file, 'utf8'));
 const run = (cmd, args, cwd = root) => execFileSync(cmd, args, { cwd, stdio: 'inherit' });
 
-const shared = () => ({ license: 'MIT', author: 'Plinthworks', keywords: ['chart', 'charts', 'data-visualization', 'svg', 'canvas', 'rtl', 'accessibility', 'no-dependency'] });
+/** What every published manifest carries: the licence, the keywords, where the code and its issues live. */
+const shared = (name) => ({
+  license: 'MIT',
+  author: 'Plinthworks',
+  keywords: ['chart', 'charts', 'data-visualization', 'svg', 'canvas', 'rtl', 'accessibility', 'no-dependency'],
+  repository: { type: 'git', url: 'git+https://github.com/plinthworks/dzgraph.git', directory: `packages/${name}` },
+  homepage: 'https://github.com/plinthworks/dzgraph#readme',
+  bugs: { url: 'https://github.com/plinthworks/dzgraph/issues' },
+});
 
 /** The workspace's own packages, pinned to the versions being built together. */
 const internal = (deps = {}) =>
@@ -45,7 +53,7 @@ function typescript(name) {
     name: source.name,
     version: source.version,
     description: source.description,
-    ...shared(),
+    ...shared(name),
     type: 'module',
     sideEffects: false,
     main: './index.js',
@@ -67,7 +75,7 @@ function theme() {
   const source = read(join(dir, 'package.json'));
   for (const file of source.files) if (existsSync(join(dir, file))) cpSync(join(dir, file), join(dir, 'dist', file));
   const { files: _files, ...manifest } = source;
-  writeFileSync(join(dir, 'dist', 'package.json'), JSON.stringify({ ...manifest, ...shared() }, null, 2) + '\n');
+  writeFileSync(join(dir, 'dist', 'package.json'), JSON.stringify({ ...manifest, ...shared('theme') }, null, 2) + '\n');
   extras('theme');
 }
 
@@ -79,7 +87,7 @@ function angular() {
   const manifest = read(file);
   delete manifest.main;
   delete manifest.types;
-  Object.assign(manifest, shared());
+  Object.assign(manifest, shared('angular'));
   manifest.dependencies = internal(manifest.dependencies);
   writeFileSync(file, JSON.stringify(manifest, null, 2) + '\n');
   extras('angular');

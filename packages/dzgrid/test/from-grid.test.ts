@@ -1,5 +1,5 @@
 // A chart made from what a real DzGrid grid selects, in a real browser (chart-from-grid.md). Phase 8a.
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { allTypes, type ChartUpdate } from '@dzgraph/core';
 import { chart, type Chart } from '@dzgraph/dom';
 import { createGrid } from '@dzgrid/dom';
@@ -253,6 +253,21 @@ describe('review (Phase 8a close)', () => {
     blocks.api(grid)!.set(block(['d', 'at'], ['a', 'pears']));
     const data = gridTable(grid, { range: blocks }).series[0]!.data;
     expect(data.map((d) => d.key)).toEqual(['a', 'b', 'c', 'd']);
+  });
+});
+
+describe('health data (chart-from-grid.md 9)', () => {
+  it('values and labels reach the chart only: never a Problem or the console', async () => {
+    const rows = ROWS.map((r) => (r.id === 'b' ? { ...r, month: 'Secret-label', apples: 'Secret-value' } : r));
+    const grid = mountGrid({ rows });
+    const { c } = mountChart();
+    const told: unknown[] = [];
+    const spies = (['log', 'info', 'warn', 'error'] as const).map((k) => vi.spyOn(console, k).mockImplementation((...a: unknown[]) => void told.push(a)));
+    blocks.api(grid)!.set(block(['a', 'month'], ['c', 'apples']));
+    made.push(chartFromGrid(c, grid, { range: blocks }));
+    await raf2();
+    spies.forEach((s) => s.mockRestore());
+    expect(JSON.stringify([c.problems, told])).not.toMatch(/Secret/);
   });
 });
 

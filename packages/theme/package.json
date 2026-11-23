@@ -1,10 +1,16 @@
 {
   "name": "@dzgraph/theme",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "DzGraph's theme: CSS variables (--dzgraph-*) over the shared --tz-* palette, light and dark.",
   "license": "MIT",
-  "sideEffects": ["*.css"],
-  "files": ["dzgraph.scss", "dzgraph.css", "dzgraph.unlayered.css"],
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dzgraph.scss",
+    "dzgraph.css",
+    "dzgraph.unlayered.css"
+  ],
   "exports": {
     "./dzgraph.css": "./dzgraph.css",
     "./dzgraph.unlayered.css": "./dzgraph.unlayered.css",

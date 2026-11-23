@@ -8,7 +8,8 @@ import { ROOT, rel, walk } from './files.js';
 const ALLOWED: Record<string, readonly string[]> = {
   core: [],
   dom: ['@dzgraph/core'],
-  angular: ['@dzgraph/core', '@dzgraph/dom', '@angular/core'],
+  // @angular/common: `isPlatformBrowser`, never drawing on the server (angular.md 5); a declared peer.
+  angular: ['@dzgraph/core', '@dzgraph/dom', '@angular/core', '@angular/common'],
   theme: [],
   // The bridges: the DOM layer and their host's package only (dztooltip.md 6).
   dztooltip: ['@dzgraph/dom', '@dztooltip/core'],

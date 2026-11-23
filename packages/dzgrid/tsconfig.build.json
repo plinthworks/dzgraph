@@ -6,6 +6,7 @@
     "outDir": "dist",
     "declaration": true,
     "sourceMap": true,
+    "inlineSources": true,
     "paths": {
       "@dzgraph/core": ["../core/dist/index.d.ts"],
       "@dzgraph/core/internal": ["../core/dist/internal.d.ts"],

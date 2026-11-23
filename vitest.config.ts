@@ -36,6 +36,11 @@ const printMedia: BrowserCommand<[on: boolean]> = async (ctx, on) => {
   await ctx.page.emulateMedia({ media: on ? 'print' : null });
 };
 
+/** The user's `prefers-reduced-motion: reduce`, or back to none (animation.md 5). */
+const reducedMotion: BrowserCommand<[on: boolean]> = async (ctx, on) => {
+  await ctx.page.emulateMedia({ reducedMotion: on ? 'reduce' : 'no-preference' });
+};
+
 export default defineConfig({
   test: {
     globals: true,
@@ -49,7 +54,7 @@ export default defineConfig({
           globals: true,
           include: ['packages/core/test/**/*.test.ts', 'packages/dom/test/**/*.test.ts', 'packages/dztooltip/test/**/*.test.ts', 'packages/dzgrid/test/**/*.test.ts'],
           fileParallelism: false,
-          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia } },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia, reducedMotion } },
         },
       },
       // Angular components compiled for the tests (not stubbed: only a rendered template catches a binding that fails),
@@ -63,7 +68,7 @@ export default defineConfig({
           include: ['packages/angular/test/**/*.test.ts'],
           setupFiles: ['packages/angular/test/setup.ts'],
           fileParallelism: false,
-          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia } },
+          browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia, reducedMotion } },
         },
       },
       { test: { name: 'theme', globals: true, environment: 'node', passWithNoTests: true, include: ['packages/theme/test/**/*.test.ts'] } },

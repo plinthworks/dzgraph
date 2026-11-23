@@ -54,3 +54,35 @@ Revue de code (agent) : 2 défauts corrigés, chacun par un test qui échouait d
 points « true » / « false » (option `yesNo` : les mots de la grille) ; sur un axe de temps, les points gardaient le tri
 de la grille (`unsorted-x`), ils sont maintenant dans l'ordre du temps. Trouvés en route, venus de la 7b : `linkGrid`
 refusait une vraie grille à la compilation ; le pont DzTooltip dépassait son budget.
+
+## 8b — relecture des fiches contre les tests (agent, 2026-11-23)
+
+Règles sans test (chacune testée, ou retirée de sa fiche si elle n'est pas tenue) :
+angular 5, 7 ; linked-charts 4, 6 ; drilldown 5, 8 ; columns-bars 5, 6 ; stacking 7, 13, 15 ; combined 7, 8 ;
+hover-tooltip 12 ; crosshair 6, 8, 9 ; measure 6 ; zoom-pan 4 ; animation 4, 5 ; layout 7 ; legend-interaction 4 ;
+selection 11 ; sparkline 11 ; print 5 ; export 10 ; dzgrid-link 3, 5, 6 (2ᵉ moitié), 7 ; dztooltip 5 ;
+chart-from-grid 9 ; log-scale 6 ; compare 8, 10 ; aggregation 6 ; direction 6 (contradiction possible : `TextPrimitive.dir`
+n'est jamais réglé selon le texte).
+Couvertes faiblement : animation 3 ; range-buttons 4 ; modes 4 ; legend 3, 5 ; combined 6 ; axes 17 ; time-axis 3 ;
+keyboard 5 ; aggregation 4 ; data-table 3, export 9, view-state 6 (cœur seulement) ; hover-tooltip 9.
+
+Résultat : chaque règle de la liste a son test (`packages/core/test/audit-8b.test.ts`, `text-dir.test.ts`,
+`packages/dom/test/audit-8b.test.ts`, et les fichiers des ponts et d'Angular). Quatre étaient fausses dans le code, chacune
+corrigée après un test qui échouait :
+- direction.md 6 : un libellé prend la direction de sa première lettre (« °C » s'affichait « C° » à droite à gauche) ;
+  4 images de référence refaites, regardées avant ;
+- hover-tooltip.md 12 / combined.md 7 : la portée d'une colonne large débordait sur la catégorie voisine (plafonnée à
+  celle d'un point, 24 px) ;
+- legend-interaction.md 4 : toutes les séries masquées, le tracé dit « Aucune donnée » ;
+- angular.md 5 : les composants ne dessinent que dans le navigateur (`isPlatformBrowser`), quoi qu'exécute les crochets.
+Couvertes faiblement, laissées pour plus tard (aucune n'est fausse à notre connaissance) : animation 3 ; range-buttons 4 ;
+modes 4 ; legend 3, 5 ; combined 6 ; axes 17 ; time-axis 3 ; keyboard 5 ; aggregation 4 ; data-table 3, export 9,
+view-state 6 (cœur seulement) ; hover-tooltip 9.
+
+## Clôture 8b (2026-11-23)
+
+Revue de code (agent) : 1 défaut corrigé après un test qui échouait — le plafond de portée d'une colonne (24 px)
+s'appliquait aussi aux graphiques de colonnes seules, où une colonne répond dans toute sa bande (hover-tooltip.md 2, 3) :
+il ne vaut plus qu'à côté de lignes. Un doute levé par un test (un secteur aux parts toutes masquées dit bien « Aucune
+donnée »). Contrôle complet (1 163), trois navigateurs (2 046), 232 images, `release:check` avec Angular 19 à 22, bancs
+au niveau d'avant.

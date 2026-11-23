@@ -197,10 +197,11 @@ function gridOf(scene: Scene, orientation: 'vertical' | 'horizontal'): MarkGrid 
 
 /**
  * The mark pointed at: a column under the pointer or the nearest in its band, else a scatter point within 24 px.
- * `ofSeries` keeps the series whose tooltip is per mark (a line's markers belong to its shared tooltip). The marks
+ * `ofSeries` keeps the series whose tooltip is per mark (a line's markers belong to its shared tooltip); `withLines`:
+ * the chart also has lines, whose shared tooltip answers where no column is near (a column's reach capped). The marks
  * are looked up in a grid built once per scene (spike S8): a move reads one cell, not the whole scene.
  */
-export function hitMark(scene: Scene, px: number, py: number, orientation: 'vertical' | 'horizontal' = 'vertical', ofSeries: (seriesId: string) => boolean = () => true): PointRef | null {
+export function hitMark(scene: Scene, px: number, py: number, orientation: 'vertical' | 'horizontal' = 'vertical', ofSeries: (seriesId: string) => boolean = () => true, withLines = false): PointRef | null {
   if (!inside(scene.areas.plot, px, py)) return null;
   // Slices (ADR 0007): the one whose ring and angle hold the pointer. A pie has few; read them in order.
   for (const grp of scene.layers.find((l) => l.id === 'series')?.groups ?? [])
@@ -222,7 +223,10 @@ export function hitMark(scene: Scene, px: number, py: number, orientation: 'vert
         break;
       }
       const d = orientation === 'vertical' ? Math.max(0, p.x - px, px - (p.x + p.width)) : Math.max(0, p.y - py, py - (p.y + p.height));
-      const reach = (orientation === 'vertical' ? p.width : p.height) * 0.75;
+      // Near it, within its band: three quarters of its width (hover-tooltip.md 2, 3). Beside lines, never past a point's
+      // reach: a wide column would answer over the next category, where only the lines are (hover-tooltip.md 12).
+      const size = (orientation === 'vertical' ? p.width : p.height) * 0.75;
+      const reach = withLines ? Math.min(size, POINT_REACH) : size;
       if (d <= reach && (!band || d < band.d)) band = { h, d };
     } else {
       const d = Math.hypot(p.x - px, p.y - py);

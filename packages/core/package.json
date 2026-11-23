@@ -1,6 +1,6 @@
 {
   "name": "@dzgraph/core",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Charts for showing and exploring data: the pure core (options and data in, a scene out). No DOM, no dependency.",
   "type": "module",
   "license": "MIT",

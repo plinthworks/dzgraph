@@ -1,5 +1,5 @@
 // <dz-chart> (angular.md), compiled and run in a real browser. Step 2.7.
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import type { ChartOptions, PointRef } from '@dzgraph/core';
@@ -97,5 +97,30 @@ describe('<dz-chart> (angular.md)', () => {
     const host = f.nativeElement.querySelector('dz-chart')!;
     f.destroy();
     expect(host.children.length).toBe(0);
+  });
+});
+
+describe('<dz-chart> before it is drawn and on the server (angular.md 5, 7)', () => {
+  it('7: `chart` is null until the first render, then the chart', async () => {
+    const fixture = TestBed.createComponent(Host);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.nativeElement.style.inlineSize = '500px';
+    // Created, not yet rendered: no chart.
+    expect(fixture.componentInstance.chart().chart).toBeNull();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.chart().chart?.getView()).toEqual(expect.any(Object));
+    fixture.destroy();
+  });
+
+  it('5: on the server nothing is drawn and nothing fails; `chart` stays null', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+    const fixture = TestBed.createComponent(Host);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    await frame();
+    expect(fixture.componentInstance.chart().chart).toBeNull();
+    expect(fixture.nativeElement.querySelector('dz-chart svg')).toBeNull();
+    fixture.destroy();
   });
 });

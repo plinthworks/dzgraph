@@ -3,7 +3,8 @@
  * value updates the chart, never re-creates it. One output per event. Drawn in the browser only (nothing on the
  * server); destroyed with the component.
  */
-import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, output, untracked } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, output, PLATFORM_ID, untracked } from '@angular/core';
 import type { ChartOptions, PointRef, Problem } from '@dzgraph/core';
 import { allTypes } from '@dzgraph/core';
 import type { SeriesType } from '@dzgraph/core/internal';
@@ -76,8 +77,8 @@ export class DzChart {
       c.on('drill', (d) => this.drill.emit(d));
       if (c.problems.length) this.problems.emit(c.problems);
     };
-    // In the browser only, once the host is in the page.
-    afterNextRender(create);
+    // In the browser only, once the host is in the page: never on the server, whatever runs the render hooks (angular.md 5).
+    if (isPlatformBrowser(inject(PLATFORM_ID))) afterNextRender(create);
     // A new value of the options updates the chart; a field it no longer has goes back to its default.
     effect(() => {
       const options = this.options();

@@ -1,5 +1,5 @@
 // <dz-sparkline> (angular.md 8, sparkline.md), compiled and run in a real browser. Phase 7a.
-import { Component, signal } from '@angular/core';
+import { Component, PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
 import { DzSparkline } from '@dzgraph/angular';
@@ -25,5 +25,19 @@ describe('<dz-sparkline> (angular.md 8)', () => {
     expect(fixture.nativeElement.querySelectorAll('svg').length).toBe(1);
     fixture.destroy();
     expect(document.querySelector('svg.dzgraph-sparkline')).toBeNull();
+  });
+});
+
+describe('<dz-sparkline> on the server (angular.md 5)', () => {
+  it('nothing drawn, nothing fails', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+    const fixture = TestBed.createComponent(Host);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    fixture.componentInstance.values.set([2, 9]);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('svg')).toBeNull();
+    fixture.destroy();
   });
 });

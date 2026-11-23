@@ -312,7 +312,8 @@ function attempt(input: LayoutInput, opts: Options, stacks: Stacks, compares: Co
   // Axes: settled in passes (sizes depend on each other).
   const problems: Problem[] = [];
   // No value to show: no series, or only gaps (axes.md 6, review 14b).
-  const empty = model.series.every((s) => !s.columns.y.some((v) => !Number.isNaN(v)));
+  // Every series hidden counts as none: the plot says there is nothing to show (legend-interaction.md 4).
+  const empty = model.series.every((s) => !isShown(s, input.view) || !s.columns.y.some((v) => !Number.isNaN(v)));
   const axes = settleAxes(input, { top, bottom, minX, maxX }, opts, empty, problems, stacks, compares);
   // A series compared without a baseline is not drawn; said once, by series, never with a value (compare.md 6).
   for (const s of model.series) if (compares.missing.has(s.id)) problems.push({ code: 'no-baseline', path: `series[${s.rank}]`, seriesId: s.id });

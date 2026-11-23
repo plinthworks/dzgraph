@@ -32,7 +32,7 @@ npm run test:browsers  # core and dom tests in Chrome, Firefox, WebKit, one afte
 npm run typecheck    # core (lib ES2023, no DOM), dom, then the tests
 npm run build        # packages/*/dist; refuses a manifest pointing at src/ and any runtime dependency
 npm run check:size   # bundled, minified, gzipped, against size-budget.json (null = recorded only)
-npm run gate:step    # every batch's gate: test:ci, test:tz, typecheck, build, check:size
+npm run gate:step    # every batch's gate: test:ci, test:tz, typecheck, build, check:size, check:api
 npm run spike        # Phase 0 spikes in real browsers, one after another
 ```
 

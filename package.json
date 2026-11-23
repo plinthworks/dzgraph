@@ -14,13 +14,18 @@
     "typecheck": "tsc -p packages/core/tsconfig.json --noEmit && tsc -p packages/dom/tsconfig.json --noEmit && tsc -p tsconfig.spec.json --noEmit && ngc -p packages/angular/tsconfig.spec.json --noEmit",
     "build": "node scripts/build.mjs",
     "check:size": "node scripts/size.mjs",
-    "gate:step": "npm run test:ci && npm run test:tz && npm run typecheck && npm run build && npm run check:size",
+    "gate:step": "npm run test:ci && npm run test:tz && npm run typecheck && npm run build && npm run check:size && npm run check:api",
     "spike": "node spikes/all.mjs",
     "build:theme": "node scripts/build-theme.mjs",
     "playground": "node scripts/playground.mjs",
     "test:reference": "node scripts/browser-reference.mjs",
     "bench": "node scripts/bench.mjs",
-    "check:angular": "node scripts/angular-compat.mjs"
+    "check:angular": "node scripts/angular-compat.mjs",
+    "check:api": "node scripts/api.mjs",
+    "pack:local": "npm run build && rm -rf packed && mkdir packed && for p in core theme dom dztooltip dzgrid angular; do (cd packages/$p/dist && npm pack --pack-destination ../../../packed >/dev/null) || exit 1; done && ls packed",
+    "release:check": "npm run pack:local && npm run check:size && npm run check:api && node scripts/release.mjs check && npm run check:angular",
+    "publish:latest": "npm run build && node scripts/release.mjs publish",
+    "publish:verify": "node scripts/release.mjs verify"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.9.7",

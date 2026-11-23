@@ -5,6 +5,7 @@
  * draws (ADR 0002).
  */
 import { selectedCount } from './selection.js';
+import { ownDirection } from './dir.js';
 import { throughAffine } from './scale.js';
 import type { ChartModel } from './model.js';
 import type { ChartLayout, PlacedText } from './layout.js';
@@ -73,7 +74,7 @@ export function composeScene(input: ComposeInput): Scene {
   const text = (t: PlacedText, id: string, fill: ColorToken = 'text'): TextPrimitive => {
     const m = measureText(t.text, t.font);
     const y = t.baseline === 'top' ? t.y + m.ascent : t.baseline === 'middle' ? t.y + (m.ascent - m.descent) / 2 : t.baseline === 'bottom' ? t.y - m.descent : t.y;
-    return { kind: 'text', sceneId: id, paint: { fill }, x: t.x, y, text: t.text, font: t.font, anchor: t.anchor, baseline: 'alphabetic', dir: t.dir, ...(t.rotate ? { rotate: t.rotate } : {}) };
+    return { kind: 'text', sceneId: id, paint: { fill }, x: t.x, y, text: t.text, font: t.font, ...ownDirection(t.text, t.dir, t.anchor), baseline: 'alphabetic', ...(t.rotate ? { rotate: t.rotate } : {}) };
   };
 
   // Background: the chart, then the plot area.

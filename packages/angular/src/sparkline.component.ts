@@ -2,7 +2,8 @@
  * `<dz-sparkline>` (sparkline.md, angular.md 8): a sparkline in an Angular template. Its values and options are signal
  * inputs: a new value draws it again, never re-creates it. Drawn in the browser only (nothing on the server).
  */
-import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, untracked } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, PLATFORM_ID, untracked } from '@angular/core';
 import { sparkline, type SparklineHandle, type SparklineSetup } from '@dzgraph/dom/sparkline';
 
 @Component({
@@ -25,9 +26,11 @@ export class DzSparkline {
 
   constructor() {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-    afterNextRender(() => {
-      this.instance = sparkline(host, untracked(this.values), untracked(this.options));
-    });
+    // In the browser only (angular.md 5).
+    if (isPlatformBrowser(inject(PLATFORM_ID)))
+      afterNextRender(() => {
+        this.instance = sparkline(host, untracked(this.values), untracked(this.options));
+      });
     effect(() => {
       const values = this.values();
       const options = this.options();

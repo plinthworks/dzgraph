@@ -3,6 +3,7 @@
  * smallest join « Autres »; labels outside with a leader line, or the legend when they do not fit; a donut's hole
  * holds the total. The type places itself (`place`) and draws from its own placement (`marks`).
  */
+import { ownDirection } from '../dir.js';
 import type { SeriesBase } from '../options.js';
 import type { MarkContext, MarkSet, Placement, PlaceInput, PlacedLegendItem, SeriesModel, SeriesType } from '../series-type.js';
 import type { ColorToken, Primitive, TextPrimitive } from '../scene.js';
@@ -267,8 +268,8 @@ function pieMarks(ctx: MarkContext<SeriesBase<string, unknown>, 'polar'>): MarkS
     l.leader.forEach(([x, y], k) => (k ? b.lineTo(x, y) : b.moveTo(x, y)));
     return { kind: 'path', sceneId: sceneId('s', s.id, 'leader', l.index), paint: { stroke: 'text-muted', strokeWidth: 1 }, path: b.build() };
   });
-  const texts: TextPrimitive[] = p.labels.map((l) => ({ kind: 'text', sceneId: sceneId('s', s.id, 'label', l.index), paint: { fill: 'text' }, x: l.x, y: l.y, text: l.text, font: 'data-label', anchor: l.anchor, baseline: 'middle', dir: ctx.dir }));
-  const centre: TextPrimitive[] = p.center.map((c, k) => ({ kind: 'text', sceneId: sceneId('s', s.id, 'center', k), paint: { fill: k ? 'text-muted' : 'text' }, x: p.cx, y: c.y, text: c.text, font: c.font, anchor: 'middle', baseline: 'middle', dir: ctx.dir }));
+  const texts: TextPrimitive[] = p.labels.map((l) => ({ kind: 'text', sceneId: sceneId('s', s.id, 'label', l.index), paint: { fill: 'text' }, x: l.x, y: l.y, text: l.text, font: 'data-label', ...ownDirection(l.text, ctx.dir, l.anchor), baseline: 'middle' }));
+  const centre: TextPrimitive[] = p.center.map((c, k) => ({ kind: 'text', sceneId: sceneId('s', s.id, 'center', k), paint: { fill: k ? 'text-muted' : 'text' }, x: p.cx, y: c.y, text: c.text, font: c.font, ...ownDirection(c.text, ctx.dir, 'middle'), baseline: 'middle' }));
   if (leaders.length) out.push({ layer: 'labels', role: 'path', items: leaders });
   if (texts.length || centre.length) out.push({ layer: 'labels', role: 'labels', items: [...texts, ...centre] });
   return out;

@@ -4,6 +4,7 @@ import { describe, it, expect, afterEach, beforeAll, afterAll } from 'vitest';
 import { allTypes } from '@dzgraph/core';
 import { chart, type Chart } from '@dzgraph/dom';
 import { dzTooltip } from '@dzgraph/dztooltip';
+import { tooltip } from '@dztooltip/core';
 
 let theme: HTMLStyleElement;
 beforeAll(async () => {
@@ -167,6 +168,44 @@ describe('review (Phase 7b close)', () => {
     await raf2();
     await raf2();
     expect(Math.round(bubble()!.getBoundingClientRect().y - before)).toBe(50);
+  });
+});
+
+describe('screen readers and one bubble (dztooltip.md 5)', () => {
+  it('the point says what it says without the bridge; the bubble describes nothing', async () => {
+    const { el } = mount();
+    const plain = document.createElement('div');
+    plain.setAttribute('style', 'inline-size:600px;block-size:400px');
+    plain.lang = 'en';
+    plain.dir = 'ltr';
+    document.body.appendChild(plain);
+    const c = chart(plain, { animation: false, xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar'] }, series: [{ type: 'line', id: 'a', name: 'Apples', data: [10, 20, 30] }] }, { types: allTypes });
+    made.push({ el: plain, c });
+    await raf2();
+    const p = el.querySelectorAll<SVGElement>('.dzgraph-point')[1]!;
+    p.focus(focusHere);
+    await raf2();
+    expect(bubble()).not.toBeNull();
+    expect(p.getAttribute('aria-label')).toBe(plain.querySelectorAll('.dzgraph-point')[1]!.getAttribute('aria-label'));
+    expect(p.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('one bubble on screen with the page\'s other DzTooltip tooltips', async () => {
+    const { el } = mount();
+    const button = document.createElement('button');
+    button.textContent = 'Save';
+    document.body.appendChild(button);
+    const other = tooltip(button, { content: 'Saves the draft' });
+    other.show();
+    await raf2();
+    expect(bubble()?.textContent).toContain('Saves the draft');
+    el.querySelector<SVGElement>('.dzgraph-point')!.focus(focusHere);
+    await raf2();
+    const shown = [...document.querySelectorAll<HTMLElement>('.dzt-tooltip')].filter((b) => !b.hidden);
+    expect(shown).toHaveLength(1);
+    expect(shown[0]!.textContent).toContain('Apples');
+    other.destroy();
+    button.remove();
   });
 });
 

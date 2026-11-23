@@ -1,0 +1,175 @@
+# The accepted public type surface — written by scripts/api.mjs, checked by `npm run check:api`.
+# Changed only by an owner decision: `node scripts/api.mjs --accept "<decision>"` (see scripts/api.mjs).
+# history: owner 2026-11-23: the 1.0.0 surface, reviewed (Phase 8b)
+
+@ @dzgraph/dzgrid
+## ChartFromGridOptions
+  export interface ChartFromGridOptions<G> extends GridTableOptions<G> {
+      readonly type?: SeriesType | undefined;
+      readonly xAxis?: Readonly<Record<string, unknown>> | undefined;
+      readonly follow?: boolean | undefined;
+  }
+## GridColumnLike
+  export interface GridColumnLike {
+      readonly id: string;
+      readonly type: string;
+      readonly def: {
+          readonly header?: string | undefined;
+      };
+      readonly codec: {
+          coerce(raw: unknown, ctx: CtxLike): unknown;
+          format(v: unknown, ctx: CtxLike): string;
+      };
+  }
+## GridCommandLike
+  export type GridCommandLike = {
+      readonly type: 'selection.set';
+      readonly selection: GridSelectionLike;
+  } | {
+      readonly type: 'filter.column';
+      readonly column: string;
+      readonly filter: GridFilterLike | null;
+  };
+## GridFilterLike
+  export type GridFilterLike = {
+      readonly type: 'set';
+      readonly include: readonly string[];
+  } | {
+      readonly type: 'number';
+      readonly op: 'between';
+      readonly value: number;
+      readonly valueTo: number;
+  } | {
+      readonly type: 'instant';
+      readonly op: 'between';
+      readonly at: string;
+      readonly atTo: string;
+  };
+## GridLike
+  export interface GridLike {
+      readonly kernel: {
+          dispatch(command: never, source: 'api'): unknown;
+          subscribe(listener: (event: {
+              readonly type: string;
+          }) => void): () => void;
+      };
+  }
+## GridLinkOptions
+  export interface GridLinkOptions {
+      readonly selection?: boolean;
+      readonly filter?: {
+          readonly column: string;
+          readonly by: 'selection' | 'range';
+          readonly as?: 'number' | 'instant';
+      };
+  }
+## GridPivotLike
+  export interface GridPivotLike<G> {
+      api(grid: G): {
+          on(): boolean;
+          series(o?: {
+              readonly value?: string;
+              readonly level?: number;
+          }): {
+              readonly categories: readonly string[];
+              readonly series: readonly {
+                  readonly id: string;
+                  readonly name: string;
+                  readonly values: readonly (number | null)[];
+              }[];
+          };
+      } | null;
+  }
+## GridPoint
+  export interface GridPoint {
+      readonly x?: XValue;
+      readonly y: number | null;
+      readonly key?: string;
+  }
+## GridRangeLike
+  export interface GridRangeLike<G> {
+      api(grid: G): {
+          box(): {
+              readonly top: number;
+              readonly bottom: number;
+              readonly start: number;
+              readonly end: number;
+          } | null;
+      } | null;
+  }
+## GridReadLike
+  export interface GridReadLike {
+      readonly kernel: {
+          readonly rows: {
+              readonly displayed: {
+                  readonly count: number;
+                  nodeAt(i: number): RowNodeLike;
+                  held?(): Iterable<number>;
+              };
+          };
+          readonly columns: {
+              visible(): readonly GridColumnLike[];
+          };
+          readonly selection: GridSelectionLike;
+          readonly reader: {
+              value(col: GridColumnLike, row: unknown, id: string): unknown;
+          };
+          subscribe(listener: (event: {
+              readonly type: string;
+              readonly source?: string;
+          }) => void): () => void;
+      };
+  }
+## GridSelectionLike
+  export type GridSelectionLike = {
+      readonly mode: 'include';
+      readonly keys: ReadonlySet<string>;
+  } | {
+      readonly mode: 'exclude';
+      readonly keys: ReadonlySet<string>;
+  };
+## GridTable
+  export interface GridTable {
+      readonly source: 'pivot' | 'block' | 'rows' | null;
+      readonly xAxis: {
+          readonly scale: 'category';
+          readonly categories: readonly string[];
+      } | {
+          readonly scale: 'time';
+          readonly zone: string;
+      } | null;
+      readonly series: readonly {
+          readonly id: string;
+          readonly name: string;
+          readonly data: readonly GridPoint[];
+      }[];
+  }
+## GridTableOptions
+  export interface GridTableOptions<G> {
+      readonly range?: GridRangeLike<G> | undefined;
+      readonly pivot?: GridPivotLike<G> | undefined;
+      readonly pivotValue?: string | undefined;
+      readonly pivotLevel?: number | undefined;
+      readonly timeZone?: string | undefined;
+      readonly locale?: string | undefined;
+      readonly yesNo?: readonly [
+          yes: string,
+          no: string
+      ] | undefined;
+  }
+## chartFromGrid
+  export declare function chartFromGrid<G extends GridReadLike>(chart: Chart, grid: G, o?: ChartFromGridOptions<G>): () => void;
+## chartMenuItem
+  export declare function chartMenuItem<C>(label: string, open: (c: C) => void): {
+      readonly id: 'dzgraph.chart';
+      readonly label: string;
+      readonly action: (c: C) => void;
+  };
+## gridTable
+  export declare function gridTable<G extends GridReadLike>(grid: G, o?: GridTableOptions<G>): GridTable;
+## idOfRowKey
+  export declare function idOfRowKey(key: string): string | null;
+## linkGrid
+  export declare function linkGrid(chart: Chart, grid: GridLike, options?: GridLinkOptions): () => void;
+## rowKeyOf
+  export declare const rowKeyOf: (id: string) => string;

@@ -186,7 +186,8 @@ export class Hover {
     if (!s) return null;
     const { model, layout, scene, locale, text } = s;
     const perMark = new Set(model.series.filter((o) => o.tooltip === 'mark').map((o) => o.id));
-    const mark = hitMark(scene, x, y, model.orientation, (id) => perMark.has(id));
+    const withLines = model.series.some((o) => o.tooltip === 'shared');
+    const mark = hitMark(scene, x, y, model.orientation, (id) => perMark.has(id), withLines);
     if (mark) {
       // A slice (ADR 0007): its anchor, and it alone highlighted (pie-donut.md 12).
       const polar = layout.placements.has(mark.seriesId);

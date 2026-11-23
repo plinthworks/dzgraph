@@ -175,6 +175,19 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   (`unsorted-x`), now in time order. Gate green (1 091), three browsers green (1 914). Committed. Next: 8b (full
   check, API frozen, packages ready for 1.0.0).
 
+- **8b built (2026-11-23).** API frozen: `scripts/api.mjs`, `api/*.api.txt` (six packages, 142 exports; reviewed —
+  the scene contract stays public, the `animate` hook gives scenes), `check:api` in the gate. Release: `release:check`
+  (pack, size, API, manifests, typings, source maps carrying their sources, Angular 19–22 compiling every entry and the
+  bridges on a real DzGrid and DzTooltip from npm, no legacy-peer-deps), `publish:latest` / `publish:verify` for the
+  owner. README (root and each package, examples type-checked), CHANGELOG 1.0.0, LICENSE, versions 1.0.0. Sheet audit
+  (agent): about forty rules without a test — each tested now; four were false in the code and fixed (a label's own
+  direction, a wide column's hover reach, every series hidden says « no data », Angular never draws on the server).
+  Weakly covered rules listed in the plan. Gate green (1 161), three browsers green (2 040), 232 images (4 redone,
+  looked at), benches as before.
+- **8b closed, Phase 8 closed.** Review: 1 finding fixed (a column's hover reach capped only beside lines). Gate green
+  (1 163), three browsers green (2 046), 232 images, release check green. Committed. Next: the owner publishes
+  1.0.0 (`npm run publish:latest -- --otp=…`); then Phase 9 (documentation site).
+
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure

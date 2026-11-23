@@ -174,3 +174,52 @@ describe('review (Phase 7b close)', () => {
   });
 });
 
+
+describe('the rules the Phase 8b audit found untested (dzgrid-link.md 3, 5, 6, 7)', () => {
+  it('3: « every row but these » in the grid leaves the chart as it is', async () => {
+    const { c, grid, el } = mount();
+    made.push(linkGrid(c, grid));
+    await raf2();
+    await pick(el, [1]);
+    grid.kernel.dispatch({ type: 'selection.set', selection: { mode: 'exclude', keys: new Set([dataKey('a')!]) } }, 'user');
+    await raf2();
+    expect(chartKeys(c)).toEqual(['b']);
+  });
+
+  it('5: a key one side does not have is skipped, never an error', async () => {
+    const { c, grid } = mount();
+    made.push(linkGrid(c, grid));
+    // A row the chart has no point for.
+    grid.update({ rows: [...ROWS, { id: 'z', x: 9, sales: 1 }] });
+    await raf2();
+    const errors: unknown[] = [];
+    const onError = (e: ErrorEvent) => errors.push(e.error);
+    window.addEventListener('error', onError);
+    grid.kernel.dispatch({ type: 'selection.toggle', row: dataKey('z')! }, 'user');
+    grid.kernel.dispatch({ type: 'selection.toggle', row: dataKey('b')! }, 'user');
+    await raf2();
+    window.removeEventListener('error', onError);
+    expect(errors).toEqual([]);
+    expect(chartKeys(c)).toEqual(['b']);
+  });
+
+  it('6: a chart destroyed stops telling the link; the grid goes on without error', async () => {
+    const { c, grid } = mount();
+    made.push(linkGrid(c, grid));
+    c.destroy();
+    expect(() => grid.kernel.dispatch({ type: 'selection.toggle', row: dataKey('a')! }, 'user')).not.toThrow();
+    expect(gridKeys(grid)).toEqual(['a']);
+  });
+
+  it('7: the chart says a selection from the grid as it says one made by code without the link', async () => {
+    const linked = mount();
+    made.push(linkGrid(linked.c, linked.grid));
+    const alone = mount();
+    await raf2();
+    linked.grid.kernel.dispatch({ type: 'selection.toggle', row: dataKey('b')! }, 'user');
+    alone.c.selectBy('key', ['b']);
+    await new Promise((r) => setTimeout(r, 300));
+    const said = (el: HTMLElement) => [...el.querySelectorAll('[aria-live]')].map((n) => n.textContent);
+    expect(said(linked.el)).toEqual(said(alone.el));
+  });
+});

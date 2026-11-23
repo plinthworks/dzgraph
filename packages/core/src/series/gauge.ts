@@ -3,6 +3,7 @@
  * along the reading direction; its value written in the middle, the scale's ends under the ring's ends, thresholds as
  * a thin ring outside with the value's threshold named under it. No needle (owner 2026-11-21).
  */
+import { ownDirection } from '../dir.js';
 import type { SeriesBase } from '../options.js';
 import type { MarkContext, MarkSet, Placement, PlaceInput, SeriesType } from '../series-type.js';
 import type { ColorToken, Primitive, TextPrimitive } from '../scene.js';
@@ -157,7 +158,7 @@ function gaugeMarks(ctx: MarkContext<SeriesBase<string, unknown>, 'polar'>): Mar
     items.push({ ...a, paint: { fill: r.color, stroke: 'background', strokeWidth: 2 } });
   });
   if (p.fill) items.push({ ...(arc('value', s.color, p.inner, p.radius, p.fill[0], p.fill[1]) as Extract<Primitive, { kind: 'arc' }>), grows: p.grows, point: { seriesId: s.id, index: 0 } });
-  const texts: TextPrimitive[] = p.texts.map((t, k) => ({ kind: 'text', sceneId: sceneId('s', s.id, 'text', k), paint: { fill: t.muted ? 'text-muted' : 'text' }, x: t.x, y: t.y, text: t.text, font: t.font, anchor: 'middle', baseline: 'middle', dir: ctx.dir }));
+  const texts: TextPrimitive[] = p.texts.map((t, k) => ({ kind: 'text', sceneId: sceneId('s', s.id, 'text', k), paint: { fill: t.muted ? 'text-muted' : 'text' }, x: t.x, y: t.y, text: t.text, font: t.font, ...ownDirection(t.text, ctx.dir, 'middle'), baseline: 'middle' }));
   return [
     { layer: 'series', role: 'marks', items },
     { layer: 'labels', role: 'labels', items: texts },
