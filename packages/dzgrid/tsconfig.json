@@ -1,0 +1,12 @@
+{
+  "extends": "../dom/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@dzgraph/core": ["../core/src/index.ts"],
+      "@dzgraph/core/internal": ["../core/src/internal.ts"],
+      "@dzgraph/core/sparkline": ["../core/src/sparkline.ts"],
+      "@dzgraph/dom": ["../dom/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

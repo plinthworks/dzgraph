@@ -1,0 +1,15 @@
+{
+  "name": "@dzgraph/dzgrid",
+  "version": "0.0.0",
+  "description": "DzGraph linked to a DzGrid grid: selection both ways, the grid filtered by the chart's selection or range.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@dzgraph/dom": "0.0.0"
+  }
+}

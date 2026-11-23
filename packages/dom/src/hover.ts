@@ -53,8 +53,29 @@ interface Found {
   readonly ring?: SvgPrimitive;
 }
 
+/**
+ * Who draws the points' tooltip when not the chart (dztooltip.md: the `@dzgraph/dztooltip` bridge). The chart fills the
+ * content (its heading and rows) and says when and where; the drawer shows it in its own bubble.
+ */
+export interface TooltipDrawer {
+  /**
+   * Shows `content` beside the point `at` gives — in the window's coordinates (CSS pixels), asked again whenever the
+   * drawer places it (the page may have moved the chart) — in the chart's direction `dir`. Called again only when
+   * what it shows or where changed.
+   */
+  show(content: HTMLElement, at: () => { readonly x: number; readonly y: number }, dir: 'ltr' | 'rtl'): void;
+  hide(): void;
+  /** Whether its bubble is on screen: it may hide it by itself (a scroll); absent, taken as shown. */
+  readonly shown?: boolean;
+  destroy(): void;
+}
+
 export class Hover {
   readonly tooltip: HTMLDivElement;
+  /** The rows handed to a drawer (never in the page by the chart's doing). */
+  private readonly content = document.createElement('div');
+  /** What the drawer shows now (its words and place): the same again is not shown again (review 3). */
+  private drawn = '';
   private readonly layer: SVGGElement;
   private current: PointRef | null = null;
   private touching = false;
@@ -65,7 +86,9 @@ export class Hover {
     private readonly root: HTMLElement,
     private readonly svg: SVGSVGElement,
     private readonly hooks: HoverHooks,
+    private drawer: TooltipDrawer | null = null,
   ) {
+    this.content.className = 'dzgraph-tooltip-content';
     this.tooltip = document.createElement('div');
     this.tooltip.className = 'dzgraph-tooltip';
     this.tooltip.setAttribute('aria-hidden', 'true');
@@ -95,6 +118,9 @@ export class Hover {
     this.svg.removeEventListener('click', this.onClick);
     this.tooltip.remove();
     this.layer.remove();
+    // Destroyed, it is told nothing more (the focus leaving the removed chart would hide it again).
+    this.drawer?.destroy();
+    this.drawer = null;
   }
 
   /** Shows what a pointer position (or, `fromPointer` false, the keyboard focus) finds; hides on null. */
@@ -102,8 +128,23 @@ export class Hover {
     const s = this.hooks.state();
     if (!found || !s) return this.hide();
     this.layer.replaceChildren(...this.visuals(found, s.scene));
-    this.fill(found.tooltip, s);
-    this.place(found.at, s);
+    if (this.drawer) {
+      const same = JSON.stringify([found.tooltip, found.at, s.layout.dir]);
+      // The same words at the same place, still on screen: nothing to do (review 3).
+      if (same !== this.drawn || this.drawer.shown === false) {
+        this.drawn = same;
+        this.fill(found.tooltip, s);
+        // In the window: the scene's (0, 0) is the drawing's corner (raster.ts); read when the drawer places it.
+        const at = found.at;
+        this.drawer.show(this.content, () => {
+          const box = this.svg.getBoundingClientRect();
+          return { x: box.x + at.x, y: box.y + at.y };
+        }, s.layout.dir);
+      }
+    } else {
+      this.fill(found.tooltip, s);
+      this.place(found.at, s);
+    }
     // `pointHover` is the pointer's (Phase 5 links tell pointer from focus).
     if (fromPointer && !samePoint(this.current, found.point)) {
       this.current = found.point;
@@ -115,6 +156,8 @@ export class Hover {
   /** Escape: the tooltip goes, the focus ring stays (keyboard.md 4). */
   hideTooltip(): void {
     this.tooltip.hidden = true;
+    this.drawn = '';
+    this.drawer?.hide();
   }
 
   /** The keyboard focus on a point (null when it leaves the points). */
@@ -132,6 +175,8 @@ export class Hover {
     if (this.focusShown) return this.showAt(this.focusShown, false);
     this.layer.replaceChildren();
     this.tooltip.hidden = true;
+    this.drawn = '';
+    this.drawer?.hide();
     this.hooks.highlight(undefined);
   }
 
@@ -341,10 +386,12 @@ export class Hover {
       }
       rows.push(row);
     }
-    this.tooltip.replaceChildren(heading, ...rows);
-    this.tooltip.style.font = s.font('legend');
-    this.tooltip.dir = s.layout.dir;
-    this.tooltip.hidden = false;
+    // Into the chart's card, or the content a drawer shows (dztooltip.md 2).
+    const box = this.drawer ? this.content : this.tooltip;
+    box.replaceChildren(heading, ...rows);
+    box.style.font = s.font('legend');
+    box.dir = s.layout.dir;
+    if (!this.drawer) this.tooltip.hidden = false;
   }
 
   /** Beside the point on the end side, the start side if no room; inside the chart (hover-tooltip.md 7). */

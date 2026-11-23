@@ -118,6 +118,13 @@ $font: var(--tz-font-family, system-ui, -apple-system, 'Segoe UI', sans-serif);
     white-space: nowrap;
   }
 
+  // The rows handed to another tooltip (dztooltip.md 2): out of the chart, so the series' colours are set on them too.
+  .dzgraph-tooltip-content {
+    @include palette(dzgraph, $dzgraph-palette);
+    color-scheme: var(--tz-color-scheme, light dark);
+    white-space: nowrap;
+  }
+
   .dzgraph-tooltip-heading {
     margin-block-end: 4px;
     color: var(--tz-fg-muted);

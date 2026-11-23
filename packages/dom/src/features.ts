@@ -13,6 +13,7 @@ import { CrosshairPart, type CrosshairHooks } from './crosshair.js';
 import { MeasurePart, type MeasureHooks } from './measuring.js';
 import { ModeBar, type ModeBarHooks } from './modes.js';
 import type { Painter } from './painter.js';
+import type { TooltipDrawer } from './hover.js';
 import { CanvasPainter } from './canvas-painter.js';
 import { WebglPainter } from './webgl-painter.js';
 import { ZoomControls, type ZoomHooks } from './gestures.js';
@@ -37,7 +38,7 @@ export interface NavigatorControlsPart {
 }
 
 export interface Feature {
-  readonly name: 'timeAxis' | 'zoom' | 'navigatorStrip' | 'canvas' | 'webgl' | 'crosshair' | 'compare' | 'measure' | 'selection' | 'aggregation' | 'drilldown' | 'menu' | 'exporting';
+  readonly name: 'timeAxis' | 'zoom' | 'navigatorStrip' | 'canvas' | 'webgl' | 'crosshair' | 'compare' | 'measure' | 'selection' | 'aggregation' | 'drilldown' | 'menu' | 'exporting' | 'tooltip';
   /** The features it brings with it. */
   readonly needs?: readonly Feature[];
   readonly time?: TimeKit;
@@ -54,6 +55,8 @@ export interface Feature {
   readonly menu?: (root: HTMLElement, hooks: MenuHooks) => MenuPart;
   /** Export and printing (export.md, csv.md, print.md). */
   readonly exporting?: ExportingKit;
+  /** Who draws the points' tooltip (dztooltip.md): a bridge's; absent, the chart's own card. */
+  readonly tooltip?: (root: HTMLElement) => TooltipDrawer;
   /** Measuring between two points (measure.md), a mode of the mode bar. */
   readonly measure?: (svg: SVGSVGElement, hooks: MeasureHooks) => MeasurePart;
   /** Selecting points (selection.md): the core's shapes, and the gestures. */
@@ -149,6 +152,7 @@ export interface Resolved {
   readonly drill: Feature['drill'] | null;
   readonly menu: Feature['menu'] | null;
   readonly exporting: ExportingKit | null;
+  readonly tooltip: Feature['tooltip'] | null;
   /** Whether the comparison and the aggregation came (the menu offers only what can be done). */
   readonly compares: boolean;
   readonly aggregates: boolean;
@@ -174,6 +178,7 @@ export function resolveFeatures(given: readonly Feature[] | undefined): Resolved
   let drill: Feature['drill'] | null = null;
   let menuPart: Feature['menu'] | null = null;
   let exp: ExportingKit | null = null;
+  let tip: Feature['tooltip'] | null = null;
   let measurePart: Feature['measure'] | null = null;
   let bar: Feature['modeBar'] | null = null;
   let sel: Feature['selection'] | null = null;
@@ -186,6 +191,7 @@ export function resolveFeatures(given: readonly Feature[] | undefined): Resolved
     drill ??= f.drill ?? null;
     menuPart ??= f.menu ?? null;
     exp ??= f.exporting ?? null;
+    tip ??= f.tooltip ?? null;
     cross ??= f.crosshair ?? null;
     webglPart ??= f.webgl ?? null;
     time ??= f.time ?? null;
@@ -193,5 +199,5 @@ export function resolveFeatures(given: readonly Feature[] | undefined): Resolved
     zoomPart ??= f.zoom ?? null;
     canvasPart ??= f.canvas ?? null;
   }
-  return { kit: { time, navigator: nav?.kit ?? null, crosshair: cross?.kit ?? null, compare: cmp, selection: sel?.kit ?? null, aggregation: agg }, zoom: zoomPart, navigator: nav?.controls ?? null, canvas: canvasPart, webgl: webglPart, crosshair: cross?.part ?? null, measure: measurePart, modeBar: bar, selection: sel?.part ?? null, drill, menu: menuPart, exporting: exp, compares: cmp !== null, aggregates: agg !== null };
+  return { kit: { time, navigator: nav?.kit ?? null, crosshair: cross?.kit ?? null, compare: cmp, selection: sel?.kit ?? null, aggregation: agg }, zoom: zoomPart, navigator: nav?.controls ?? null, canvas: canvasPart, webgl: webglPart, crosshair: cross?.part ?? null, measure: measurePart, modeBar: bar, selection: sel?.part ?? null, drill, menu: menuPart, exporting: exp, tooltip: tip, compares: cmp !== null, aggregates: agg !== null };
 }

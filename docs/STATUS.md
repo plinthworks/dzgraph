@@ -151,7 +151,13 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
 - **7a built and closed.** `@dzgraph/core/sparkline`, `@dzgraph/dom/sparkline` (1.9 KB gz alone), theme
   `.dzgraph-sparkline`, `<dz-sparkline>`, `<dz-chart>`'s missing `drill` output, `npm run check:angular` (Angular 19.2,
   20.3, 21.2, 22.3 compile the built package). Review: 4 findings fixed. Gate green (1 051), three browsers green
-  (1 806). Phase 6 committed (`dc1e538`); 7a not committed. Next: 7b (DzTooltip and DzGrid bridges).
+  (1 806). Committed (`dc7c9fc`).
+- **7b built.** The tooltip seam (`Feature.tooltip`, `TooltipDrawer`), `@dzgraph/dztooltip` (`dzTooltip(look)`),
+  `@dzgraph/dzgrid` (`linkGrid`: selection both ways, filter on a named column by selection or range; DzGrid's row
+  keys written as it writes them, tested against its `dataKey`). A Phase 1 bug of the SVG painter found and fixed.
+  Gate green (1 069), three browsers green (1 848), 232 images match.
+- **7b closed, Phase 7 closed.** Review: 7 findings fixed (list in the plan). Gate green (1 076), three browsers green
+  (1 869). 7b committed. Next: Phase 8 (a chart from a DzGrid selection; full check; 1.0 preparation).
 
 ## Working rules
 

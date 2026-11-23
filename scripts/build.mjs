@@ -88,11 +88,13 @@ function angular() {
 // Order matters: the DOM layer compiles against the core's declarations, Angular against both.
 typescript('core');
 typescript('dom');
+typescript('dztooltip');
+typescript('dzgrid');
 angular();
 theme();
 
 let bad = 0;
-for (const name of ['core', 'dom', 'angular', 'theme']) {
+for (const name of ['core', 'dom', 'angular', 'theme', 'dztooltip', 'dzgrid']) {
   const m = read(join(pkg(name), 'dist', 'package.json'));
   if (JSON.stringify(m).includes('src/')) {
     console.error(`packages/${name}/dist/package.json still points at src/`);
@@ -110,4 +112,4 @@ if (Object.keys(read(join(pkg('core'), 'dist', 'package.json')).dependencies ?? 
   bad++;
 }
 if (bad) process.exit(1);
-console.log('\nBuilt: packages/{core,dom,angular,theme}/dist');
+console.log('\nBuilt: packages/{core,dom,angular,theme,dztooltip,dzgrid}/dist');

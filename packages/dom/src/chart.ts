@@ -698,7 +698,7 @@ export const chart: CreateChart = (element, initial, setup) => {
       emit('pointClick', { point: keyed(point) });
       drillPart?.down(point);
     },
-  });
+  }, features.tooltip?.(root) ?? null);
   /** Up a drill level (drilldown.md 4): Backspace, or Alt + the arrow toward the reading direction's start. */
   const upKey = (e: KeyboardEvent) => e.key === 'Backspace' || (e.altKey && screenStep(e.key, true) === (getComputedStyle(root).direction === 'rtl' ? 1 : -1));
   // ---- Modes and measure (modes.md, measure.md). ----

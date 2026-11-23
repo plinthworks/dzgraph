@@ -10,6 +10,10 @@ const ALLOWED: Record<string, readonly string[]> = {
   dom: ['@dzgraph/core'],
   angular: ['@dzgraph/core', '@dzgraph/dom', '@angular/core'],
   theme: [],
+  // The bridges: the DOM layer and their host's package only (dztooltip.md 6).
+  dztooltip: ['@dzgraph/dom', '@dztooltip/core'],
+  // No import of DzGrid: its kernel described by structural types (dzgrid-link.md).
+  dzgrid: ['@dzgraph/dom'],
 };
 
 export function specifiers(source: string): string[] {

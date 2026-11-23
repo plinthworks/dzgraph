@@ -12,6 +12,8 @@ const alias = {
   '@dzgraph/core': here('./packages/core/src/index.ts'),
   '@dzgraph/dom': here('./packages/dom/src/index.ts'),
   '@dzgraph/angular': here('./packages/angular/src/index.ts'),
+  '@dzgraph/dztooltip': here('./packages/dztooltip/src/index.ts'),
+  '@dzgraph/dzgrid': here('./packages/dzgrid/src/index.ts'),
 };
 
 /**
@@ -45,7 +47,7 @@ export default defineConfig({
         test: {
           name: 'browser',
           globals: true,
-          include: ['packages/core/test/**/*.test.ts', 'packages/dom/test/**/*.test.ts'],
+          include: ['packages/core/test/**/*.test.ts', 'packages/dom/test/**/*.test.ts', 'packages/dztooltip/test/**/*.test.ts', 'packages/dzgrid/test/**/*.test.ts'],
           fileParallelism: false,
           browser: { enabled: true, headless: true, provider: playwright(), instances: instances(), screenshotFailures: false, commands: { printMedia } },
         },

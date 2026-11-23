@@ -15,9 +15,11 @@
       "@dzgraph/core/sparkline": ["./packages/core/src/sparkline.ts"],
       "@dzgraph/dom/sparkline": ["./packages/dom/src/sparkline.ts"],
       "@dzgraph/dom": ["./packages/dom/src/index.ts"],
-      "@dzgraph/angular": ["./packages/angular/src/index.ts"]
+      "@dzgraph/angular": ["./packages/angular/src/index.ts"],
+      "@dzgraph/dztooltip": ["./packages/dztooltip/src/index.ts"],
+      "@dzgraph/dzgrid": ["./packages/dzgrid/src/index.ts"]
     }
   },
-  "include": ["packages/core/test/**/*.ts", "packages/dom/test/**/*.ts", "scripts/**/*.ts"],
+  "include": ["packages/core/test/**/*.ts", "packages/dom/test/**/*.ts", "packages/dztooltip/test/**/*.ts", "packages/dzgrid/test/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["**/dist/**", "**/node_modules/**"]
 }

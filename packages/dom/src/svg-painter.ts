@@ -76,6 +76,8 @@ export class SvgPainter implements Painter {
           seen.add(p.sceneId);
           let el = this.elements.get(p.sceneId);
           if (!el || el.localName !== spec.tag) {
+            // Replaced where it was: past it first when it is where the next one goes (a column getting a rounded end).
+            if (el && el === cursor) cursor = el.nextSibling;
             el?.remove();
             el = document.createElementNS(NS, spec.tag);
             this.elements.set(p.sceneId, el);

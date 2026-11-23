@@ -1,5 +1,5 @@
 {
-  "note": "Bundled, minified, gzipped (a stylesheet as it ships). Budgets: the measure after Phase 1 + 5 % (owner 2026-11-21); raised when a feature needs it, without asking (owner), said in the step's report. Phase 2 (hover, legend, keyboard, accessibility, animation) raised dom, apps and theme 2026-11-21. Phase 3 (time axes, Canvas painter, zoom and pan, navigator, range buttons) raised dom, apps and theme 2026-11-21. Phase 4 step 1 (features as imported modules, ADR 0006) lowered the apps without features to their new measure + 5 %, raised dom (it now holds every feature) and added the app with everything, 2026-11-22. Phase 4 step 3 (stacking: piles, shares, totals; a core rule every column and area chart carries) raised core and the apps without features to their measure + 5 %, 2026-11-22. Phase 4 step 4 (log scale) raised the app with everything to its measure + 5 %, 2026-11-22. Phase 4 step 6 (polar system: pie, donut, gauge; their layout, legend, hover, keyboard and table seams in every chart) raised every entry to its measure + 5 %, 2026-11-22. Phase 3 bis (dense scatters as one batch, WebGL2 painter, table and value-axis fit for unsorted series without a full scan, ADR 0008) raised dom and the apps to their measure + 5 %, 2026-11-22. Phase 5a (the view as state, crosshair, comparison, measure, selection; their option checks, words and view seams in every chart) raised dom and the apps to their measure + 5 %, 2026-11-22. Phase 5b (aggregation, drilldown, menu, linked charts; their option checks, view parts and words in every chart; the menu's and the breadcrumb's styles) raised dom, the apps and theme to their measure + 5 %, 2026-11-22. Phase 6 (export: SVG, PNG, CSV, printing; the `exporting` option read in every chart, the table split into raw and written, the print rules) raised core, dom, the app with everything and theme to their measure + 5 %, 2026-11-22. Phase 7a added the sparkline entry (an app drawing only sparklines), its measure + 5 % after the review's fixes (bad languages, null options, lone points as dots), 2026-11-22. Phase 7a raised theme to its measure + 5 % (the sparkline's styles and its own palette), 2026-11-22.",
+  "note": "Bundled, minified, gzipped (a stylesheet as it ships). Budgets: the measure after Phase 1 + 5 % (owner 2026-11-21); raised when a feature needs it, without asking (owner), said in the step's report. Phase 2 (hover, legend, keyboard, accessibility, animation) raised dom, apps and theme 2026-11-21. Phase 3 (time axes, Canvas painter, zoom and pan, navigator, range buttons) raised dom, apps and theme 2026-11-21. Phase 4 step 1 (features as imported modules, ADR 0006) lowered the apps without features to their new measure + 5 %, raised dom (it now holds every feature) and added the app with everything, 2026-11-22. Phase 4 step 3 (stacking: piles, shares, totals; a core rule every column and area chart carries) raised core and the apps without features to their measure + 5 %, 2026-11-22. Phase 4 step 4 (log scale) raised the app with everything to its measure + 5 %, 2026-11-22. Phase 4 step 6 (polar system: pie, donut, gauge; their layout, legend, hover, keyboard and table seams in every chart) raised every entry to its measure + 5 %, 2026-11-22. Phase 3 bis (dense scatters as one batch, WebGL2 painter, table and value-axis fit for unsorted series without a full scan, ADR 0008) raised dom and the apps to their measure + 5 %, 2026-11-22. Phase 5a (the view as state, crosshair, comparison, measure, selection; their option checks, words and view seams in every chart) raised dom and the apps to their measure + 5 %, 2026-11-22. Phase 5b (aggregation, drilldown, menu, linked charts; their option checks, view parts and words in every chart; the menu's and the breadcrumb's styles) raised dom, the apps and theme to their measure + 5 %, 2026-11-22. Phase 6 (export: SVG, PNG, CSV, printing; the `exporting` option read in every chart, the table split into raw and written, the print rules) raised core, dom, the app with everything and theme to their measure + 5 %, 2026-11-22. Phase 7a added the sparkline entry (an app drawing only sparklines), its measure + 5 % after the review's fixes (bad languages, null options, lone points as dots), 2026-11-22. Phase 7a raised theme to its measure + 5 % (the sparkline's styles and its own palette), 2026-11-22. Phase 7b added the two bridges alone (DzGraph and DzTooltip external), their measure + 5 %, 2026-11-22.",
   "entries": {
     "core": {
       "file": "packages/core/src/index.ts",
@@ -32,6 +32,25 @@
     "theme": {
       "file": "packages/theme/dzgraph.css",
       "maxGzip": 2240
+    },
+    "DzTooltip bridge": {
+      "file": "scripts/size/dztooltip.ts",
+      "maxGzip": 350,
+      "external": [
+        "@dzgraph/core",
+        "@dzgraph/core/internal",
+        "@dzgraph/dom",
+        "@dztooltip/core"
+      ]
+    },
+    "DzGrid bridge": {
+      "file": "scripts/size/dzgrid.ts",
+      "maxGzip": 700,
+      "external": [
+        "@dzgraph/core",
+        "@dzgraph/core/internal",
+        "@dzgraph/dom"
+      ]
     }
   }
 }

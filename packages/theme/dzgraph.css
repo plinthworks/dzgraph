@@ -56,6 +56,18 @@
     box-shadow: 0 4px 14px color-mix(in oklab, var(--tz-fg) 14%, transparent);
     white-space: nowrap;
   }
+  .dzgraph-tooltip-content {
+    --dzgraph-series-1: light-dark(#2a78d6, #3987e5);
+    --dzgraph-series-2: light-dark(#eb6834, #d95926);
+    --dzgraph-series-3: light-dark(#199e70, #199e70);
+    --dzgraph-series-4: light-dark(#c98500, #c98500);
+    --dzgraph-series-5: light-dark(#d55181, #d55181);
+    --dzgraph-series-6: light-dark(#008300, #0ca30c);
+    --dzgraph-series-7: light-dark(#6250d6, #9085e9);
+    --dzgraph-series-8: light-dark(#e34948, #e66767);
+    color-scheme: var(--tz-color-scheme, light dark);
+    white-space: nowrap;
+  }
   .dzgraph-tooltip-heading {
     margin-block-end: 4px;
     color: var(--tz-fg-muted);

@@ -60,7 +60,9 @@ Aucune dépendance d'exécution, dans aucun paquet (sauf les dépendances de pai
 @dzgraph/theme      dzgraph.scss → dzgraph.css (+ unlayered).
 @dzgraph/angular    <dz-chart>, <dz-sparkline> ; une sortie par événement.
 @dzgraph/dztooltip  l'infobulle dessinée par @dztooltip/core (ancre virtuelle sur le point).
-@dzgraph/dzgrid     sparklines dans les cellules (feature DzGrid), puis graphique tiré d'une sélection.
+@dzgraph/dzgrid     linkGrid : sélection dans les deux sens, filtre en option (types structurels, sans DzGrid) ;
+                    puis graphique tiré d'une sélection. Les sparklines en cellule restent celles de DzGrid
+                    (propriétaire, 2026-11-22).
 ```
 
 **Extensibilité (D.17)** : chaque type de série et chaque système de coordonnées (cartésien, polaire, sans axes pour
@@ -238,7 +240,7 @@ Chaque phase se ferme par une vérification d'architecture, une revue de code et
 | 4 | Empilement, combinés, double axe, échelle log ; secteurs, anneau, jauge. |
 | 5 | Exploration (§14) : viseur, mesure et comparaison, sélection de points, drilldown, menu (type, agrégation, échelle), `ChartView`, graphiques liés entre eux. |
 | 6 | Export PNG/SVG/CSV, impression. |
-| 7 | Angular complet, sparklines, pont DzTooltip, pont DzGrid (sparklines en cellule, liens grille ↔ graphique). |
+| 7 | Angular complet, sparklines (hors grille), pont DzTooltip, pont DzGrid (liens grille ↔ graphique). |
 | 8 | Graphique tiré d'une sélection DzGrid ; vérification complète ; préparation de la 1.0. |
 | 9 | Site de documentation (en dernier, comme DzGrid). |
 

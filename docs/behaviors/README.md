@@ -45,3 +45,5 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [csv.md](csv.md) — the data as CSV | 6 |
 | [print.md](print.md) — printing the chart, printing the page | 6 |
 | [sparkline.md](sparkline.md) — sparklines in a page | 7a |
+| [dztooltip.md](dztooltip.md) — the points' tooltip drawn by DzTooltip | 7b |
+| [dzgrid-link.md](dzgrid-link.md) — a chart linked to a DzGrid grid | 7b |

@@ -61,3 +61,26 @@ DzTooltip, et une grille DzGrid liée à un graphique (sélection dans les deux 
   (maintenant un point de 3,5 px, vu à l'œil dans les trois moteurs ; Firefox calcule mal la boîte d'un trait non
   étiré : le test ne lit plus la taille du point). Le cas « borne donnée seule que les valeurs n'atteignent pas » était déjà juste : épinglé par un
   test. Budgets relevés : thème 2 240, sparkline 2 030 (1,94 Ko gz mesuré).
+
+- **7b, étapes 6–7 faites (2026-11-22).** Fiches `dztooltip`, `dzgrid-link`. Couture dans DzGraph : un module peut
+  dessiner l'infobulle des points (`Feature.tooltip` → `TooltipDrawer` : le contenu du graphique, le point dans la
+  fenêtre, la direction) ; thème `.dzgraph-tooltip-content` (la palette posée sur le contenu, hors du graphique).
+  `@dzgraph/dztooltip` : `dzTooltip(look)` sur une ancre virtuelle (règle 38 de DzTooltip), sans délai, sans groupe ;
+  une défilement de la page cache la bulle (règle de DzTooltip, écrite dans la fiche). `@dzgraph/dzgrid` :
+  `linkGrid(chart, grid, { selection, filter })`, types structurels du noyau de DzGrid ; les clés de ligne écrites comme
+  DzGrid les écrit (`d:<longueur>:<id>`), un test les compare à `dataKey` / `idOfDataKey` de DzGrid. DzGrid n'a pas de
+  filtre pour l'hôte : le lien filtre une colonne nommée (ensemble des clés, ou « entre » sur la plage). Tailles : pont
+  DzTooltip 0,3 Ko, pont DzGrid 0,7 Ko (gz, hôtes à part).
+- **Trouvé en chemin** : un défaut du peintre SVG depuis la Phase 1 — un élément qui gardait son id mais changeait de
+  balise (une colonne qui prend un bout arrondi au zoom) était retiré alors qu'il marquait la place du suivant :
+  `insertBefore` levait. Test qui échoue d'abord (`svg-painter.test.ts`), corrigé.
+- **7b close (2026-11-22).** Revue de code (agent) : 7 constats corrigés, chacun avec un test qui échoue d'abord —
+  une grille qui vide sa sélection quand on la filtre (`keepOnFilter: false`) perdait celle du graphique (le filtre
+  passe maintenant avant la sélection) ; délier effaçait un filtre que l'utilisateur avait posé depuis sur la colonne ;
+  chaque mouvement du pointeur replaçait la bulle deux fois (même point, même place : rien ; et le même point redonne
+  la bulle après qu'un défilement l'a cachée) ; tout Échap de la page cachait la bulle (c'est au graphique de décider) ;
+  l'ancre restait figée quand la page déplaçait le graphique (lue à chaque placement maintenant) ; le filtre de plage
+  suivait chaque image d'un glisser (maintenant au repos du geste) et ignorait un graphique déjà zoomé au moment du
+  lien. Laissés (faible confiance) : une échelle CSS (`transform: scale`) sur un ancêtre décale la bulle ; une option
+  `dir` du graphique contraire à la direction calculée de son élément n'atteint pas le placement de DzTooltip (sans
+  effet pour `top`, le défaut).

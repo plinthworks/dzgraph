@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "declaration": true,
+    "sourceMap": true,
+    "paths": {
+      "@dzgraph/core": ["../core/dist/index.d.ts"],
+      "@dzgraph/core/internal": ["../core/dist/internal.d.ts"],
+      "@dzgraph/core/sparkline": ["../core/dist/sparkline.d.ts"],
+      "@dzgraph/dom": ["../dom/dist/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

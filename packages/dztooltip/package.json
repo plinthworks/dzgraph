@@ -1,0 +1,18 @@
+{
+  "name": "@dzgraph/dztooltip",
+  "version": "0.0.0",
+  "description": "DzGraph's points' tooltip drawn by DzTooltip: placements, tones, shapes, animations.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@dzgraph/dom": "0.0.0"
+  },
+  "peerDependencies": {
+    "@dztooltip/core": "^1.0.0"
+  }
+}
