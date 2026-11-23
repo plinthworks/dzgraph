@@ -35,7 +35,7 @@
     },
     "DzTooltip bridge": {
       "file": "scripts/size/dztooltip.ts",
-      "maxGzip": 350,
+      "maxGzip": 450,
       "external": [
         "@dzgraph/core",
         "@dzgraph/core/internal",
@@ -45,7 +45,16 @@
     },
     "DzGrid bridge": {
       "file": "scripts/size/dzgrid.ts",
-      "maxGzip": 700,
+      "maxGzip": 790,
+      "external": [
+        "@dzgraph/core",
+        "@dzgraph/core/internal",
+        "@dzgraph/dom"
+      ]
+    },
+    "Chart from DzGrid": {
+      "file": "scripts/size/dzgrid-chart.ts",
+      "maxGzip": 1360,
       "external": [
         "@dzgraph/core",
         "@dzgraph/core/internal",

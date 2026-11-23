@@ -159,6 +159,22 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
 - **7b closed, Phase 7 closed.** Review: 7 findings fixed (list in the plan). Gate green (1 076), three browsers green
   (1 869). 7b committed. Next: Phase 8 (a chart from a DzGrid selection; full check; 1.0 preparation).
 
+## 2026-11-23 — Phase 8 (a chart from DzGrid, full check, 1.0), plan `docs/phase-8-steps/plan.md`
+
+- Owner's decisions: the block of cells, else the rows ticked, and the pivot; the chart where the app puts it,
+  following live (snapshot as an option); a cell-menu item; WebGL threshold 100 000 (D.20 settled); 1.0 all ready,
+  the owner publishes; the documentation site stays Phase 9. ARCHITECTURE D.24.
+- **8a built.** `chartFromGrid`, `gridTable`, `chartMenuItem` in `@dzgraph/dzgrid` (sheet `chart-from-grid.md`); the
+  bridge split into `link.ts` and `from-grid.ts`. Found on the way, from 7b: `linkGrid` did not accept a real DzGrid
+  grid at compile time (DzGrid brands its row keys; another event carries a `selection` of another shape) — fixed,
+  the link test now type-checks; the DzTooltip bridge measured 427 B against a 350 budget. The 7b close had misread
+  its gate on these two. Budgets: DzTooltip bridge 450, DzGrid bridge 790, chart from DzGrid 1 360. Gate green
+  (1 089, every stage read), three browsers green (1 908).
+- **8a closed.** Code review (agent): 2 findings fixed, each a test that failed first — a yes/no column named the
+  points « true »/« false » (now the grid's words, option `yesNo`); on a time axis the points kept the grid's sort
+  (`unsorted-x`), now in time order. Gate green (1 091), three browsers green (1 914). Committed. Next: 8b (full
+  check, API frozen, packages ready for 1.0.0).
+
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure

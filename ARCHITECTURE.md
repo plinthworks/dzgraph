@@ -29,10 +29,11 @@ Elles priment sur le reste du document quand il dit autre chose.
 | D.17 Tout le catalogue (2026-11-21) | DzGraph proposera ce que proposent les bibliothèques pro actuelles, **plus** l'exploration **et** la 3D. Étalé : la 1.0 = D.2 + D.3 + D.15/D.16, puis une vague 1.x par famille (§9). |
 | D.18 3D | Moteur WebGL2 maison, sans dépendance, paquet séparé `@dzgraph/3d` : rotation à la souris et au clavier, éclairage simple, texte des axes en SVG par-dessus. |
 | D.19 Cartes | Oui, dans une vague tardive : paquet séparé `@dzgraph/maps` (GeoJSON fourni par l'app, projections). |
-| D.20 Nuages denses (S7) | Le peintre WebGL2 pour les nuages et bulles denses (≥ ~1 M points) entre **dans la 1.0** ; ses fondations (tampons, shaders, choix des contextes) servent ensuite la 3D (D.18). |
+| D.20 Nuages denses (S7) | Le peintre WebGL2 pour les nuages et bulles denses (seuil : 100 000 points, mesuré en Phase 3 bis, validé le 2026-11-23) entre **dans la 1.0** ; ses fondations (tampons, shaders, choix des contextes) servent ensuite la 3D (D.18). |
 | D.21 Lasso exact (S8) | Objectif : sélection **exacte en direct** même à 1 M points, en ne retestant que les cases touchées par le nouveau segment du lasso ; l'aperçu par cases ne sert que si la mesure de la Phase 5 montre qu'on n'y arrive pas. |
 | D.22 Exigence de qualité | « Du code craft » : voir §15. |
 | D.23 Tableau et zoom (2026-11-21) | Zoomer sert à montrer une partie : par défaut le tableau de données (et l'export CSV, Phase 6) suit la **plage visible** ; un bouton bascule sur **toutes les données**, pour voir les deux. Choix de l'app par option. |
+| D.24 Graphique tiré de DzGrid (2026-11-23) | Le bloc de cellules, sinon les lignes cochées, et le pivot ; le graphique est là où l'app le place et suit la sélection en direct (instantané en option) ; une entrée pour le menu de cellule de DzGrid. La 1.0 est préparée en Phase 8, publiée par le propriétaire ; le site de documentation en Phase 9. |
 | D.16 Liberté de l'utilisateur | « Un peu » : depuis un petit menu, il change le type (ligne, aire, colonnes), l'agrégation et l'échelle. Pas d'éditeur de graphiques complet. |
 
 ## 1. Technologies
@@ -61,7 +62,7 @@ Aucune dépendance d'exécution, dans aucun paquet (sauf les dépendances de pai
 @dzgraph/angular    <dz-chart>, <dz-sparkline> ; une sortie par événement.
 @dzgraph/dztooltip  l'infobulle dessinée par @dztooltip/core (ancre virtuelle sur le point).
 @dzgraph/dzgrid     linkGrid : sélection dans les deux sens, filtre en option (types structurels, sans DzGrid) ;
-                    puis graphique tiré d'une sélection. Les sparklines en cellule restent celles de DzGrid
+                    chartFromGrid : graphique tiré du pivot, d'un bloc de cellules ou des lignes cochées. Les sparklines en cellule restent celles de DzGrid
                     (propriétaire, 2026-11-22).
 ```
 

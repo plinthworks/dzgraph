@@ -47,3 +47,4 @@ we differ on purpose says so and why. Numbers are never reused: a dropped rule s
 | [sparkline.md](sparkline.md) — sparklines in a page | 7a |
 | [dztooltip.md](dztooltip.md) — the points' tooltip drawn by DzTooltip | 7b |
 | [dzgrid-link.md](dzgrid-link.md) — a chart linked to a DzGrid grid | 7b |
+| [chart-from-grid.md](chart-from-grid.md) — a chart made from what a DzGrid grid selects | 8a |
