@@ -1,0 +1,77 @@
+---
+title: DzGraph
+description: Charts for showing and exploring data, written from scratch in TypeScript — a pure core, a DOM layer, a theme, Angular, and bridges to DzTooltip and DzGrid. Accessible, right to left, no dependency.
+template: splash
+hero:
+  tagline: Charts for showing and exploring data, written from scratch in TypeScript. Lines, columns, scatters of millions of points, pies and gauges; zoom, compare, measure, select, drill down — from the keyboard too, in any language, with no dependency.
+  actions:
+    - text: Get started
+      link: getting-started/typescript/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/plinthworks/dzgraph
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import LiveChart from '../../components/LiveChart.astro';
+
+## What it is
+
+DzGraph draws charts in a page and lets people explore them: point at a value, zoom into a month, compare two
+series from the same start, select points with a lasso, click a year to see its months. It is written from scratch
+in TypeScript, in layers you can take separately:
+
+- **`@dzgraph/core`** — options and data in, a scene out. No DOM, no clock, no dependency: it runs in a browser, a
+  worker or a server.
+- **`@dzgraph/dom`** — draws the scene in SVG, on a Canvas or with WebGL2, and handles the pointer and the keyboard.
+  Each series type and each feature is its own import: a page pays only for what it uses.
+- **`@dzgraph/theme`** — the look, as CSS variables: light and dark, contrast checked.
+- **`@dzgraph/angular`**, **`@dzgraph/dztooltip`**, **`@dzgraph/dzgrid`** — the chart in Angular, its tooltip drawn by
+  DzTooltip, and a chart linked to a DzGrid grid.
+
+The chart below is a real one, drawn by the library on this page. Point at it, press Tab then the arrow keys, drag
+across the plot to zoom, click a legend item; switch the site to dark and the chart follows.
+
+<LiveChart
+  height={380}
+  features={['crosshair', 'zoom']}
+  caption="Made-up figures: visitors of an imaginary garden."
+  options={{
+    title: { text: 'Visitors, by month (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+    series: [
+      { type: 'line', id: 'greenhouse', name: 'Greenhouse', data: [420, 460, 610, 820, 990, 1130, 1210, 1180, 930, 720, 510, 470] },
+      { type: 'line', id: 'orchard', name: 'Orchard', data: [120, 150, 300, 640, 910, 1240, 1420, 1390, 980, 560, 210, 140] },
+    ],
+  }}
+/>
+
+## Designed in, not added
+
+<CardGrid>
+  <Card title="Explore" icon="magnifier">
+    Zoom and a navigator, a crosshair, comparison from a point, measures, point selection (an exact lasso on a
+    million points), aggregation by period, drilldown, linked charts — and the user's view as JSON.
+  </Card>
+  <Card title="Accessible" icon="approve-check">
+    Every point reachable from the keyboard and named for screen readers, a data table equivalent to the chart, colour
+    never alone (each series has its marker), contrast checked, reduced motion respected.
+  </Card>
+  <Card title="Any language, any direction" icon="translate">
+    Numbers and dates by the locale, time in any zone, English and French words built in, right to left designed in.
+  </Card>
+  <Card title="Big data" icon="rocket">
+    Typed columns, decimation that keeps a line's look, Canvas past a few thousand marks and WebGL2 for scatters of
+    millions of points.
+  </Card>
+</CardGrid>
+
+## Next
+
+<CardGrid>
+  <LinkCard title="TypeScript" description="A first chart with chart() from @dzgraph/dom, in any page." href="getting-started/typescript/" />
+  <LinkCard title="Angular" description="<dz-chart> and <dz-sparkline>, with signals." href="getting-started/angular/" />
+</CardGrid>

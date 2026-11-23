@@ -72,7 +72,7 @@ export default defineConfig({
         },
       },
       { test: { name: 'theme', globals: true, environment: 'node', passWithNoTests: true, include: ['packages/theme/test/**/*.test.ts'] } },
-      { test: { name: 'tools', globals: true, environment: 'node', include: ['scripts/test/**/*.test.ts'] } },
+      { test: { name: 'tools', globals: true, environment: 'node', include: ['scripts/test/**/*.test.ts', 'website/test/**/*.test.ts'] } },
     ],
   },
 });

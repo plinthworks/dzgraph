@@ -34,6 +34,7 @@ Elles priment sur le reste du document quand il dit autre chose.
 | D.22 Exigence de qualité | « Du code craft » : voir §15. |
 | D.23 Tableau et zoom (2026-11-21) | Zoomer sert à montrer une partie : par défaut le tableau de données (et l'export CSV, Phase 6) suit la **plage visible** ; un bouton bascule sur **toutes les données**, pour voir les deux. Choix de l'app par option. |
 | D.24 Graphique tiré de DzGrid (2026-11-23) | Le bloc de cellules, sinon les lignes cochées, et le pivot ; le graphique est là où l'app le place et suit la sélection en direct (instantané en option) ; une entrée pour le menu de cellule de DzGrid. La 1.0 est préparée en Phase 8, publiée par le propriétaire ; le site de documentation en Phase 9. |
+| D.25 Site de documentation (2026-11-23) | Astro Starlight dans `website/`, comme DzGrid ; anglais et français ; prise en main, guides, une page par option, référence de l'API, galerie de graphiques vivants ; chaque exemple compilé ; GitHub Pages (`plinthworks.github.io/dzgraph`). |
 | D.16 Liberté de l'utilisateur | « Un peu » : depuis un petit menu, il change le type (ligne, aire, colonnes), l'agrégation et l'échelle. Pas d'éditeur de graphiques complet. |
 
 ## 1. Technologies

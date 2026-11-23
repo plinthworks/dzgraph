@@ -1,0 +1,80 @@
+---
+title: DzGraph
+description: Des graphiques pour montrer et explorer des données, écrits de zéro en TypeScript — un cœur pur, une couche DOM, un thème, Angular, et des ponts vers DzTooltip et DzGrid. Accessibles, de droite à gauche, sans dépendance.
+template: splash
+hero:
+  tagline: Des graphiques pour montrer et explorer des données, écrits de zéro en TypeScript. Lignes, colonnes, nuages de millions de points, secteurs et jauges ; zoomer, comparer, mesurer, sélectionner, descendre dans le détail — au clavier aussi, dans toutes les langues, sans dépendance.
+  actions:
+    - text: Commencer
+      link: getting-started/typescript/
+      icon: right-arrow
+    - text: Voir sur GitHub
+      link: https://github.com/plinthworks/dzgraph
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import LiveChart from '../../../components/LiveChart.astro';
+
+## Ce que c'est
+
+DzGraph dessine des graphiques dans une page et laisse les explorer : montrer une valeur, zoomer sur un mois, comparer
+deux séries depuis un même départ, sélectionner des points au lasso, cliquer sur une année pour voir ses mois. Il est
+écrit de zéro en TypeScript, en couches que l'on peut prendre séparément :
+
+- **`@dzgraph/core`** — des options et des données en entrée, une scène en sortie. Ni DOM, ni horloge, ni
+  dépendance : il tourne dans un navigateur, un worker ou un serveur.
+- **`@dzgraph/dom`** — dessine la scène en SVG, sur un Canvas ou avec WebGL2, et gère le pointeur et le clavier. Chaque
+  type de série et chaque fonction s'importe à part : une page ne paie que ce qu'elle utilise.
+- **`@dzgraph/theme`** — l'apparence, en variables CSS : clair et sombre, contrastes vérifiés.
+- **`@dzgraph/angular`**, **`@dzgraph/dztooltip`**, **`@dzgraph/dzgrid`** — le graphique dans Angular, son infobulle
+  dessinée par DzTooltip, et un graphique lié à une grille DzGrid.
+
+Le graphique ci-dessous est un vrai graphique, dessiné par la bibliothèque dans cette page. Pointez-le, appuyez sur
+Tab puis sur les flèches, glissez sur le tracé pour zoomer, cliquez sur un élément de la légende ; passez le site en
+sombre et le graphique suit.
+
+<LiveChart
+  height={380}
+  features={['crosshair', 'zoom']}
+  caption="Chiffres inventés : les visiteurs d'un jardin imaginaire."
+  options={{
+    title: { text: 'Visiteurs, par mois (inventés)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'] },
+    series: [
+      { type: 'line', id: 'greenhouse', name: 'Serre', data: [420, 460, 610, 820, 990, 1130, 1210, 1180, 930, 720, 510, 470] },
+      { type: 'line', id: 'orchard', name: 'Verger', data: [120, 150, 300, 640, 910, 1240, 1420, 1390, 980, 560, 210, 140] },
+    ],
+  }}
+/>
+
+## Pensé dès le départ, pas ajouté
+
+<CardGrid>
+  <Card title="Explorer" icon="magnifier">
+    Zoom et navigateur, viseur, comparaison depuis un point, mesures, sélection de points (un lasso exact sur un
+    million de points), agrégation par période, exploration par clic, graphiques liés — et la vue de l'utilisateur en
+    JSON.
+  </Card>
+  <Card title="Accessible" icon="approve-check">
+    Chaque point atteignable au clavier et nommé pour les lecteurs d'écran, un tableau de données équivalent au
+    graphique, jamais la couleur seule (chaque série a son marqueur), contrastes vérifiés, mouvement réduit respecté.
+  </Card>
+  <Card title="Toutes les langues, tous les sens" icon="translate">
+    Nombres et dates selon la langue, le temps dans tout fuseau, les mots anglais et français fournis, la droite à
+    gauche pensée dès le départ.
+  </Card>
+  <Card title="Gros volumes" icon="rocket">
+    Colonnes typées, décimation qui garde l'allure d'une ligne, Canvas au-delà de quelques milliers de marques et
+    WebGL2 pour des nuages de millions de points.
+  </Card>
+</CardGrid>
+
+## Ensuite
+
+<CardGrid>
+  <LinkCard title="TypeScript" description="Un premier graphique avec chart() de @dzgraph/dom, dans n'importe quelle page." href="getting-started/typescript/" />
+  <LinkCard title="Angular" description="<dz-chart> et <dz-sparkline>, avec des signaux." href="getting-started/angular/" />
+</CardGrid>

@@ -1,0 +1,154 @@
+---
+title: "Angular"
+description: "<dz-chart> and <dz-sparkline> from @dzgraph/angular, Angular 19 to 22: signal inputs, an output per event, the chart's methods, server rendering."
+---
+
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+`@dzgraph/angular` gives two standalone components, for Angular 19 to 22: `<dz-chart>`, the whole chart, and
+`<dz-sparkline>`, a small chart in a line of text or a tile. They draw with `@dzgraph/dom`; the
+[TypeScript](../typescript/) page says what a chart does.
+
+## Install
+
+```sh
+npm install @dzgraph/core @dzgraph/dom @dzgraph/theme @dzgraph/angular
+```
+
+Load the theme once, in the app's styles (`angular.json`'s `styles`, or a `@import` in `styles.css`):
+`@dzgraph/theme/dzgraph.css`.
+
+## A chart
+
+The options are a signal input: a new value updates the chart, and what the user did (a zoom, a hidden series, a
+selection) stays. `types` and `features` default to every series type and every feature (`allTypes`,
+`allFeatures`); give fewer to ship less.
+
+<CodeTabs>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions, type PointRef } from '@dzgraph/core';
+import { crosshair, zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-tides',
+  imports: [DzChart],
+  template: `
+    <dz-chart
+      style="block-size: 320px"
+      [options]="options()"
+      [types]="types"
+      [features]="features"
+      (pointClick)="picked.set($event)"
+    />
+    <p>{{ picked() ? 'Picked point ' + picked()!.index : 'Click a point' }}</p>
+  `,
+})
+export class Tides {
+  readonly types = [line];
+  readonly features = [crosshair, zoom];
+  readonly picked = signal<PointRef | null>(null);
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Tide height (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'] },
+    series: [{ type: 'line', id: 'tide', name: 'Height (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6, 5.3, 2.2] }],
+  });
+}
+```
+
+</Fragment>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair, zoom } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('tides')!,
+  {
+    title: { text: 'Tide height (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'] },
+    series: [{ type: 'line', id: 'tide', name: 'Height (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6, 5.3, 2.2] }],
+  },
+  { types: [line], features: [crosshair, zoom] },
+);
+c.on('pointClick', (e) => console.log('Picked point', e.point.index));
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  features={['crosshair', 'zoom']}
+  options={{
+    title: { text: 'Tide height (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'] },
+    series: [{ type: 'line', id: 'tide', name: 'Height (m)', data: [1.2, 3.8, 5.1, 2.4, 0.9, 3.6, 5.3, 2.2] }],
+  }}
+/>
+
+## Outputs
+
+Every event of the chart is an output of the component, with the same detail: `problems`, `pointHover`,
+`pointClick`, `pointFocus`, `legendToggle`, `rangeChange`, `viewChange`, `modeChange`, `measure`, `selectionChange`,
+`drill`.
+
+## The chart's methods
+
+`chart` gives the chart itself, for its methods (`exportPng()`, `setView()`, `print()`…). It is null until the chart is
+drawn (after the first render, in the browser) and on the server.
+
+```ts
+import { Component, signal, viewChild } from '@angular/core';
+import type { ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-report',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 300px" [options]="options()" />
+    <button type="button" (click)="save()">Save as CSV</button>
+  `,
+})
+export class Report {
+  readonly chart = viewChild.required(DzChart);
+  readonly options = signal<ChartOptions>({ series: [{ type: 'column', id: 'jars', name: 'Jars sold', data: [14, 22, 19] }] });
+
+  async save(): Promise<void> {
+    await this.chart().chart?.download('csv');
+  }
+}
+```
+
+## A sparkline
+
+```ts
+import { Component, signal } from '@angular/core';
+import { DzSparkline } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-visits',
+  imports: [DzSparkline],
+  template: `<p>Visits this week <dz-sparkline [values]="visits()" [options]="{ type: 'area', label: 'Visits' }" /></p>`,
+})
+export class Visits {
+  readonly visits = signal<readonly number[]>([31, 44, 38, 52, 49, 61, 58]);
+}
+```
+
+The sparkline sizes itself to the text around it and says its summary to screen readers (« Visits: 7 values, from 31
+to 61, last 58 »).
+
+## Server rendering
+
+On the server nothing is drawn and nothing fails: the components draw in the browser only, once their element is in
+the page.

@@ -1,0 +1,108 @@
+---
+/**
+ * A real DzGraph chart, drawn in the browser from the library's sources (the Vite aliases in astro.config.mjs) with the
+ * theme the whole site loads. One chart per demo, made only when the demo comes near the screen. Taken from DzGrid's
+ * LiveDemo.
+ *
+ *   <LiveChart options={{ series: [{ type: 'line', data: [3, 5, 4] }] }} features={['zoom', 'crosshair']} />
+ *
+ * Everything crosses into the page as JSON: the options (no functions) and the features by name (`@dzgraph/dom`'s
+ * exports: `zoom`, `timeAxis`, `selection`…, or `all`). Every series type is given. The chart's language is the
+ * page's (`en`, `fr`; `language="ar"` for a right-to-left demo), so its words, numbers and dates follow it. Light and
+ * dark follow Starlight's switch by themselves: the theme reads `color-scheme` on <html>. `data` names a made-up data
+ * set too big for the page (demo/data.ts), put into the first series.
+ */
+interface Props {
+  options: Record<string, unknown>;
+  /** Features by name: `@dzgraph/dom`'s exports, or `all`. */
+  features?: readonly string[];
+  /** A made-up data set made in the browser (demo/data.ts), given to the first series. */
+  data?: { readonly recipe: string; readonly count: number };
+  /** The chart's language when it is not the page's: `ar` for a right-to-left demo. */
+  language?: 'ar';
+  /** The chart's height in pixels. Default 360. */
+  height?: number;
+  /** A line under the chart. */
+  caption?: string;
+}
+const { options, features = [], data, language, height = 360, caption } = Astro.props;
+const lang = language ?? (Astro.currentLocale === 'fr' ? 'fr' : 'en');
+const json = JSON.stringify({ options, features, data: data ?? null });
+---
+
+<dzgraph-live-chart class="not-content" data-demo={json}>
+  <div class="dzgraph-demo-host" style={`--demo-height: ${height}px`} lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}></div>
+  {caption && <p class="dzgraph-demo-caption">{caption}</p>}
+</dzgraph-live-chart>
+
+<script>
+  import type { Problem } from '@dzgraph/core';
+  import type { Chart, Feature } from '@dzgraph/dom';
+  import { made } from './demo/data';
+
+  type Demo = { options: Record<string, unknown>; features: string[]; data: { recipe: string; count: number } | null };
+
+  /** A demo's problems in the console, where a check of the site looks for them. */
+  const warn = (problems: readonly Problem[]) => {
+    for (const p of problems) console.warn('dzgraph demo', p.code, p.path, p.detail);
+  };
+
+  class DzgraphLiveChart extends HTMLElement {
+    #chart: Chart | null = null;
+    #seen: IntersectionObserver | null = null;
+    #started = false;
+
+    connectedCallback() {
+      if (this.#started) return;
+      // Lazy: made when the demo comes within a screen of the view.
+      this.#seen = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          this.#seen?.disconnect();
+          this.#seen = null;
+          void this.#draw();
+        }
+      }, { rootMargin: '400px 0px' });
+      this.#seen.observe(this);
+    }
+
+    async #draw() {
+      if (this.#started) return;
+      this.#started = true;
+      const host = this.querySelector<HTMLElement>('.dzgraph-demo-host');
+      if (!host) return;
+      const demo = JSON.parse(this.dataset.demo ?? '{}') as Demo;
+      try {
+        const [{ allTypes }, dom] = await Promise.all([import('@dzgraph/core'), import('@dzgraph/dom')]);
+        const named = dom as unknown as Record<string, Feature>;
+        const features = demo.features.flatMap((name) => {
+          if (name === 'all') return [...dom.allFeatures];
+          const f = named[name];
+          if (!f || typeof f !== 'object') throw new Error(`unknown demo feature: ${name}`);
+          return [f];
+        });
+        const options = demo.options as { series?: Record<string, unknown>[] };
+        if (demo.data && options.series?.[0]) options.series[0] = { ...options.series[0], data: made(demo.data.recipe, demo.data.count) };
+        if (!this.isConnected) return;
+        // The options are JSON from the page: checked by the chart itself, which says what it refuses.
+        const c = dom.chart(host, options as never /* JSON from the page: the chart checks it and reports problems */, { types: allTypes, features });
+        c.on('problems', (d) => warn(d.problems));
+        warn(c.problems);
+        this.#chart = c;
+      } catch (error) {
+        // A demo the chart refused: said on the page, not a blank box.
+        host.textContent = String(error);
+        console.error(error);
+      }
+    }
+
+    disconnectedCallback() {
+      this.#seen?.disconnect();
+      this.#seen = null;
+      this.#chart?.destroy();
+      this.#chart = null;
+      this.#started = false;
+    }
+  }
+
+  if (!customElements.get('dzgraph-live-chart')) customElements.define('dzgraph-live-chart', DzgraphLiveChart);
+</script>

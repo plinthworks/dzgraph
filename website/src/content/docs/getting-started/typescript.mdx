@@ -1,0 +1,184 @@
+---
+title: "TypeScript"
+description: "Draw a first chart with chart() from @dzgraph/dom, in any page and with no framework: install, a first chart, series types and features, updates, events, problems, the theme."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+`@dzgraph/dom` draws a chart in any page, with no framework. `@dzgraph/core` holds the option types and the series
+types, and `@dzgraph/theme` the CSS. This page uses `chart()` directly; the tabs show the same chart with
+[Angular](../angular/).
+
+## Install
+
+```sh
+npm install @dzgraph/core @dzgraph/dom @dzgraph/theme
+```
+
+No other package is needed: DzGraph has no runtime dependency.
+
+## A first chart
+
+The chart takes its element's size and follows it when it changes: give the element a width (a block element has one)
+and a height. Without a height it takes `aspectRatio` (16:9 by default).
+
+```html
+<div id="rain" style="block-size: 320px"></div>
+```
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+import '@dzgraph/theme/dzgraph.css';
+
+const c = chart(
+  document.getElementById('rain')!,
+  {
+    title: { text: 'Rain and sun (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain (mm)', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'sun', name: 'Sun (h)', data: [66, 92, 141, 182, 209, 236] },
+    ],
+  },
+  { types: [column, line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Rain and sun (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain (mm)', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'sun', name: 'Sun (h)', data: [66, 92, 141, 182, 209, 236] },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Rain and sun (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain (mm)', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'sun', name: 'Sun (h)', data: [66, 92, 141, 182, 209, 236] },
+    ],
+  }}
+/>
+
+The legend's items are buttons: a click hides a series. Tab reaches the first point; the arrow keys move along a
+series and between series; the tooltip follows. The chart's words (« No data », the points' names for screen
+readers) are in the language of the element or the page (`lang`): English and French are built in.
+
+## Series types and features
+
+A chart draws only the series types it is given (`types`), and does only what its features allow (`features`). Each is
+its own import, so a page ships only what it uses:
+
+```ts
+import { area, column, line, scatter } from '@dzgraph/core';
+import { chart, crosshair, timeAxis, zoom } from '@dzgraph/dom';
+
+const el = document.getElementById('sales')!;
+chart(el, { series: [{ type: 'area', data: [3, 5, 4] }] }, { types: [area, column, line, scatter], features: [timeAxis, zoom, crosshair] });
+```
+
+`allTypes` and `allFeatures` give everything at once, for an app that does not count bytes. An option that needs a
+feature the chart was not given is not an error: the chart draws without it and reports a `missing-module` problem
+(see [Problems](#problems)).
+
+| Feature | What it adds |
+|---|---|
+| `timeAxis` | time scales: instants and days in a zone, round ticks |
+| `zoom`, `navigatorStrip` | zoom and pan; the navigator and its range buttons |
+| `crosshair`, `compare`, `measure` | a crosshair, comparison from a point, a measure between two points |
+| `selection`, `aggregation`, `drilldown`, `menu` | selecting points, sums or means by period, details by click, the user's menu |
+| `exporting` | SVG, PNG and CSV, download and print |
+| `canvas`, `webgl` | painters for many marks: Canvas past 2 000, WebGL2 for scatters past 100 000 points |
+
+## Updating
+
+`update()` replaces the top-level fields it is given, series matched by their `id`; `setData()` replaces one series'
+values, the cheapest way to show new numbers. What the user did — a zoom, a hidden series, a selection — is their
+**view**, and new options never overwrite it.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', id: 'load', name: 'Load', data: [12, 15, 11] }] }, { types: [line] });
+
+c.update({ title: { text: 'Load (made up)' } });
+c.setData('load', [12, 15, 11, 18, 16]);
+```
+
+## Events
+
+`on()` listens to one event and returns the function that stops listening:
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', id: 'load', data: [12, 15, 11] }] }, { types: [line] });
+
+const off = c.on('pointClick', (e) => console.log(e.point.seriesId, e.point.index));
+c.on('viewChange', (e) => localStorage.setItem('view', JSON.stringify(e.view)));
+off();
+```
+
+The view is plain JSON: put it in a URL or a store, and give it back with `setView()`.
+
+## Problems
+
+Bad input never throws. A value the chart cannot read, an option it does not know, a feature it was not given: each
+becomes a `Problem` — a code, a path, a detail — in `c.problems` and the `problems` event, and the chart draws what it
+can. A problem never carries your data: a chart may plot health records.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', data: [12, 15, 11] }], crosshair: true }, { types: [line] });
+for (const p of c.problems) console.warn(p.code, p.path); // missing-module crosshair
+```
+
+<Aside>
+Call `destroy()` when the element goes: it removes the chart's listeners and observers.
+</Aside>
+
+## The theme
+
+`@dzgraph/theme/dzgraph.css` gives the colours and the fonts, as CSS variables, in a cascade layer (`dzgraph.theme`)
+so your own rules win; `dzgraph.unlayered.css` is the same without the layer. Light and dark follow the page's
+`color-scheme`: this site's switch changes the charts too.
+
+## Next
+
+- [Angular](../angular/): the same chart as a component.
+- The [guides](../../guides/data/), task by task.

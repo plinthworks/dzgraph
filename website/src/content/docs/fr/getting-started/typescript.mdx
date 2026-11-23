@@ -1,0 +1,186 @@
+---
+title: "TypeScript"
+description: "Dessiner un premier graphique avec chart() de @dzgraph/dom, dans n'importe quelle page et sans framework : installation, premier graphique, types de séries et fonctions, mises à jour, événements, problèmes, thème."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+`@dzgraph/dom` dessine un graphique dans n'importe quelle page, sans framework. `@dzgraph/core` contient les types des
+options et les types de séries, et `@dzgraph/theme` le CSS. Cette page utilise `chart()` directement ; les onglets
+montrent le même graphique avec [Angular](../angular/).
+
+## Installer
+
+```sh
+npm install @dzgraph/core @dzgraph/dom @dzgraph/theme
+```
+
+Aucun autre paquet n'est nécessaire : DzGraph n'a aucune dépendance à l'exécution.
+
+## Un premier graphique
+
+Le graphique prend la taille de son élément et la suit quand elle change : donnez à l'élément une largeur (un élément
+de bloc en a une) et une hauteur. Sans hauteur, il prend `aspectRatio` (16:9 par défaut).
+
+```html
+<div id="rain" style="block-size: 320px"></div>
+```
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+import '@dzgraph/theme/dzgraph.css';
+
+const c = chart(
+  document.getElementById('rain')!,
+  {
+    title: { text: 'Pluie et soleil (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie (mm)', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'sun', name: 'Soleil (h)', data: [66, 92, 141, 182, 209, 236] },
+    ],
+  },
+  { types: [column, line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-rain',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" />`,
+})
+export class Rain {
+  readonly types = [column, line];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Pluie et soleil (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie (mm)', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'sun', name: 'Soleil (h)', data: [66, 92, 141, 182, 209, 236] },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Pluie et soleil (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie (mm)', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'sun', name: 'Soleil (h)', data: [66, 92, 141, 182, 209, 236] },
+    ],
+  }}
+/>
+
+Les éléments de la légende sont des boutons : un clic masque une série. Tab atteint le premier point ; les flèches
+avancent le long d'une série et passent d'une série à l'autre ; l'infobulle suit. Les mots du graphique (« Aucune
+donnée », le nom des points pour les lecteurs d'écran) sont dans la langue de l'élément ou de la page (`lang`) :
+l'anglais et le français sont fournis.
+
+## Types de séries et fonctions
+
+Un graphique ne dessine que les types de séries qu'on lui donne (`types`), et ne fait que ce que ses fonctions
+permettent (`features`). Chacun s'importe à part, si bien qu'une page n'embarque que ce qu'elle utilise :
+
+```ts
+import { area, column, line, scatter } from '@dzgraph/core';
+import { chart, crosshair, timeAxis, zoom } from '@dzgraph/dom';
+
+const el = document.getElementById('sales')!;
+chart(el, { series: [{ type: 'area', data: [3, 5, 4] }] }, { types: [area, column, line, scatter], features: [timeAxis, zoom, crosshair] });
+```
+
+`allTypes` et `allFeatures` donnent tout d'un coup, pour une app qui ne compte pas les octets. Une option qui demande
+une fonction que le graphique n'a pas reçue n'est pas une erreur : le graphique se dessine sans elle et signale un
+problème `missing-module` (voir [Problèmes](#problèmes)).
+
+| Fonction | Ce qu'elle ajoute |
+|---|---|
+| `timeAxis` | les échelles de temps : instants et jours dans un fuseau, graduations rondes |
+| `zoom`, `navigatorStrip` | zoom et déplacement ; le navigateur et ses boutons de plage |
+| `crosshair`, `compare`, `measure` | un viseur, la comparaison depuis un point, une mesure entre deux points |
+| `selection`, `aggregation`, `drilldown`, `menu` | sélectionner des points, sommes ou moyennes par période, le détail par clic, le menu de l'utilisateur |
+| `exporting` | SVG, PNG et CSV, téléchargement et impression |
+| `canvas`, `webgl` | des peintres pour beaucoup de marques : Canvas au-delà de 2 000, WebGL2 pour les nuages au-delà de 100 000 points |
+
+## Mettre à jour
+
+`update()` remplace les champs de premier niveau qu'on lui donne, les séries appariées par leur `id` ; `setData()`
+remplace les valeurs d'une série, le moyen le moins coûteux de montrer de nouveaux chiffres. Ce que l'utilisateur a
+fait — un zoom, une série masquée, une sélection — est sa **vue**, et de nouvelles options ne l'écrasent jamais.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', id: 'load', name: 'Charge', data: [12, 15, 11] }] }, { types: [line] });
+
+c.update({ title: { text: 'Charge (inventée)' } });
+c.setData('load', [12, 15, 11, 18, 16]);
+```
+
+## Événements
+
+`on()` écoute un événement et renvoie la fonction qui arrête d'écouter :
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', id: 'load', data: [12, 15, 11] }] }, { types: [line] });
+
+const off = c.on('pointClick', (e) => console.log(e.point.seriesId, e.point.index));
+c.on('viewChange', (e) => localStorage.setItem('view', JSON.stringify(e.view)));
+off();
+```
+
+La vue est du JSON simple : mettez-la dans une URL ou un store, et rendez-la avec `setView()`.
+
+## Problèmes
+
+Une mauvaise entrée ne lève jamais d'exception. Une valeur que le graphique ne sait pas lire, une option qu'il ne
+connaît pas, une fonction qu'il n'a pas reçue : chacune devient un `Problem` — un code, un chemin, un détail — dans
+`c.problems` et l'événement `problems`, et le graphique dessine ce qu'il peut. Un problème ne porte jamais vos
+données : un graphique peut tracer des dossiers médicaux.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', data: [12, 15, 11] }], crosshair: true }, { types: [line] });
+for (const p of c.problems) console.warn(p.code, p.path); // missing-module crosshair
+```
+
+<Aside>
+Appelez `destroy()` quand l'élément s'en va : cela retire les écouteurs et les observateurs du graphique.
+</Aside>
+
+## Le thème
+
+`@dzgraph/theme/dzgraph.css` donne les couleurs et les polices, en variables CSS, dans une couche de cascade
+(`dzgraph.theme`) pour que vos propres règles l'emportent ; `dzgraph.unlayered.css` est le même sans la couche. Clair
+et sombre suivent le `color-scheme` de la page : l'interrupteur de ce site change aussi les graphiques.
+
+## Ensuite
+
+- [Angular](../angular/) : le même graphique en composant.
+- Les [guides](../../guides/data/), tâche par tâche.

@@ -188,6 +188,15 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   (1 163), three browsers green (2 046), 232 images, release check green. Committed. Next: the owner publishes
   1.0.0 (`npm run publish:latest -- --otp=…`); then Phase 9 (documentation site).
 
+## 2026-11-23 — Phase 9 (documentation site), plan `docs/phase-9-steps/plan.md`
+
+- Owner's decisions: Astro Starlight as DzGrid's site, English and French, getting started → guides → one page per
+  option → API reference, plus a gallery of live charts; GitHub Pages (`plinthworks.github.io/dzgraph`). ARCHITECTURE
+  D.25.
+- **Batch 1 (skeleton) done.** `website/`, both languages, the sidebar and its stubs, the home page and the getting
+  started pages written, `LiveChart`, `CodeTabs`, the site's tests (every example compiled, twins, links), the workflow.
+  37 pages built; Chrome en/fr light/dark: every demo drawn, no console message. Gate green (1 179). Committed.
+
 ## Working rules
 
 CLAUDE.md. Talk to the owner in French, short. Owner 2026-11-21: « je veux du code craft », « donne-moi la meilleure
