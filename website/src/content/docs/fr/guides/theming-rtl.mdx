@@ -3,6 +3,156 @@ title: "Thème et droite à gauche"
 description: "Les variables CSS, clair et sombre, la palette des séries, les pages de droite à gauche."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [direction.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/direction.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Un graphique dessine ses formes d'après les options et prend chaque couleur et chaque police dans des variables CSS.
+Ses mots, ses nombres et ses dates suivent la langue de la page, et sa mise en page suit le sens de la page.
+
+## La feuille du thème
+
+`@dzgraph/theme/dzgraph.css` pose les variables, dans une couche de cascade nommée `dzgraph.theme` : toute règle à vous
+qui n'est pas dans une couche l'emporte sur elle, quelle que soit sa spécificité. Chargez-la une fois :
+
+```ts
+import '@dzgraph/theme/dzgraph.css';
+```
+
+`dzgraph.unlayered.css` est la même feuille sans la couche, pour une app dont la propre remise à zéro n'est pas dans
+une couche et l'emporterait sinon sur le thème. Sans l'une ou l'autre, un graphique dessine sa géométrie mais aucune
+couleur : aucune couleur n'est écrite dans le code de la bibliothèque.
+
+Les variables forment deux familles : `--tz-*`, la palette partagée avec DzGrid et DzTooltip (une page qui habille ses
+grilles habille ses graphiques), et `--dzgraph-*`, celles du graphique.
+
+| Variable | Ce qu'elle fixe |
+|---|---|
+| `--tz-bg`, `--tz-fg`, `--tz-fg-muted`, `--tz-border`, `--tz-accent` | la palette partagée : fond, texte, texte discret, traits, accent |
+| `--dzgraph-series-1` … `--dzgraph-series-8` | les couleurs des séries, dans un ordre fixe |
+| `--dzgraph-background`, `--dzgraph-plot-background` | le fond du graphique et celui du tracé |
+| `--dzgraph-text`, `--dzgraph-text-muted` | titres, étiquettes, légende |
+| `--dzgraph-axis-line`, `--dzgraph-tick`, `--dzgraph-grid-line` | axes, graduations et quadrillage, discrets |
+| `--dzgraph-focus` | l'anneau de focus du clavier, la bande du zoom |
+| `--dzgraph-others`, `--dzgraph-track` | la part « Autres » d'un secteur, l'échelle vide d'une jauge |
+| `--dzgraph-font-title`, `-subtitle`, `-axis-title`, `-tick-label`, `-legend`, `-data-label` | les polices, par rôle |
+
+## Clair et sombre
+
+Chaque couleur du thème est une paire claire et sombre (`light-dark()`) : le graphique suit le `color-scheme` de la
+page. Un attribut `data-theme="light"` ou `data-theme="dark"` sur le graphique ou l'un de ses parents en choisit un ;
+ce site le pose sur la page, c'est pourquoi son interrupteur change aussi les graphiques. Une image exportée garde les
+couleurs de l'écran, sauf si elle demande un autre thème (voir [Export et impression](../exporting/)).
+
+## Vos couleurs et vos polices
+
+Posez les variables sur `.dzgraph`, la classe de chaque graphique, avec les valeurs de votre propre système de design :
+
+```css
+.dzgraph {
+  --tz-accent: var(--brand-accent);
+  --dzgraph-series-1: var(--brand-primary);
+  --dzgraph-color-harvest: var(--brand-harvest);
+  --dzgraph-font-title: 600 18px var(--brand-font);
+}
+```
+
+Une série prend les couleurs de la palette dans l'ordre. `color: 3` lui donne la troisième ;
+`color: { token: 'harvest' }` lui donne `--dzgraph-color-harvest`, une variable que vous définissez. Une couleur n'est
+jamais écrite dans les options : un changement de thème atteint chaque graphique. Au-delà de huit séries la palette
+recommence, et chaque série garde son propre symbole de marqueur.
+
+Les huit couleurs de la palette ont été choisies ensemble : des voisines restent distinctes pour les lecteurs
+daltoniens, et chacune tient 3:1 sur le fond dans les deux modes. Si vous les remplacez, vérifiez la même chose.
+
+## Les mots du graphique
+
+La langue du graphique est l'option `locale` quand elle est donnée, sinon le `lang` de l'élément du graphique ou de
+son parent le plus proche, sinon celle du navigateur. Elle fixe les nombres et les dates (`Intl`) et les mots :
+« Aucune donnée », le résumé et le nom des points pour les lecteurs d'écran, le menu, le tableau de données. L'anglais
+et le français sont fournis ; toute autre langue écrit ses nombres et ses dates à sa façon, avec des mots anglais,
+jusqu'à ce que vous donniez les vôtres avec `messages` :
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, type Messages } from '@dzgraph/dom';
+
+const words: Partial<Messages> = {
+  noData: 'Rien de cueilli pour l’instant',
+  seriesHidden: (name) => `${name} rangée`,
+  seriesShown: (name) => `${name} de retour`,
+};
+
+chart(
+  document.getElementById('picked')!,
+  { locale: 'fr-CA', series: [{ type: 'column', id: 'picked', name: 'Cueillette', data: [] }] },
+  { types: [column], messages: words },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import type { Messages } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-picked',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options()" [types]="types" [messages]="words" />`,
+})
+export class Picked {
+  readonly types = [column];
+  readonly words: Partial<Messages> = {
+    noData: 'Rien de cueilli pour l’instant',
+    seriesHidden: (name) => `${name} rangée`,
+    seriesShown: (name) => `${name} de retour`,
+  };
+  readonly options = signal<ChartOptions>({ locale: 'fr-CA', series: [{ type: 'column', id: 'picked', name: 'Cueillette', data: [] }] });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+La langue et le sens sont relus à chaque dessin : une page qui les change voit ses graphiques suivre.
+
+## De droite à gauche
+
+Un graphique prend le sens de son élément (son attribut `dir` ou sa `direction` CSS), sauf si les options donnent
+`dir: 'rtl'` ou `'ltr'`. La droite à gauche est pensée dès le départ, pas ajoutée :
+
+- Tout ce qui se place selon le sens de lecture change de côté : le titre commence à droite, la légende part de la
+  droite, l'axe y se tient au début (à droite) et un axe `opposite` à gauche.
+- Les barres partent du côté du début, la droite.
+- L'axe x n'est pas inversé : les catégories et le temps vont toujours de gauche à droite, comme le plus souvent pour
+  les nombres et les dates. `mirror: true` les fait aller de droite à gauche, et les flèches du clavier tournent avec.
+- Les nombres et les dates sont écrits par la langue : ses chiffres, ses séparateurs et leur ordre.
+- Une étiquette dans l'autre sens (un nom latin dans un graphique arabe) garde son propre sens dans sa boîte.
+
+L'élément de ce graphique est en arabe, de droite à gauche ; son titre et le nom de ses séries restent dans la langue
+de cette page :
+
+<LiveChart
+  height={360}
+  language="ar"
+  options={{
+    title: { text: 'Pots vendus (inventés)' },
+    xAxis: { scale: 'category', categories: ['يناير', 'فبراير', 'مارس', 'أبريل'] },
+    series: [
+      { type: 'bar', id: 'plum', name: 'Prune', data: [1240, 1810, 2260, 1930] },
+      { type: 'bar', id: 'quince', name: 'Coing', data: [860, 1120, 1540, 2010] },
+    ],
+  }}
+/>
+
+<Aside>
+Écrivez aussi le CSS autour d'un graphique avec des côtés logiques (`inline-start`, `margin-inline-end`) : la même
+page se lit alors bien dans les deux sens.
+</Aside>

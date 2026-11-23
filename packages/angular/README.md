@@ -8,7 +8,7 @@ import { DzChart, DzSparkline } from '@dzgraph/angular';
 
 @Component({
   imports: [DzChart, DzSparkline],
-  template: `<dz-chart [options]="options()" (pointClick)="open($event.point)" (viewChange)="save($event.view)" />
+  template: `<dz-chart [options]="options()" (pointClick)="open($event)" (viewChange)="save($event.view)" />
              <dz-sparkline [values]="visits()" [options]="{ type: 'area', label: 'Visits' }" />`,
 })
 ```

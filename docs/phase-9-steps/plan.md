@@ -36,3 +36,19 @@ page, jeux de données inventés générés : `walk`, `cloud`), `CodeTabs` (Type
 (`website/test/pages.test.ts`, `examples.test.ts`, repris de DzGrid : chaque exemple compilé par ngc strict, chaque page a
 sa jumelle de même forme, chaque lien arrive) dans le projet `tools` ; le workflow `.github/workflows/docs.yml`.
 37 pages construites. Chrome : en et fr, clair et sombre, chaque démo dessinée, aucun message dans la console.
+
+## Lot 2 — les guides (fait le 2026-11-23)
+
+Les 12 guides dans les deux langues (données, types de séries, axes et temps, interactions, exploration, gros volumes,
+export et impression, accessibilité, thème et droite à gauche, Angular, DzTooltip, DzGrid), 26 démos vivantes, chaque
+exemple compilé. Écrits par quatre agents en parallèle sur les sources et les fiches, relus et vérifiés ensuite :
+tests du site, construction, Chrome (en et fr, clair et sombre : chaque démo dessinée, aucun message), images regardées.
+Le zoom, le navigateur et la vue sont dans « exploration » (comme le disaient les pages en attente).
+
+Trouvé par les démos et corrigé (test d'abord) : un axe de temps à une seule valeur (une année agrégée seule) montrait
+des millisecondes, et une colonne seule ajoutait une demi-unité ; descendre dans une année que les données ne font que
+commencer décalait l'année pour tenir dans les données. Le README d'Angular (`$event.point`) et deux phrases de la prise
+en main Angular (le détail des sorties ; `types`/`features` ne réduisent pas le paquet livré) corrigés.
+
+À décider par le propriétaire : `DzChart` prend `allTypes` et `allFeatures` par défaut, si bien qu'une app Angular
+embarque tout quoi qu'elle passe. `drilldown: 'time'` part toujours des années, même avec `xAxis.aggregate` donné.

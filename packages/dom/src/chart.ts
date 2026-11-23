@@ -291,6 +291,7 @@ export const chart: CreateChart = (element, initial, setup) => {
           aggChoice = time.aggregation;
           range = time.range;
         }
+        periodRange = time ? range : null;
         viewVersion++;
         // The level read now: the next key of a path is looked for in it, and the events tell its view (review 1, 3).
         read();
@@ -349,6 +350,11 @@ export const chart: CreateChart = (element, initial, setup) => {
   let view: View = { hidden };
   /** The first x axis's visible range (GLOSSARY: Visible range); null: the whole data. */
   let range: Range | null = null;
+  /**
+   * A time level's period (drilldown.md 6): shown whole, past the data's end too, so it is not kept inside the data
+   * like a range the user chose (a partial year moved back would show the year before).
+   */
+  let periodRange: Range | null = null;
   /** A gesture is changing the range frame after frame: the aids wait for it to rest. */
   let moving = false;
   let lastRangeAt = -Infinity;
@@ -429,7 +435,7 @@ export const chart: CreateChart = (element, initial, setup) => {
     // The aspect ratio or the direction may have changed: measured again.
     measured = null;
     // New data: the range stays inside it, or goes back to the whole (zoom-pan.md 5).
-    if (range) {
+    if (range && range !== periodRange) {
       const e = xExtent();
       applyRange(e && e.max > e.min ? wholeOrNull(clampRange(range, e), e) : null);
     }

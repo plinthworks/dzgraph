@@ -19,7 +19,8 @@ Clicks a column, a bar or a slice (or presses Enter on it) to see what it is mad
    last is a link that goes back to that level. Backspace (and Alt + the arrow toward the reading direction's start: ← in LTR, → in RTL) goes up one level.
 5. Going up restores the level as it was (its range, hidden series, selection).
 6. Automatic time drill: a year axis (aggregated by year) drills into the months of the year clicked, then the days
-   of the month (aggregation.md), the range set to that period; up restores the coarser period.
+   of the month (aggregation.md), the range set to that period — the whole period, past the data's end too (a year
+   the data only begin is not moved back to fit, Phase 9); up restores the coarser period.
 7. The level is part of the view (view-state.md): `getView()` gives the path of keys from the root, `setView()` goes
    there (loading what it needs). Event `drill` with the path.
 8. In a link group the level is shared like the range (linked-charts.md).

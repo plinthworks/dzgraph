@@ -1,8 +1,198 @@
 ---
 title: "Interactions"
-description: "The tooltip, the legend, the keyboard, animation."
+description: "What every chart does for the pointer, the finger and the keyboard: the tooltip, the highlight, the legend, the keys, animation, the chart's words."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [hover-tooltip.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/hover-tooltip.md).
-:::
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+Everything on this page comes with `chart()` itself: no feature to import. Zooming, the crosshair, selecting and the
+other ways to explore are in [Exploring](../exploring/).
+
+## The tooltip
+
+Over lines and areas the tooltip is **shared**: the x nearest the pointer is found, anywhere up or down the plot, and
+every visible line gives its value there. Over columns, bars and scatters it is **per mark**: the column in whose band
+the pointer is, or the scatter point within 24 px. A chart mixing both gives the mark its own tooltip and the lines
+their shared one elsewhere.
+
+The tooltip names the point (its category, its x or its name), then gives one row per series: its sign, as in the
+legend, its name and its value in the chart's language. It sits on the end side of the reading direction, never over
+the point, and goes when the pointer leaves the plot. On a touch screen a tap shows it and a slide moves it.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Jars sold and the target (made up)' },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Jars sold', data: [42, 38, 51, 47, 63, 88, 71] },
+      { type: 'line', id: 'target', name: 'Target', data: [45, 45, 45, 50, 60, 80, 70] },
+    ],
+  }}
+/>
+
+While a column, a bar or a scatter point is pointed at, the other series fade to 35 %: the **highlight**.
+`highlight: false` turns it off. A shared line tooltip fades nothing, since every line is in it.
+
+The tooltip is for the eyes only. Keyboard and screen-reader users get the same content from the focused point (see
+[The keyboard](#the-keyboard)). To draw it with DzTooltip, see [DzTooltip](../dztooltip/).
+
+## Pointing from the app
+
+`pointHover` says which point the pointer is on (`null` when it leaves), `pointClick` which one was clicked or
+tapped. `showX()` does the reverse: it shows the tooltip and the crosshair at an x value, as if the user pointed
+there, without sending `pointHover` back.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('visits')!, { series: [{ type: 'line', id: 'visits', data: [31, 44, 38, 52] }] }, { types: [line] });
+
+c.on('pointHover', (e) => console.log(e.point ? e.point.index : 'left the plot'));
+c.showX(2);
+c.showX(null);
+```
+
+## The legend
+
+The legend shows when there are two series or more. Each item is a toggle button: a click, or Enter or Space on a
+focused item, hides its series, and the axes are worked out again without it. Pointing at an item fades the other
+series. Hiding every series is allowed: the plot then says there is no data.
+
+A hidden series is part of what the user did (their [view](../exploring/#the-view-as-json)), not an option:
+`initiallyHidden` hides a series only the first time it appears, so options rebuilt later never show it again by
+surprise. `setSeriesVisible()` hides or shows one from the app; `legendToggle` says when the user did.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('beds')!,
+  {
+    title: { text: 'Garden beds watered (made up)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Beans', data: [1, 2, 2, 4], initiallyHidden: true },
+    ],
+  },
+  { types: [line] },
+);
+c.on('legendToggle', (e) => console.log(e.seriesId, e.shown ? 'shown' : 'hidden'));
+c.setSeriesVisible('beans', true);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-beds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" (legendToggle)="toggled($event.seriesId, $event.shown)" />`,
+})
+export class Beds {
+  readonly types = [line];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Garden beds watered (made up)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Beans', data: [1, 2, 2, 4], initiallyHidden: true },
+    ],
+  });
+
+  toggled(seriesId: string, shown: boolean): void {
+    console.log(seriesId, shown ? 'shown' : 'hidden');
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Garden beds watered (made up)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Herbs', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Beans', data: [1, 2, 2, 4], initiallyHidden: true },
+    ],
+  }}
+/>
+
+`legend: false` hides the legend. `position` puts it at the `top`, the `bottom` (the default), the `start` or the
+`end` of the reading direction; `align` places it along that side.
+
+## The keyboard
+
+The chart's points are one tab stop; the legend's items come after them. Every point can be reached, even those a
+dense line does not draw: the focus ring shows where the point is, and the tooltip and the crosshair follow.
+
+| Key | What it does |
+|---|---|
+| Tab | to the point focused last (the first point the first time), then the legend, then out |
+| ← → | the previous or next point along x, as drawn (in bars: between series) |
+| ↑ ↓ | the series above or below at the same x (in bars: along the categories) |
+| Home, End | the series' first or last point |
+| Page Up, Page Down | a tenth of the series' points back or forward |
+| Enter | a click on the point (`pointClick`) |
+| Escape | hides the tooltip; the focus stays |
+
+Focus changes send `pointFocus`. The zoom, selection, measure and drill keys are in [Exploring](../exploring/).
+
+## Animation
+
+A chart appears in 400 ms: lines are revealed from the start of the x axis, columns grow from their baseline, points
+fade in. An update moves what stays to where it goes in 250 ms; a legend click animates the same way; a resize does
+not. Under `prefers-reduced-motion: reduce`, or with `animation: false`, the end state is drawn at once.
+
+An app may drive the animation itself with the `animate` hook (GSAP, for one): it receives both states, the duration
+the chart would take, and a function that draws any state between them.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('slow')!, { series: [{ type: 'line', data: [3, 5, 4, 6] }] }, {
+  types: [line],
+  animate: (a) => {
+    const start = performance.now();
+    const frame = (now: number) => {
+      const t = Math.min(1, (now - start) / (a.duration * 3));
+      a.draw(1 - (1 - t) ** 3);
+      if (t < 1) requestAnimationFrame(frame);
+      else a.done();
+    };
+    requestAnimationFrame(frame);
+  },
+});
+```
+
+## The chart's words
+
+The words the chart says or shows (« No data », the points' names for screen readers, the buttons' names) follow
+the language of the element or the page; English and French are built in. `messages` changes some or all of them;
+with Angular, the `messages` input does the same.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('empty')!, { series: [{ type: 'line', data: [] }] }, { types: [line], messages: { noData: 'Nothing measured yet' } });
+```

@@ -1,8 +1,204 @@
 ---
 title: "Interactions"
-description: "L’infobulle, la légende, le clavier, l’animation."
+description: "Ce que fait chaque graphique pour le pointeur, le doigt et le clavier : l’infobulle, la mise en avant, la légende, les touches, l’animation, les mots du graphique."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [hover-tooltip.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/hover-tooltip.md) (en anglais).
-:::
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Tout ce qui est sur cette page vient avec `chart()` lui-même : aucune fonction à importer. Le zoom, le viseur, la
+sélection et les autres façons d'explorer sont dans [Explorer](../exploring/).
+
+## L'infobulle
+
+Sur des lignes et des aires, l'infobulle est **partagée** : l'x le plus proche du pointeur est trouvé, n'importe où
+en hauteur dans le tracé, et chaque ligne visible y donne sa valeur. Sur des colonnes, des barres et des nuages, elle
+est **par marque** : la colonne dans la bande de laquelle est le pointeur, ou le point du nuage à moins de 24 px. Un
+graphique qui mêle les deux donne à la marque sa propre infobulle, et aux lignes leur infobulle partagée ailleurs.
+
+L'infobulle nomme le point (sa catégorie, son x ou son nom), puis donne une ligne par série : son signe, comme dans
+la légende, son nom et sa valeur dans la langue du graphique. Elle se place du côté de la fin du sens de lecture,
+jamais sur le point, et s'en va quand le pointeur quitte le tracé. Sur un écran tactile, un toucher la montre et un
+glissement la déplace.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Pots vendus et objectif (inventés)' },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.', 'dim.'] },
+    series: [
+      { type: 'column', id: 'sold', name: 'Pots vendus', data: [42, 38, 51, 47, 63, 88, 71] },
+      { type: 'line', id: 'target', name: 'Objectif', data: [45, 45, 45, 50, 60, 80, 70] },
+    ],
+  }}
+/>
+
+Tant qu'une colonne, une barre ou un point de nuage est pointé, les autres séries s'estompent à 35 % : la **mise en
+avant**. `highlight: false` la coupe. Une infobulle partagée de lignes n'estompe rien, puisque chaque ligne y est.
+
+L'infobulle est pour les yeux seulement. Les utilisateurs du clavier et des lecteurs d'écran ont le même contenu par
+le point qui a le focus (voir [Le clavier](#le-clavier)). Pour la dessiner avec DzTooltip, voir
+[DzTooltip](../dztooltip/).
+
+## Pointer depuis l'app
+
+`pointHover` dit sur quel point est le pointeur (`null` quand il s'en va), `pointClick` lequel a été cliqué ou
+touché. `showX()` fait l'inverse : il montre l'infobulle et le viseur à une valeur de x, comme si l'utilisateur y
+pointait, sans renvoyer `pointHover`.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('visits')!, { series: [{ type: 'line', id: 'visits', data: [31, 44, 38, 52] }] }, { types: [line] });
+
+c.on('pointHover', (e) => console.log(e.point ? e.point.index : 'a quitté le tracé'));
+c.showX(2);
+c.showX(null);
+```
+
+## La légende
+
+La légende s'affiche à partir de deux séries. Chaque élément est un bouton bascule : un clic, ou Entrée ou Espace
+sur un élément qui a le focus, masque sa série, et les axes sont recalculés sans elle. Pointer un élément estompe les
+autres séries. Masquer toutes les séries est permis : le tracé dit alors qu'il n'y a aucune donnée.
+
+Une série masquée fait partie de ce que l'utilisateur a fait (sa [vue](../exploring/#la-vue-en-json)), pas des
+options : `initiallyHidden` ne masque une série que la première fois qu'elle apparaît, si bien que des options
+refaites plus tard ne la remontrent jamais par surprise. `setSeriesVisible()` en masque ou en montre une depuis
+l'app ; `legendToggle` dit quand l'utilisateur l'a fait.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('beds')!,
+  {
+    title: { text: 'Massifs arrosés (inventés)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Aromates', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Haricots', data: [1, 2, 2, 4], initiallyHidden: true },
+    ],
+  },
+  { types: [line] },
+);
+c.on('legendToggle', (e) => console.log(e.seriesId, e.shown ? 'montrée' : 'masquée'));
+c.setSeriesVisible('beans', true);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-beds',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" (legendToggle)="toggled($event.seriesId, $event.shown)" />`,
+})
+export class Beds {
+  readonly types = [line];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Massifs arrosés (inventés)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Aromates', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Haricots', data: [1, 2, 2, 4], initiallyHidden: true },
+    ],
+  });
+
+  toggled(seriesId: string, shown: boolean): void {
+    console.log(seriesId, shown ? 'montrée' : 'masquée');
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Massifs arrosés (inventés)' },
+    legend: { position: 'end', align: 'start' },
+    series: [
+      { type: 'line', id: 'roses', name: 'Roses', data: [3, 4, 2, 5] },
+      { type: 'line', id: 'herbs', name: 'Aromates', data: [6, 5, 7, 6] },
+      { type: 'line', id: 'beans', name: 'Haricots', data: [1, 2, 2, 4], initiallyHidden: true },
+    ],
+  }}
+/>
+
+`legend: false` masque la légende. `position` la met en haut (`top`), en bas (`bottom`, par défaut), au début
+(`start`) ou à la fin (`end`) du sens de lecture ; `align` la place le long de ce côté.
+
+## Le clavier
+
+Les points du graphique sont un seul arrêt de tabulation ; les éléments de la légende viennent après. Chaque point
+peut être atteint, même ceux qu'une ligne dense ne dessine pas : l'anneau de focus montre où est le point, et
+l'infobulle et le viseur suivent.
+
+| Touche | Ce qu'elle fait |
+|---|---|
+| Tab | vers le dernier point qui a eu le focus (le premier point la première fois), puis la légende, puis dehors |
+| ← → | le point précédent ou suivant le long de x, tel que dessiné (en barres : d'une série à l'autre) |
+| ↑ ↓ | la série au-dessus ou au-dessous au même x (en barres : le long des catégories) |
+| Début, Fin | le premier ou le dernier point de la série |
+| Page préc., Page suiv. | un dixième des points de la série en arrière ou en avant |
+| Entrée | un clic sur le point (`pointClick`) |
+| Échap | masque l'infobulle ; le focus reste |
+
+Chaque changement de focus envoie `pointFocus`. Les touches du zoom, de la sélection, de la mesure et du détail sont
+dans [Explorer](../exploring/).
+
+## L'animation
+
+Un graphique apparaît en 400 ms : les lignes se découvrent depuis le début de l'axe des x, les colonnes poussent
+depuis leur base, les points apparaissent en fondu. Une mise à jour amène ce qui reste là où il va en 250 ms ; un clic
+dans la légende s'anime de même ; un redimensionnement, non. Sous `prefers-reduced-motion: reduce`, ou avec
+`animation: false`, l'état final est dessiné d'un coup.
+
+Une app peut mener l'animation elle-même avec le crochet `animate` (GSAP, par exemple) : il reçoit les deux états, la
+durée que prendrait le graphique, et une fonction qui dessine n'importe quel état entre les deux.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('slow')!, { series: [{ type: 'line', data: [3, 5, 4, 6] }] }, {
+  types: [line],
+  animate: (a) => {
+    const start = performance.now();
+    const frame = (now: number) => {
+      const t = Math.min(1, (now - start) / (a.duration * 3));
+      a.draw(1 - (1 - t) ** 3);
+      if (t < 1) requestAnimationFrame(frame);
+      else a.done();
+    };
+    requestAnimationFrame(frame);
+  },
+});
+```
+
+## Les mots du graphique
+
+Les mots que le graphique dit ou montre (« Aucune donnée », le nom des points pour les lecteurs d'écran, le nom des
+boutons) suivent la langue de l'élément ou de la page ; l'anglais et le français sont fournis. `messages` en change
+une partie ou tous ; avec Angular, l'entrée `messages` fait de même.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(document.getElementById('empty')!, { series: [{ type: 'line', data: [] }] }, { types: [line], messages: { noData: 'Rien de mesuré pour l’instant' } });
+```

@@ -3,6 +3,196 @@ title: "DzGrid"
 description: "A chart linked to a grid, and a chart made from what a grid selects."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [dzgrid-link.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/dzgrid-link.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import LiveChart from '../../../components/LiveChart.astro';
+
+`@dzgraph/dzgrid` puts a chart beside a [DzGrid](https://github.com/plinthworks/dzgrid) grid, in two ways:
+
+- `linkGrid()` links a chart and a grid that show the same rows: what the user selects on one side is selected on the
+  other.
+- `chartFromGrid()` fills a chart with what the user selects in the grid: a block of cells, rows ticked, or the pivot.
+
+The bridge reads the grid through the parts it uses, without importing DzGrid: any DzGrid 1.x fits.
+
+## Install
+
+```sh
+npm install @dzgraph/dzgrid
+```
+
+## A point is a row
+
+A point and a row match by key: a point's `key` is its row's id, the one DzGrid's `getRowId` gives. Give each point
+the key of its row, and the link finds it. A key one side does not have is skipped, never an error.
+
+## Link a chart and a grid
+
+`linkGrid()` links them and returns the function that unlinks. By default the selection goes both ways: the points
+the user selects in the chart become the grid's selected rows, and the rows ticked in the grid become the chart's
+selected points. Neither echoes back. The chart needs its `selection` feature and option.
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+import { linkGrid } from '@dzgraph/dzgrid';
+import { createGrid } from '@dzgrid/dom';
+import { EN } from '@dzgrid/dom/locales/en';
+
+type Hive = { readonly id: string; readonly hive: string; readonly honey: number };
+const HIVES: readonly Hive[] = [
+  { id: 'h1', hive: 'Hive A', honey: 14 },
+  { id: 'h2', hive: 'Hive B', honey: 22 },
+  { id: 'h3', hive: 'Hive C', honey: 9 },
+  { id: 'h4', hive: 'Hive D', honey: 17 },
+];
+
+const c = chart(
+  document.getElementById('honey')!,
+  {
+    title: { text: 'Honey by hive (made up)' },
+    selection: true,
+    xAxis: { scale: 'category', categories: HIVES.map((h) => h.hive) },
+    series: [{ type: 'column', id: 'honey', name: 'Honey (kg)', data: HIVES.map((h) => ({ x: h.hive, y: h.honey, key: h.id })) }],
+  },
+  { types: [column], features: [selection] },
+);
+const grid = createGrid<Hive>(document.getElementById('hives')!, {
+  rows: HIVES,
+  getRowId: (h) => h.id,
+  messages: EN,
+  columns: [{ id: 'hive', header: 'Hive' }, { id: 'honey', header: 'Honey (kg)', type: 'number' }],
+  selection: { mode: 'multi' },
+});
+const unlink = linkGrid(c, grid);
+```
+
+<LiveChart
+  height={320}
+  features={['selection']}
+  caption="The chart side only: DzGrid is not loaded on this page. Drag over the columns to select them; Shift + drag adds."
+  options={{
+    title: { text: 'Honey by hive (made up)' },
+    selection: true,
+    xAxis: { scale: 'category', categories: ['Hive A', 'Hive B', 'Hive C', 'Hive D'] },
+    series: [{ type: 'column', id: 'honey', name: 'Honey (kg)', data: [{ x: 'Hive A', y: 14, key: 'h1' }, { x: 'Hive B', y: 22, key: 'h2' }, { x: 'Hive C', y: 9, key: 'h3' }, { x: 'Hive D', y: 17, key: 'h4' }] }],
+  }}
+/>
+
+`selection: false` turns the selection off. A grid's « every row but these » selection (select all, over server
+pages) is not carried to the chart: the chart cannot know rows it was never given.
+
+## Filter the grid by the chart
+
+With `filter`, the link sets the filter of one column of the grid. The user's filters on the other columns still
+apply.
+
+| `filter` | The grid shows |
+|---|---|
+| `{ column, by: 'selection' }` | the rows whose `column` holds the key of a selected point; none selected, no filter |
+| `{ column, by: 'range' }` | the rows whose `column` number is in the chart's visible range; the whole data, no filter |
+| `{ column, by: 'range', as: 'instant' }` | the same, for a date-time column |
+
+For a range, the filter is set once a zoom or a pan rests, not at every frame: a grid fed by a server asks once.
+While linked, the link owns that column's filter. Unlinking lifts it, unless the user has set another since.
+
+## A chart from what the grid selects
+
+`chartFromGrid()` fills a chart the app made: its element, its features, its title stay yours. The bridge gives it
+its `series` and its `xAxis`. The data comes from the first of these that applies:
+
+1. the grid's **pivot**, when it is on (`pivot` given): its groups as categories, one series per created column;
+2. a **block of cells** (`range` given, two cells at least): its rows, its columns;
+3. **rows ticked**: those rows, in the grid's order, every visible column.
+
+With none of them, the chart keeps what it shows: a click outside the grid drops its block, and the chart must not
+empty when the user moves to it.
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+import { chartFromGrid } from '@dzgraph/dzgrid';
+import { createGrid } from '@dzgrid/dom';
+import { EN } from '@dzgrid/dom/locales/en';
+import { EN_RANGE } from '@dzgrid/dom/locales/en-range';
+import { range } from '@dzgrid/dom/range';
+
+type Month = { readonly id: string; readonly month: string; readonly apples: number; readonly pears: number };
+
+const blocks = range();
+const grid = createGrid<Month>(document.getElementById('fruit')!, {
+  rows: [
+    { id: 'jan', month: 'Jan', apples: 5, pears: 1 },
+    { id: 'feb', month: 'Feb', apples: 8, pears: 2 },
+    { id: 'mar', month: 'Mar', apples: 6, pears: 3 },
+  ],
+  getRowId: (m) => m.id,
+  messages: { ...EN, text: { ...EN.text, ...EN_RANGE.text } },
+  columns: [
+    { id: 'month', header: 'Month' },
+    { id: 'apples', header: 'Apples', type: 'number' },
+    { id: 'pears', header: 'Pears', type: 'number' },
+  ],
+  selection: { mode: 'multi' },
+  features: [blocks],
+});
+const c = chart(document.getElementById('fruit-chart')!, { title: { text: 'Fruit picked (made up)' }, series: [] }, { types: [column, line] });
+const stop = chartFromGrid(c, grid, { range: blocks });
+```
+
+The user selects the block from Jan to Mar, Month to Pears. The chart shows this:
+
+<LiveChart
+  height={320}
+  caption="What chartFromGrid draws from that block (made up). DzGrid is not loaded on this page."
+  options={{
+    title: { text: 'Fruit picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar'] },
+    series: [
+      { type: 'column', id: 'grid:apples', name: 'Apples', data: [{ x: 'Jan', y: 5, key: 'jan' }, { x: 'Feb', y: 8, key: 'feb' }, { x: 'Mar', y: 6, key: 'mar' }] },
+      { type: 'column', id: 'grid:pears', name: 'Pears', data: [{ x: 'Jan', y: 1, key: 'jan' }, { x: 'Feb', y: 2, key: 'feb' }, { x: 'Mar', y: 3, key: 'mar' }] },
+    ],
+  }}
+/>
+
+## How columns become series
+
+- **The points' names.** Among the columns before the first number column, the first text, choice, yes/no, day or
+  date-time column names the points. A date-time column puts them on a time axis, in the grid's zone (`timeZone`,
+  UTC by default); a day column too, at their midnight. Any other puts them on a category axis, with the text the grid
+  shows. With no such column, the points are evenly spaced.
+- **The series.** Each number column is a series, named by its header, its id `grid:` and the column's id. Other
+  columns are left out.
+- **The values** are what the grid shows, its edits included, never its formatting. A blank, or a value the column
+  refuses, is a gap. A point's key is its row's id, so `linkGrid()` finds it.
+- **The type.** `type` if given; else a line on a time axis, and columns otherwise. The user's choice in the chart's
+  menu wins.
+
+By default the chart follows: it is filled again when the user changes the block or the rows ticked, and when the rows,
+the columns or the pivot change — once a frame at most. `follow: false` takes one picture. Rows ticked by code do not
+refill it, so `linkGrid()` beside it does not shrink the chart to its selection.
+
+`gridTable()` gives the same table without a chart: its `source` (`pivot`, `block`, `rows` or null), its `xAxis` and
+its `series`.
+
+## A menu item
+
+`chartMenuItem()` makes an item for DzGrid's cell menu. It calls your function with the cell's context; the label is
+yours, in your app's language.
+
+```ts
+import { chartMenuItem } from '@dzgraph/dzgrid';
+import { contextMenu } from '@dzgrid/dom/context-menu';
+
+type Month = { readonly id: string; readonly month: string; readonly apples: number };
+declare function openChart(month: string): void;
+
+const menu = contextMenu<Month>({
+  items: (_cell, defaults) => [...defaults, chartMenuItem('Chart', (cell) => openChart(cell.row.month))],
+});
+```
+
+Put `menu` in the grid's features, beside the `range` feature.
+
+<Aside>
+The values and the labels reach the chart only: its tooltip, its table, its exports. Never a problem, never an event.
+</Aside>

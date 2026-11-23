@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 const SITE = fileURLToPath(new URL('..', import.meta.url));
 const DOCS = join(SITE, 'src/content/docs');
 /** The pages written so far, batch by batch (docs/phase-9-steps/plan.md); every other page is still a stub. */
-const WRITTEN = ['index', 'getting-started/typescript', 'getting-started/angular'];
+const WRITTEN = ['index', 'getting-started/typescript', 'getting-started/angular', ...['data', 'series-types', 'axes-time', 'interactions', 'exploring', 'big-data', 'exporting', 'accessibility', 'theming-rtl', 'angular', 'dztooltip', 'dzgrid'].map((g) => `guides/${g}`)];
 /** The sidebar's sections: a page lives in one of them (or is the home page). */
 const SECTIONS = ['getting-started', 'gallery', 'guides', 'options', 'api'];
 /** A stub's one note: its title, and its sentence around the link to what stands in for the page meanwhile. */

@@ -3,6 +3,192 @@ title: "Les données"
 description: "Les formes d’une série : valeurs, paires, points, colonnes typées ; clés ; trous."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [big-data.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/big-data.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Le `data` d'une série prend quatre formes. Prenez celle qu'ont déjà vos données : le graphique lit chacune sans vous
+demander de convertir. Les secteurs et les anneaux prennent des parts, et une jauge une valeur (voir
+[Types de séries](../series-types/)).
+
+## Des valeurs seules
+
+Une liste de nombres : le x de chaque valeur est sa place dans la liste, ou la catégorie à cette place.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+  series: [{ type: 'column', id: 'cups', name: 'Tasses de thé', data: [4, 6, 3, 7, 5] }],
+};
+```
+
+## Paires et points
+
+Des paires `[x, y]` donnent à chaque valeur son propre x : un nombre, le nom d'une catégorie, ou une date sur un
+[axe de temps](../axes-time/#le-temps). Des points `{ x, y }` disent la même chose, et peuvent porter une `key` et un
+`name` ; l'infobulle et le tableau de données montrent le `name` à la place de x.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const pairs: ChartOptions = {
+  series: [{ type: 'scatter', id: 'plants', name: 'Plantes', data: [[12, 3.1], [18, 4.4], [25, 6.0]] }],
+};
+
+export const points: ChartOptions = {
+  series: [
+    {
+      type: 'line',
+      id: 'pond',
+      name: 'Profondeur de la mare (m)',
+      data: [
+        { x: 1, y: 1.4, key: 'p-1', name: 'Premier relevé' },
+        { x: 2, y: 1.1, key: 'p-2', name: 'Second relevé' },
+      ],
+    },
+  ],
+};
+```
+
+Quand les x sont des chaînes et que l'axe n'a pas de `scale`, l'axe est un axe de catégories, dans l'ordre où les
+données les donnent. Quand l'axe liste ses `categories`, une chaîne qu'il ne liste pas reçoit sa propre bande à la fin,
+et le graphique le signale (`invalid-data`).
+
+## Des colonnes typées
+
+Pour les grandes séries, donnez des colonnes : un tableau par champ, tous de même longueur. Un `Float64Array` pour `y`
+est lu tel quel, sans copie : de nouveaux chiffres ne coûtent presque rien. `x` peut manquer : les points sont alors
+également espacés.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const count = 100_000;
+const x = new Float64Array(count);
+const y = new Float64Array(count);
+for (let i = 0; i < count; i++) {
+  x[i] = i;
+  y[i] = Math.sin(i / 500) * 10;
+}
+chart(document.getElementById('wave')!, { series: [{ type: 'line', id: 'wave', data: { x, y } }] }, { types: [line] });
+```
+
+Le guide [Gros volumes](../big-data/) dit comment ces séries sont dessinées.
+
+## Les trous
+
+`null` est un trou : la ligne se coupe, la colonne manque, la case du tableau est vide. Un point seul entre deux trous
+est montré par un marqueur, sinon on ne le verrait pas. Dans une colonne typée, `NaN` est un trou.
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    xAxis: { scale: 'category', categories: ['8 h', '9 h', '10 h', '11 h', '12 h', '13 h', '14 h', '15 h', '16 h'] },
+    series: [
+      { type: 'line', id: 'hive-a', name: 'Ruche A', data: [12, 18, null, 26, 31, null, 22, 17, 11] },
+      { type: 'line', id: 'hive-b', name: 'Ruche B', data: [8, 11, 15, 19, null, 24, null, 14, 9] },
+    ],
+  }}
+/>
+
+Une valeur qui n'est pas un nombre dans un tableau que vous avez écrit (`NaN`, `Infinity`, une chaîne là où va un
+nombre) est dessinée comme un trou elle aussi, et le graphique le signale une fois pour la série : un problème
+`non-finite-value` ou `invalid-data`, avec le nombre de points. Il ne dit jamais quelle était la valeur.
+
+## Les clés
+
+La `key` d'un point est son identité. La sélection, les [graphiques liés](../exploring/) et le
+[pont DzGrid](../dzgrid/) s'en servent pour savoir quel point est lequel, quelle que soit sa place dans les données. Les
+colonnes typées prennent les clés en tableau `key`.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  series: [
+    {
+      type: 'column',
+      id: 'orders',
+      name: 'Commandes',
+      data: { x: ['Nord', 'Sud', 'Est'], y: [42, 35, 28], key: ['shop-n', 'shop-s', 'shop-e'] },
+    },
+  ],
+};
+```
+
+Deux points d'une série avec la même clé : le second est laissé hors de la sélection et des liens, et le graphique
+signale `duplicate-key`.
+
+## L'ordre des x
+
+Les lignes et les aires sont dessinées dans l'ordre des données. Quand x recule, la ligne est dessinée telle quelle
+(elle peut se croiser), sans la [décimation](../big-data/) qui garde les longues lignes rapides, et le graphique
+signale `unsorted-x` une fois pour la série. Triez les données quand l'ordre ne veut rien dire.
+
+## De nouvelles données
+
+`setData()` remplace les valeurs d'une série : le moyen le moins coûteux de montrer de nouveaux chiffres. `update()`
+avec de nouvelles `series` les remplace entières, appariées par leur `id`. Dans les deux cas, ce que l'utilisateur a
+fait (un zoom, une série masquée, une sélection) reste.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('kettle')!,
+  { title: { text: 'Température de la bouilloire (inventée)' }, series: [{ type: 'line', id: 'temp', name: 'Température (°C)', data: [18, 24, 37] }] },
+  { types: [line] },
+);
+
+const readings = [18, 24, 37];
+setInterval(() => {
+  readings.push(Math.min(100, readings.at(-1)! + 9));
+  c.setData('temp', readings);
+}, 1000);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, computed, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-kettle',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 320px" [options]="options()" [types]="types" />
+    <button type="button" (click)="read()">Nouveau relevé</button>
+  `,
+})
+export class Kettle {
+  readonly types = [line];
+  readonly readings = signal<readonly number[]>([18, 24, 37]);
+  readonly options = computed<ChartOptions>(() => ({
+    title: { text: 'Température de la bouilloire (inventée)' },
+    series: [{ type: 'line', id: 'temp', name: 'Température (°C)', data: this.readings() }],
+  }));
+
+  read(): void {
+    this.readings.update((r) => [...r, Math.min(100, r.at(-1)! + 9)]);
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<Aside>
+Le graphique n'écrit jamais dans vos tableaux. Un `y` typé est lu tel quel ; `x` est toujours copié, et un `y` qui
+contient `Infinity` aussi.
+</Aside>

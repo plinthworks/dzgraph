@@ -103,3 +103,28 @@ describe('the tooltip on a time axis (time-axis.md 8)', () => {
     expect(tooltipOf(model, l, { points: [{ seriesId: 'a', index: 1 }] }, 'fr-FR', text).heading).toBe('ven. 6 mars 2026');
   });
 });
+
+describe('one value only (axes.md 5, found by the site\'s aggregation demo)', () => {
+  const xOf = (model: Parameters<typeof layout>[0]['model']) => layout({ model, types, width: 600, height: 400, dir: 'ltr', measureText, text, locale: 'en-GB' }).axes.find((a) => a.id === 'x')!;
+
+  it('an axis aggregated by year with one year spans the years around it, ticks on the calendar', async () => {
+    const { aggregationKit } = await import('../src/aggregation.js');
+    const { model } = normalize({ xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'column', id: 'c', data: [[utc(2026, 2, 3), 4], [utc(2026, 9, 9), 6]] }] }, types);
+    const x = xOf(aggregationKit.apply(model, { period: 'year' })!.model);
+    const values = x.ticks.map((t) => t.value);
+    // Around 2026: from the start of 2025 to the start of 2027, never a millisecond tick on 1 January 2026.
+    expect(Math.min(...values)).toBeGreaterThanOrEqual(utc(2025, 1, 1));
+    expect(Math.max(...values)).toBeLessThanOrEqual(utc(2027, 1, 1));
+    expect(values.every((v) => new Date(v).getUTCDate() === 1 && v % 86_400_000 === 0)).toBe(true);
+    expect([...x.ticks.map((t) => t.label?.text), ...x.second.map((s) => s.text)].join(' ')).toContain('2026');
+  });
+
+  it('one instant: a day on each side, ticks on the hour at least', () => {
+    const { model } = normalize({ xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'line', id: 'l', data: [[utc(2026, 3, 5, 13) + 1234, 4]] }] }, types);
+    const values = xOf(model).ticks.map((t) => t.value);
+    expect(values.length).toBeGreaterThan(1);
+    expect(values.every((v) => v % 3_600_000 === 0)).toBe(true);
+    expect(Math.min(...values)).toBeGreaterThanOrEqual(utc(2026, 3, 4, 13));
+    expect(Math.max(...values)).toBeLessThanOrEqual(utc(2026, 3, 6, 14));
+  });
+});

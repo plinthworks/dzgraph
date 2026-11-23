@@ -196,6 +196,14 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
 - **Batch 1 (skeleton) done.** `website/`, both languages, the sidebar and its stubs, the home page and the getting
   started pages written, `LiveChart`, `CodeTabs`, the site's tests (every example compiled, twins, links), the workflow.
   37 pages built; Chrome en/fr light/dark: every demo drawn, no console message. Gate green (1 179). Committed.
+- **Batch 2 (guides) done.** The 12 guides written in both languages (24 pages, 26 live demos), every example compiled.
+  The demos found two bugs, fixed test first: a time axis with one value (a lone aggregated year) showed milliseconds
+  — now centred a period (or a day) each side (axes.md 5), and a lone column no longer pads half a unit; a time drill
+  into a year the data only begin moved the year back to fit the data — the period is now shown whole (drilldown.md 6).
+  Also: the Angular README's `$event.point` (the output gives the `PointRef`), and two getting-started sentences
+  (outputs' detail; `types`/`features` do not shrink the bundle: `DzChart` imports `allTypes`/`allFeatures` as defaults
+  — owner to decide). An Angular test proves the guide's linking of two charts (a `read` callback after the charts'
+  own) on Angular 21. Committed.
 
 ## Working rules
 

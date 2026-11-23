@@ -111,7 +111,8 @@ function columnMarks<O extends SeriesBase<string, unknown>>(ctx: MarkContext<O, 
 function columnBounds(s: SeriesModel): { x: Bounds | null; y: Bounds | null } {
   const x = rangeOf(s.columns.x);
   const step = smallestStep(s.columns.x);
-  const half = Number.isFinite(step) ? step / 2 : 0.5;
+  // One column alone has no step: its axis centres it itself (axes.md 5), whatever its unit (half a millisecond on time).
+  const half = Number.isFinite(step) ? step / 2 : 0;
   return { x: x ? { min: x.min - half, max: x.max + half } : null, y: withZero(rangeOf(s.columns.y)) };
 }
 

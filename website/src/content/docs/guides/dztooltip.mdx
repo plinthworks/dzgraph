@@ -3,6 +3,121 @@ title: "DzTooltip"
 description: "The points’ tooltip drawn by DzTooltip: placements, tones, animations."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [dztooltip.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/dztooltip.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+A chart has its own tooltip: a card beside the point under the pointer or the keyboard focus. With
+`@dzgraph/dztooltip`, [DzTooltip](https://github.com/plinthworks/dztooltip) draws it instead, with its look: its
+placements, tones, shapes and animations, the same as the other tooltips of your page.
+
+The chart still decides what the tooltip says and when it shows. DzTooltip decides where it goes and how it looks.
+
+## Install
+
+```sh
+npm install @dzgraph/dztooltip @dztooltip/core @dztooltip/theme
+```
+
+Load DzTooltip's theme once, beside DzGraph's: `@dztooltip/theme/dztooltip.css`. Only `@dzgraph/dztooltip` imports
+`@dztooltip/core`: a chart without the bridge ships none of DzTooltip.
+
+## Use it
+
+`dzTooltip()` makes a feature: give it to the chart with the others.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair } from '@dzgraph/dom';
+import { dzTooltip } from '@dzgraph/dztooltip';
+
+chart(
+  document.getElementById('bees')!,
+  {
+    title: { text: 'Bees seen per hour (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [{ type: 'line', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 44, 23] }],
+  },
+  { types: [line], features: [crosshair, dzTooltip({ tone: 'info', placement: 'top', animation: 'morph' })] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { dzTooltip } from '@dzgraph/dztooltip';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />`,
+})
+export class Bees {
+  readonly types = [line];
+  readonly features = [crosshair, dzTooltip({ tone: 'info', placement: 'top', animation: 'morph' })];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Bees seen per hour (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [{ type: 'line', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 44, 23] }],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+This site does not load DzTooltip, so the chart below shows the chart's own tooltip. With the bridge, the same words
+show in a DzTooltip bubble.
+
+<LiveChart
+  height={320}
+  features={['crosshair']}
+  caption="The chart's own tooltip: DzTooltip is not loaded on this page."
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [{ type: 'line', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 44, 23] }],
+  }}
+/>
+
+## The look
+
+`dzTooltip()` takes DzTooltip's look options. The main ones:
+
+| Option | What it does |
+|---|---|
+| `placement` | Where the bubble opens beside the point: `top` (the default), `bottom`, `start`, `end`, with `-start` or `-end`, or `auto`. |
+| `tone` | Its colours: `info`, `neutral`, `success`, `warning`, `danger`. |
+| `animation` | How it opens and closes: `fade`, `scale`, `slide`, `pop`, `rise`, `morph`, `none`. |
+| `shape` | A ready-made shape of `@dztooltip/theme`, or your own as SVG path data. |
+| `flip`, `shift` | Whether it moves to the other side, or slides along, to stay in the window. |
+| `maxWidth`, `offset` | Its widest, and its gap from the point. |
+| `reducedMotion` | Under reduced motion: no animation (`none`, the default) or a short fade (`fade`). |
+
+The bridge adds two of its own: `nonce`, the page's nonce for the one `<style>` DzTooltip adds under a strict CSP, and
+`root`, the element the bubble goes in. DzTooltip's [documentation](https://github.com/plinthworks/dztooltip) has the
+rest.
+
+## What stays the chart's
+
+- **The words.** The heading, a row per series with its sign, name and value, the shares and totals: the chart's, in
+  the chart's language and direction.
+- **When.** Shown at once on the point under the pointer or the focus, moved from point to point, hidden when the
+  pointer leaves the plot, on Escape, and on a tap outside. DzTooltip's hover delays do not apply.
+- **Screen readers.** The bubble is for the eyes only. The focused point's name and the chart's live region say the
+  same, as without the bridge.
+
+<Aside>
+As every DzTooltip tooltip, a scroll of the page hides it. The next point pointed at or focused shows it again.
+</Aside>

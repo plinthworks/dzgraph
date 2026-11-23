@@ -3,6 +3,287 @@ title: "Exploring"
 description: "Zoom, the navigator, crosshair, comparison, measure, selection, aggregation, drilldown, the menu, the view as JSON, linked charts."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [view-state.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/view-state.md).
-:::
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+Each way to explore is a feature of `@dzgraph/dom`, imported on its own and given to `chart()` in `features`
+(see [Series types and features](../../getting-started/typescript/#series-types-and-features)). What the user finds
+while exploring — a range, a selection, a comparison — is their **view**: plain JSON the app can keep and give back.
+
+## Zoom and pan
+
+With the `zoom` feature, a drag across the plot zooms to the x range it covers; Shift + drag moves the range once
+zoomed; Ctrl (⌘ on a Mac) + wheel zooms around the pointer, and a plain wheel still scrolls the page. On a touch
+screen, a pinch zooms and a one-finger slide moves the range. Value axes fit the points in view, and a « Reset zoom »
+button goes back to the whole. The chart never zooms past the data's ends.
+
+`rangeChange` gives the visible bounds (`null` for the whole); `setRange()` sets them from the app, with numbers or,
+on a time axis, ISO dates.
+
+## The navigator and range buttons
+
+`navigator: true`, with the `navigatorStrip` feature (it brings `zoom`), draws a strip under the plot with the
+whole x range and a window over the visible part. Drag the window to move the range, a handle to move one end; both
+handles are sliders for the keyboard. On a time axis, buttons above the plot (« 1m », « 3m », « YTD », « 1y »,
+« All ») show the last month, the last three months, the year so far, the last year or everything
+(`rangeButtons: false` hides them); a button longer than the data is disabled.
+
+`crosshair: true`, with the `crosshair` feature, adds lines through the pointer and its values on the axes
+(`{ horizontal: true }` for the horizontal line too).
+
+<LiveChart
+  height={420}
+  features={['timeAxis', 'navigatorStrip', 'crosshair']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'A made-up sensor, one reading a minute' },
+    crosshair: true,
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair, navigatorStrip, timeAxis } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('sensor')!,
+  { navigator: true, crosshair: true, xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'line', id: 'sensor', data: [['2026-01-01T00:00:00Z', 100], ['2026-01-01T00:01:00Z', 101]] }] },
+  { types: [line], features: [timeAxis, navigatorStrip, crosshair] },
+);
+c.on('rangeChange', (e) => console.log(e.range));
+c.setRange({ min: '2026-01-01T00:00:00Z', max: '2026-01-01T00:01:00Z' });
+```
+
+## Modes: zoom, select, measure
+
+A drag across the plot does one thing at a time. With two or more of the `zoom`, `selection` and `measure` features,
+a row of buttons at the start of the plot's top edge chooses which: « Zoom », « Select », « Measure ».
+`setMode()` chooses from the app, and `modeChange` says when the user did. A chart with `selection` alone selects on
+drag.
+
+<LiveChart
+  height={400}
+  features={['zoom', 'selection', 'measure', 'canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Two made-up clouds' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Samples', data: [] }],
+  }}
+/>
+
+## Measure
+
+In measure mode, press on a point and drag to another: a line joins them and a tag gives the difference in value,
+in percent and along x (a duration on a time axis). The two points may be of different series. Escape, a click
+elsewhere or new data removes it; zooming keeps it on its points. With the keyboard, M on a focused point starts a
+measure, the arrows move its end, M keeps it. `measure` gives the two points, `null` when it goes.
+
+## Selection
+
+`selection: true`, with the `selection` feature, lets the user select points: a range of x on lines and areas, a
+rectangle on scatters, columns and bars; `shapes` lists those offered (`rectangle`, `range`, `lasso`). The lasso is
+exact, even on a million points. Shift adds, Alt removes; a click selects one point, Shift + click adds it; Escape or
+a click on empty plot clears. With the keyboard, Space selects the focused point. Selected points keep their colour
+and the others fade.
+
+The selection is data, not pixels: it lasts through zoom, resize and hidden series. `selectionChange` gives the
+indices, the keys and the x values per series; `selectBy()` selects from the app by key or by x.
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('trees')!,
+  { selection: true, series: [{ type: 'scatter', id: 'trees', data: [{ x: 2, y: 3, key: 'oak' }, { x: 4, y: 1, key: 'elm' }, { x: 5, y: 4, key: 'yew' }] }] },
+  { types: [scatter], features: [selection] },
+);
+c.on('selectionChange', (e) => console.log(e.count, e.series.map((s) => s.keys)));
+c.selectBy('key', ['oak', 'yew']);
+```
+
+## Comparison and the menu
+
+`compare` on a y axis, with the `compare` feature, draws each series against its first point in view: `value` as
+the difference, `percent` as the change in percent, `index` as base 100. `compareTo` fixes the baseline at an x.
+Zooming moves a baseline that is not fixed. The tooltip gives the compared value, then the raw one.
+
+The `menu` feature adds a « Chart options » button at the end of the top edge. `menu: true` offers everything that
+makes sense for the data; `{ items }` chooses: a series' `type`, the `aggregation`, the `scale` (linear or
+logarithmic), the comparison (`compare`), and with `exporting`, `export` and `print`. A choice is part of the view.
+
+<LiveChart
+  height={360}
+  features={['compare', 'menu']}
+  options={{
+    title: { text: 'Two made-up shops, compared with January' },
+    menu: { items: ['compare', 'scale', 'type'] },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'North shop', data: [120, 132, 128, 150, 161, 158] },
+      { type: 'line', id: 'south', name: 'South shop', data: [80, 78, 90, 99, 97, 112] },
+    ],
+  }}
+/>
+
+## Aggregation
+
+`aggregate` on the x axis, with the `aggregation` feature, draws one point per period of a time axis (`hour`, `day`,
+`week`, `month`, `quarter`, `year`, on the zone's calendar) or per bucket of a number axis (`{ step }`). Each series
+says how (`aggregate`: `sum`, `mean`, `min`, `max`, `count`); columns and bars sum by default, the others take the
+mean. A period without points is a gap, not a zero. The tooltip names the period and how many points it holds.
+
+```ts
+import { column } from '@dzgraph/core';
+import { aggregation, chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('rain')!,
+  {
+    xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'month' },
+    series: [{ type: 'column', id: 'rain', name: 'Rain (mm)', aggregate: 'sum', data: [['2026-01-05', 12], ['2026-01-19', 4], ['2026-02-02', 9]] }],
+  },
+  { types: [column], features: [timeAxis, aggregation] },
+);
+```
+
+## Drilldown
+
+A click or Enter on a point that has a detail shows the detail in its place; a breadcrumb above the plot goes back,
+as do Backspace and Alt + ←. Going back restores the level as it was. `drill` gives the path of keys.
+
+`drilldown: 'time'`, with the `drilldown` feature (it brings `aggregation`), starts a time axis at years and drills
+a year into its months, a month into its days. Click a year, then a month:
+
+<LiveChart
+  height={360}
+  features={['timeAxis', 'drilldown']}
+  data={{ recipe: 'walk', count: 600000 }}
+  options={{
+    title: { text: 'A made-up sensor, mean by year' },
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'sensor', name: 'Reading', aggregate: 'mean', data: [] }],
+  }}
+/>
+
+A series' `drilldown` gives each point's detail by the point's key (`details`), or loads it (`load`, a function
+returning a promise of series); a load that fails or takes more than 10 s says so and offers to retry. Click a fruit:
+
+<LiveChart
+  height={340}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Orchard harvest (made up)' },
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears', 'Plums'] },
+    series: [
+      {
+        type: 'column',
+        id: 'fruit',
+        name: 'Crates',
+        data: { y: [52, 31, 18], key: ['apples', 'pears', 'plums'] },
+        drilldown: {
+          details: {
+            apples: [{ type: 'column', id: 'apples', name: 'Apples', data: [['Gala', 22], ['Russet', 17], ['Bramley', 13]] }],
+            pears: [{ type: 'column', id: 'pears', name: 'Pears', data: [['Comice', 19], ['Conference', 12]] }],
+            plums: [{ type: 'column', id: 'plums', name: 'Plums', data: [['Victoria', 11], ['Damson', 7]] }],
+          },
+        },
+      },
+    ],
+  }}
+/>
+
+## The keys for exploring
+
+| Key | What it does |
+|---|---|
+| + − | zoom in or out around the focused point |
+| Shift + ← → | move the visible range (in selection mode: extend the selection) |
+| 0 | back to the whole |
+| Space | select or unselect the focused point |
+| M | start a measure on the focused point, then keep it |
+| Enter | a point's detail |
+| Backspace, Alt + ← | up one level of detail |
+| Escape | remove the measure, clear the selection |
+
+## The view as JSON
+
+The view holds what the user changed while exploring, and only that: hidden series, the visible range, the
+comparison, the selection, the aggregation, the drill level, a series' type, the scale. It names series by id and
+points by key (or index), never by their values. `getView()` gives it, `setView()` gives it back, `viewChange` says
+what changed and who changed it. What it names that no longer exists is left out and reported (`invalid-view`).
+The mode and a measure are not part of it: they are how the user works, not what they found.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line, type ChartView } from '@dzgraph/core';
+import { chart, zoom } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', id: 'load', data: [12, 15, 11, 18, 16] }] }, { types: [line], features: [zoom] });
+
+const saved = localStorage.getItem('load-view');
+if (saved) c.setView(JSON.parse(saved) as ChartView);
+c.on('viewChange', (e) => {
+  if (e.source === 'user') localStorage.setItem('load-view', JSON.stringify(e.view));
+});
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal, viewChild } from '@angular/core';
+import { line, type ChartOptions, type ChartView } from '@dzgraph/core';
+import { zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-load',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 300px" [options]="options()" [types]="types" [features]="features" (viewChange)="saved.set($event.view)" />
+    <button type="button" (click)="restore()">Restore the view</button>
+  `,
+})
+export class Load {
+  readonly types = [line];
+  readonly features = [zoom];
+  readonly chart = viewChild.required(DzChart);
+  readonly saved = signal<ChartView | null>(null);
+  readonly options = signal<ChartOptions>({ series: [{ type: 'line', id: 'load', data: [12, 15, 11, 18, 16] }] });
+
+  restore(): void {
+    const view = this.saved();
+    if (view) this.chart().chart?.setView(view);
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Linked charts
+
+`linkCharts()` makes charts follow each other, by value and never by pixel: the crosshair and the tooltip at the
+same x, the same visible range, the same selected points (by key or by x), the same drill level. It returns the
+function that unlinks them; a chart destroyed leaves its groups by itself.
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart, crosshair, linkCharts, selection, zoom, type ChartSetup } from '@dzgraph/dom';
+
+const setup: ChartSetup = { types: [line, column], features: [zoom, crosshair, selection] };
+const price = chart(document.getElementById('price')!, { crosshair: true, series: [{ type: 'line', data: [10, 12, 11, 14] }] }, setup);
+const volume = chart(document.getElementById('volume')!, { crosshair: true, series: [{ type: 'column', data: [300, 420, 380, 510] }] }, setup);
+
+const unlink = linkCharts([price, volume], { crosshair: true, zoom: 'x', selection: 'x' });
+unlink();
+```

@@ -23,7 +23,8 @@ Load the theme once, in the app's styles (`angular.json`'s `styles`, or a `@impo
 
 The options are a signal input: a new value updates the chart, and what the user did (a zoom, a hidden series, a
 selection) stays. `types` and `features` default to every series type and every feature (`allTypes`,
-`allFeatures`); give fewer to ship less.
+`allFeatures`); give fewer and the chart draws and does only those. The component
+imports both lists, so they are in the bundle either way.
 
 <CodeTabs>
 <Fragment slot="angular">
@@ -97,7 +98,9 @@ c.on('pointClick', (e) => console.log('Picked point', e.point.index));
 
 ## Outputs
 
-Every event of the chart is an output of the component, with the same detail: `problems`, `pointHover`,
+Every event of the chart is an output of the component. The point events (`pointHover`, `pointClick`, `pointFocus`)
+give the `PointRef` itself, `rangeChange` the range, `modeChange` the mode and `problems` the list; the others give
+the event's detail: `problems`, `pointHover`,
 `pointClick`, `pointFocus`, `legendToggle`, `rangeChange`, `viewChange`, `modeChange`, `measure`, `selectionChange`,
 `drill`.
 

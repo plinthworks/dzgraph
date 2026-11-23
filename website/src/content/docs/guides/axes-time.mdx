@@ -3,6 +3,190 @@ title: "Axes and time"
 description: "Linear, category, logarithmic and time scales; time zones; ticks; two value axes."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [time-axis.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/time-axis.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+A chart has an x axis and a y axis, guessed from the data when the options leave them out. `xAxis` and `yAxis` take
+one axis, or a list of them. An axis's `scale` says how it turns values into positions.
+
+| `scale` | Values | When |
+|---|---|---|
+| `'linear'` | numbers | the default for numbers |
+| `'category'` | names, one band each | the default when x values are strings |
+| `'log'` | positive numbers, each power of ten the same length | values over several orders of magnitude |
+| `'time'` | instants and calendar days, in a zone | with the `timeAxis` feature |
+
+## Bounds and ticks
+
+A value axis fits the data and rounds its ends outwards to ticks: values from 13 to 87 give an axis from 0 to 100.
+Columns, bars and areas always have zero on their axis; lines and scatters do not force it in. `min` and `max` are
+kept exactly as given. Ticks fall on round steps (1, 2, 2.5 or 5 times a power of ten), about one every 64 px upright;
+`ticks.target` asks for another count. Labels follow the chart's locale, and large numbers shorten (`12K`, `3.4M`).
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  yAxis: {
+    scale: 'linear',
+    title: 'Weight',
+    min: 0,
+    ticks: { target: 4, format: (v, context) => `${v.toLocaleString(context.locale)} kg` },
+  },
+  series: [{ type: 'line', id: 'pumpkin', name: 'Pumpkin', data: [2.5, 4.1, 6.8, 9.2] }],
+};
+```
+
+`ticks.grid` turns gridlines on or off (on for value axes, off for the x axis). `reversed` runs an axis from its end
+to its start. `opposite` puts it on the far side: an x axis at the top, a y axis at the end of the reading direction.
+`title` writes the axis's name beyond its labels.
+
+A category axis has one band per category, its label centred under the band. Labels that would overlap are turned by
+45°, then every second (third…) one is shown, always the first.
+
+## Logarithmic scale
+
+`scale: 'log'` on a value axis: base ten, each power of ten the same length. A value of zero or below has no place on
+it: the point becomes a gap and the series reports `non-positive-log-value` once, with how many points. It is never
+moved to a small number to be drawn.
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Ants in a made-up colony' },
+    xAxis: { title: 'Week' },
+    yAxis: { scale: 'log', title: 'Ants' },
+    series: [{ type: 'line', id: 'ants', name: 'Ants', data: [[1, 12], [2, 40], [3, 150], [4, 520], [5, 2100], [6, 7400], [7, 26000], [8, 61000]] }],
+  }}
+/>
+
+Stacking on a log axis is reported (`invalid-option`): a pile's parts do not add up along it.
+
+## Time
+
+`scale: 'time'` needs the `timeAxis` feature (without it the axis is drawn linear and the chart reports
+`missing-module`). It reads three kinds of x:
+
+- **instants** as numbers: milliseconds since 1970 UTC;
+- **instants** as ISO strings with an offset: `2026-03-29T01:30:00+01:00`, `2026-03-29T00:30:00Z`;
+- **calendar days**: `2026-03-29`, placed at that day's midnight in the axis's zone.
+
+A date-time without an offset (`2026-03-29T01:30`) is never guessed: the point is a gap, and the chart reports
+`ambiguous-instant`. Ticks fall on round wall-clock values (years, months, days, hours…). A label says only what
+changes at its unit (« 2026 », « Mar », « 3 », « 14:00 »), and when ticks are days or finer, a second row names the
+month or the date.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('eggs')!,
+  {
+    title: { text: 'Eggs laid (made up)' },
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [
+      {
+        type: 'column',
+        id: 'eggs',
+        name: 'Eggs',
+        data: [['2026-03-27', 5], ['2026-03-28', 7], ['2026-03-29', 6], ['2026-03-30', 8], ['2026-03-31', 4]],
+      },
+    ],
+  },
+  { types: [column], features: [timeAxis] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-eggs',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />`,
+})
+export class Eggs {
+  readonly types = [column];
+  readonly features = [timeAxis];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Eggs laid (made up)' },
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [
+      {
+        type: 'column',
+        id: 'eggs',
+        name: 'Eggs',
+        data: [['2026-03-27', 5], ['2026-03-28', 7], ['2026-03-29', 6], ['2026-03-30', 8], ['2026-03-31', 4]],
+      },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'zoom', 'crosshair']}
+  data={{ recipe: 'walk', count: 4320 }}
+  options={{
+    title: { text: 'A made-up sensor, one reading a minute' },
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+Three days of readings, one a minute: drag across the plot to zoom down to hours and minutes, and the ticks follow.
+
+## Time zones
+
+An axis reads instants in its `zone`, an IANA name (`'Europe/Paris'`, `'America/Los_Angeles'`); without one, the
+page's zone. Ticks, labels, the tooltip and the data table all read that zone's wall clock. A day tick stands at local
+midnight even on a day of 23 or 25 hours; an hour the clock repeats has two ticks, an hour it skips has none.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  xAxis: { scale: 'time', zone: 'Pacific/Auckland', min: '2026-04-04T00:00:00+13:00', max: '2026-04-06T00:00:00+12:00' },
+  series: [{ type: 'line', id: 'tide', name: 'Tide (m)', data: [[Date.UTC(2026, 3, 4, 3), 1.2], [Date.UTC(2026, 3, 4, 9), 2.6]] }],
+};
+```
+
+<Aside>
+Days and instants are different things. A calendar day has no zone; an instant has no calendar until a zone reads it.
+DzGraph never turns one into the other without the axis's zone, so a chart reads the same on every machine.
+</Aside>
+
+## Two value axes
+
+Two measures of different units each get their own value axis: give `yAxis` a list, the second `opposite`, and name
+it on its series (`yAxis: 'y2'`; axes are `y`, `y2`, `y3`… unless you give them an `id`). The second axis's ticks fall
+on the first one's gridlines, so one set of gridlines serves both. Each axis shows the signs of its series before its
+title, so the reader knows which series is read where without relying on colour.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Rain and warmth (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: [{ title: 'Rain (mm)' }, { title: 'Temperature (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Rain', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'warmth', name: 'Temperature', yAxis: 'y2', data: [4, 6, 9, 12, 16, 19] },
+    ],
+  }}
+/>

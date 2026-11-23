@@ -3,6 +3,124 @@ title: "DzTooltip"
 description: "L’infobulle des points dessinée par DzTooltip : placements, tons, animations."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [dztooltip.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/dztooltip.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Un graphique a sa propre infobulle : une carte à côté du point sous le pointeur ou sous le focus du clavier. Avec
+`@dzgraph/dztooltip`, c'est [DzTooltip](https://github.com/plinthworks/dztooltip) qui la dessine, avec son allure : ses
+placements, ses tons, ses formes et ses animations, les mêmes que les autres infobulles de la page.
+
+Le graphique décide toujours de ce que dit l'infobulle et du moment où elle s'affiche. DzTooltip décide où elle se
+place et de quoi elle a l'air.
+
+## Installer
+
+```sh
+npm install @dzgraph/dztooltip @dztooltip/core @dztooltip/theme
+```
+
+Chargez le thème de DzTooltip une fois, à côté de celui de DzGraph : `@dztooltip/theme/dztooltip.css`. Seul
+`@dzgraph/dztooltip` importe `@dztooltip/core` : un graphique sans le pont n'embarque rien de DzTooltip.
+
+## L'utiliser
+
+`dzTooltip()` fait une fonction : donnez-la au graphique avec les autres.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair } from '@dzgraph/dom';
+import { dzTooltip } from '@dzgraph/dztooltip';
+
+chart(
+  document.getElementById('bees')!,
+  {
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 44, 23] }],
+  },
+  { types: [line], features: [crosshair, dzTooltip({ tone: 'info', placement: 'top', animation: 'morph' })] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { dzTooltip } from '@dzgraph/dztooltip';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-bees',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />`,
+})
+export class Bees {
+  readonly types = [line];
+  readonly features = [crosshair, dzTooltip({ tone: 'info', placement: 'top', animation: 'morph' })];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 44, 23] }],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+Ce site ne charge pas DzTooltip : le graphique ci-dessous montre l'infobulle propre au graphique. Avec le pont, les
+mêmes mots s'affichent dans une bulle de DzTooltip.
+
+<LiveChart
+  height={320}
+  features={['crosshair']}
+  caption="L'infobulle propre au graphique : DzTooltip n'est pas chargé sur cette page."
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 44, 23] }],
+  }}
+/>
+
+## L'allure
+
+`dzTooltip()` prend les options d'allure de DzTooltip. Les principales :
+
+| Option | Ce qu'elle fait |
+|---|---|
+| `placement` | Où la bulle s'ouvre à côté du point : `top` (par défaut), `bottom`, `start`, `end`, avec `-start` ou `-end`, ou `auto`. |
+| `tone` | Ses couleurs : `info`, `neutral`, `success`, `warning`, `danger`. |
+| `animation` | Comment elle s'ouvre et se ferme : `fade`, `scale`, `slide`, `pop`, `rise`, `morph`, `none`. |
+| `shape` | Une forme toute faite de `@dztooltip/theme`, ou la vôtre en tracé SVG. |
+| `flip`, `shift` | Si elle passe de l'autre côté, ou glisse, pour rester dans la fenêtre. |
+| `maxWidth`, `offset` | Sa plus grande largeur, et son écart au point. |
+| `reducedMotion` | Avec le mouvement réduit : aucune animation (`none`, par défaut) ou un court fondu (`fade`). |
+
+Le pont en ajoute deux : `nonce`, le nonce de la page pour l'unique `<style>` qu'ajoute DzTooltip sous une CSP
+stricte, et `root`, l'élément où va la bulle. La [documentation](https://github.com/plinthworks/dztooltip) de DzTooltip
+donne le reste.
+
+## Ce qui reste au graphique
+
+- **Les mots.** Le titre, une ligne par série avec son signe, son nom et sa valeur, les parts et les totaux : ceux du
+  graphique, dans sa langue et son sens d'écriture.
+- **Le moment.** Affichée tout de suite sur le point sous le pointeur ou le focus, déplacée de point en point, masquée
+  quand le pointeur quitte le tracé, sur Échap, et sur un toucher ailleurs. Les délais de survol de DzTooltip ne
+  s'appliquent pas.
+- **Les lecteurs d'écran.** La bulle n'est que pour les yeux. Le nom du point sous le focus et la zone annoncée du
+  graphique disent la même chose, comme sans le pont.
+
+<Aside>
+Comme toute infobulle de DzTooltip, un défilement de la page la masque. Le prochain point pointé ou sous le focus la
+rouvre.
+</Aside>

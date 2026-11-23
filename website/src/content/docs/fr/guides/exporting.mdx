@@ -3,6 +3,144 @@ title: "Export et impression"
 description: "SVG, PNG, CSV, téléchargement et impression, faits dans la page."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [export.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/export.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+La fonction `exporting` fait d'un graphique un fichier : une image (SVG, PNG), ses chiffres (CSV) ou une page imprimée.
+Tout est fait dans la page ; rien n'est envoyé à un serveur. Sans elle, les méthodes d'export ne font rien et
+signalent un problème `missing-module`.
+
+## Ce que montre une image
+
+Une image est la **vue**, comme à l'écran : la plage visible, sans les séries masquées, avec la sélection, la
+comparaison, l'agrégation et le niveau de détail, et avec le titre, les axes et la légende. Les outils restent
+dehors : ni barre des modes, ni bouton du menu, ni bouton de retour du zoom, ni fil d'Ariane, ni navigateur, ni boutons
+de plage, et ni infobulle, ni viseur, ni anneau de focus. Une image montre les données, pas les outils.
+
+- **Les couleurs** sont celles de l'écran (une page sombre s'exporte sombre), sauf si l'image demande
+  `theme: 'light'` ou `'dark'`. Le fond est toujours peint, jamais transparent.
+- **La taille** : celle du graphique à l'écran. `width` et `height` refont la mise en page à cette taille (les
+  étiquettes, les graduations et la légende s'y ajustent) ; ils n'étirent pas l'image.
+- **Le SVG** est un document autonome : les couleurs et les polices y sont écrites en valeurs, il n'a pas besoin du
+  thème. Il a `role="img"`, un `<title>` (le titre du graphique) et un `<desc>` (le résumé qu'entendent les lecteurs
+  d'écran), la langue et le sens. Un nuage dense donne un élément par point : prenez le PNG pour lui.
+- **Le PNG** est dessiné à `scale` pixels de l'appareil par pixel CSS (par défaut ceux de l'écran, au moins 2). Les
+  marques que l'écran peint avec Canvas ou WebGL2 y sont aussi.
+- **Le nom du fichier** vient du titre (lettres, chiffres et tirets), sinon « graphique » ; `exporting.filename` le
+  fixe.
+
+## Depuis le code
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, exporting } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('harvest')!,
+  {
+    title: { text: 'Cagettes cueillies (inventées)' },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [12, 19, 15, 22, 17] }],
+    exporting: { filename: 'cagettes' },
+  },
+  { types: [column], features: [exporting] },
+);
+
+document.getElementById('save')!.addEventListener('click', () => void c.download('png'));
+
+const svg = c.exportSvg({ theme: 'light' }); // un document SVG autonome
+const png = await c.exportPng({ width: 1200, height: 630, scale: 2 }); // un Blob, pour l'aperçu d'un lien
+const csv = c.exportCsv(); // les chiffres, en texte
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal, viewChild } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { exporting } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-crates',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />
+    <button type="button" (click)="save()">Enregistrer en PNG</button>
+  `,
+})
+export class Crates {
+  readonly chart = viewChild.required(DzChart);
+  readonly types = [column];
+  readonly features = [exporting];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Cagettes cueillies (inventées)' },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [12, 19, 15, 22, 17] }],
+    exporting: { filename: 'cagettes' },
+  });
+
+  async save(): Promise<void> {
+    await this.chart().chart?.download('png');
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+`exportSvg()` et `exportCsv()` donnent du texte (null sans la fonction) ; `exportPng()` donne un `Blob` ;
+`download()` enregistre un fichier dans le format nommé (`'png'`, `'svg'` ou `'csv'`).
+
+## Le menu de l'utilisateur
+
+Avec la fonction `menu`, `menu: true` place un petit bouton en haut du graphique ; son élément « Télécharger » propose
+PNG, SVG et CSV, et « Imprimer » imprime. `menu: { items: ['export', 'print'] }` ne propose que ces deux-là. Essayez sur
+ce graphique :
+
+<LiveChart
+  height={340}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Cagettes cueillies (inventées)' },
+    menu: { items: ['export', 'print'] },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [{ type: 'column', id: 'crates', name: 'Cagettes', data: [12, 19, 15, 22, 17] }],
+  }}
+/>
+
+## Les chiffres en CSV
+
+Le CSV a les mêmes colonnes que le [tableau de données](../accessibility/#le-tableau-de-données) : les valeurs de x,
+puis une colonne par série visible. Il a les lignes que montre le tableau (la plage visible, ou toutes les données
+quand le tableau y est passé), mais toutes, sans limite.
+
+- Les valeurs sont brutes : `1234.5`, jamais « 1 234,5 € » ; une cellule vide pour un trou.
+- Les instants sont en ISO 8601 avec leur décalage, dans le fuseau de l'axe (`2026-03-08T02:00:00+01:00`) ; des jours
+  seuls (`2026-03-08`) quand chaque instant est un minuit.
+- Par défaut il est universel : des virgules entre les cellules, un point pour les décimales, de l'UTF-8 avec une
+  marque d'ordre des octets pour qu'un tableur lise les accents. `exporting: { csv: { locale: true } }` (ou
+  `exportCsv({ locale: true })`) écrit des points-virgules et une virgule décimale quand la langue du graphique écrit
+  ses décimales avec une virgule : un tableur français l'ouvre en colonnes.
+- Une cellule de texte qui commence comme une formule (`=`, `+`, `-`, `@`) est écrite après une apostrophe, pour qu'un
+  tableur ne l'exécute pas. Les nombres ne sont jamais touchés.
+
+## Imprimer
+
+`print()` imprime le graphique seul sur une page : l'image ci-dessus, en couleurs claires (le papier est clair), à la
+largeur de la page. `print({ table: true })` ajoute le tableau de données dessous. L'impression passe par un cadre
+caché : la page autour du graphique ne bouge pas, et le graphique à l'écran garde sa vue et son focus.
+
+Une page imprimée entière, par l'impression du navigateur, imprime aussi chaque graphique en couleurs claires, sans
+ses outils, et jamais coupé entre deux feuilles. C'est le travail du thème : cela vaut même sans la fonction
+`exporting`.
+
+<Aside>
+Rien ne quitte le navigateur : l'export n'appelle jamais un service distant, et un graphique de chiffres privés reste
+privé.
+</Aside>

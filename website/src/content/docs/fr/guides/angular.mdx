@@ -3,6 +3,258 @@ title: "Angular en détail"
 description: "<dz-chart> et <dz-sparkline> : signaux, sorties, méthodes du graphique, rendu serveur."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [angular.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/angular.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+`@dzgraph/angular` fournit deux composants autonomes : `<dz-chart>` et `<dz-sparkline>`. La page
+[Angular](../../getting-started/angular/) dessine un premier graphique. Cette page va plus loin : des options faites de
+signaux, ce que porte chaque sortie, les méthodes du graphique, deux graphiques qui se suivent, les sparklines et le
+serveur.
+
+## Entrées
+
+| Entrée | Ce que c'est |
+|---|---|
+| `options` | Obligatoire. Les `ChartOptions` du graphique. Une nouvelle valeur met le graphique à jour. |
+| `types` | Les types de séries que le graphique peut dessiner. Par défaut `allTypes`. |
+| `features` | Les fonctions que le graphique peut utiliser. Par défaut `allFeatures`. |
+| `messages` | Des mots à la place de ceux fournis. |
+| `animate` | Une fonction pour mener soi-même les animations. |
+
+`options` est comparé par identité : donnez un nouvel objet, ne modifiez jamais celui que le graphique a reçu. Un champ
+de premier niveau que la nouvelle valeur n'a plus revient à sa valeur par défaut : retirez le titre, et le graphique
+n'en a plus.
+
+`types`, `features`, `messages` et `animate` forment la configuration du graphique. Une nouvelle valeur de l'un d'eux
+dessine un nouveau graphique, et le zoom, les séries masquées et la sélection de l'utilisateur repartent de zéro.
+Gardez-les dans des champs du composant, comme ci-dessous.
+
+## Des options faites de signaux
+
+Faites des options un `computed` de vos signaux. Quand un signal change, le graphique reçoit de nouvelles options et se
+met à jour. Une série qui garde son `id` est mise à jour sur place.
+
+```ts
+import { Component, computed, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+type Shop = 'harbour' | 'market';
+const HONEY: Record<Shop, readonly number[]> = {
+  harbour: [14, 22, 19, 27, 31, 26],
+  market: [9, 12, 18, 24, 29, 35],
+};
+
+@Component({
+  selector: 'app-honey',
+  imports: [DzChart],
+  template: `
+    <button type="button" (click)="shop.set('harbour')">Boutique du port</button>
+    <button type="button" (click)="shop.set('market')">Étal du marché</button>
+    <dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />
+  `,
+})
+export class Honey {
+  readonly types = [column];
+  readonly features = [crosshair];
+  readonly shop = signal<Shop>('harbour');
+  readonly options = computed<ChartOptions>(() => ({
+    title: { text: 'Pots de miel vendus (inventés)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'column', id: 'jars', name: this.shop() === 'harbour' ? 'Boutique du port' : 'Étal du marché', data: HONEY[this.shop()] }],
+  }));
+}
+```
+
+<LiveChart
+  height={320}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Pots de miel vendus (inventés)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    series: [{ type: 'column', id: 'jars', name: 'Boutique du port', data: [14, 22, 19, 27, 31, 26] }],
+  }}
+/>
+
+## Ce que porte chaque sortie
+
+Chaque événement du graphique est une sortie du même nom. La plupart portent le détail de l'événement, tel que `on()`
+le donne. Quelques-unes n'en portent que la partie utile :
+
+| Sortie | `$event` |
+|---|---|
+| `pointHover` | le point sous le pointeur (`PointRef`), ou null quand il s'en va |
+| `pointClick`, `pointFocus` | le point (`PointRef` : `seriesId`, `index`, `key`) |
+| `rangeChange` | la plage visible (`min`, `max`), ou null pour toutes les données |
+| `modeChange` | le mode : `'zoom'`, `'selection'` ou `'measure'` |
+| `problems` | la liste des problèmes |
+| `legendToggle`, `viewChange`, `measure`, `selectionChange`, `drill` | le détail de l'événement |
+
+Donc `(pointClick)="open($event.seriesId, $event.index)"`, et non `$event.point`.
+
+## Les méthodes du graphique
+
+`chart`, sur le composant, est le graphique lui-même, avec toutes ses méthodes. Il vaut null tant que le graphique
+n'est pas dessiné (après le premier rendu, dans le navigateur) et sur le serveur : appelez-le avec `?.`.
+
+La vue de l'utilisateur (zoom, séries masquées, sélection, comparaison) est une simple donnée. Ici un bouton la garde,
+et un autre la rend :
+
+```ts
+import { Component, viewChild } from '@angular/core';
+import type { ChartOptions, ChartView } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-saved-view',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 300px" [options]="options" />
+    <button type="button" (click)="keep()">Garder cette vue</button>
+    <button type="button" (click)="restore()">Revenir à la vue gardée</button>
+  `,
+})
+export class SavedView {
+  readonly dz = viewChild.required(DzChart);
+  readonly options: ChartOptions = {
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    series: [{ type: 'line', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }],
+  };
+  private kept: ChartView | null = null;
+
+  keep(): void {
+    this.kept = this.dz().chart?.getView() ?? null;
+  }
+  restore(): void {
+    if (this.kept) this.dz().chart?.setView(this.kept);
+  }
+}
+```
+
+## Deux graphiques qui se suivent
+
+`linkCharts()` de `@dzgraph/dom` lie des graphiques : le même viseur, le même zoom, la même sélection. Avec Angular,
+liez-les une fois les deux dessinés. Chaque `<dz-chart>` dessine son graphique après le premier rendu ; une fonction
+`read` d'`afterNextRender` passe après, dans le même rendu.
+
+<CodeTabs>
+<Fragment slot="angular">
+
+```ts
+import { afterNextRender, Component, DestroyRef, inject, viewChildren } from '@angular/core';
+import type { ChartOptions } from '@dzgraph/core';
+import { linkCharts } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-garden',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 240px" [options]="heat" />
+    <dz-chart style="block-size: 240px" [options]="bees" />
+  `,
+})
+export class Garden {
+  readonly charts = viewChildren(DzChart);
+  readonly heat: ChartOptions = {
+    title: { text: 'Chaleur (inventée)' },
+    crosshair: true,
+    series: [{ type: 'line', id: 'heat', name: 'Chaleur (°C)', data: [14, 17, 21, 24, 23, 19, 15] }],
+  };
+  readonly bees: ChartOptions = {
+    title: { text: 'Abeilles vues (inventées)' },
+    crosshair: true,
+    series: [{ type: 'column', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }],
+  };
+
+  constructor() {
+    let unlink = () => {};
+    // Les graphiques sont dessinés dans la phase principale du premier rendu ; la phase de lecture vient après.
+    afterNextRender({
+      read: () => {
+        const charts = this.charts().flatMap((dz) => (dz.chart ? [dz.chart] : []));
+        unlink = linkCharts(charts, { crosshair: true, zoom: 'x' });
+      },
+    });
+    inject(DestroyRef).onDestroy(() => unlink());
+  }
+}
+```
+
+</Fragment>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart, crosshair, linkCharts, zoom } from '@dzgraph/dom';
+
+const heat = chart(
+  document.getElementById('heat')!,
+  { title: { text: 'Chaleur (inventée)' }, crosshair: true, series: [{ type: 'line', id: 'heat', name: 'Chaleur (°C)', data: [14, 17, 21, 24, 23, 19, 15] }] },
+  { types: [line], features: [crosshair, zoom] },
+);
+const bees = chart(
+  document.getElementById('bees')!,
+  { title: { text: 'Abeilles vues (inventées)' }, crosshair: true, series: [{ type: 'column', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }] },
+  { types: [column], features: [crosshair, zoom] },
+);
+const unlink = linkCharts([heat, bees], { crosshair: true, zoom: 'x' });
+```
+
+</Fragment>
+</CodeTabs>
+
+Un graphique détruit quitte ses liens de lui-même ; `unlink` les arrête tous.
+
+## Les sparklines
+
+`<dz-sparkline>` prend `values` (obligatoire ; `null` est un trou) et `options` : `type` (`line`, `area`, `column`,
+`winloss`), `min` et `max`, `markers` (`last`, `minmax`, `none`), `label`, `locale`, `messages`. Une nouvelle valeur de
+l'une ou l'autre la redessine. Son `sparkline` donne ses `problems`.
+
+Donnez à plusieurs sparklines les mêmes `min` et `max`, et elles se comparent :
+
+```ts
+import { Component } from '@angular/core';
+import { DzSparkline } from '@dzgraph/angular';
+
+type Hive = { readonly name: string; readonly weights: readonly number[] };
+
+@Component({
+  selector: 'app-hives',
+  imports: [DzSparkline],
+  template: `
+    @for (hive of hives; track hive.name) {
+      <p class="hive">{{ hive.name }} <dz-sparkline [values]="hive.weights" [options]="{ type: 'column', min: 0, max: 40, label: hive.name }" /></p>
+    }
+  `,
+})
+export class Hives {
+  readonly hives: readonly Hive[] = [
+    { name: 'Ruche A', weights: [12, 18, 25, 31, 36, 38] },
+    { name: 'Ruche B', weights: [10, 11, 15, 14, 19, 22] },
+  ];
+}
+```
+
+Une sparkline mesure 6em sur 1,2em, dans la ligne du texte. Donnez-lui sa taille dans le CSS global de l'app, sur
+`.dzgraph-sparkline` (le dessin est fait par script : les styles limités à un composant ne l'atteignent pas) :
+
+```css
+.hive .dzgraph-sparkline { inline-size: 8em; block-size: 2em; }
+```
+
+## Sur le serveur
+
+Sur le serveur, les deux composants ne dessinent rien et n'échouent sur rien ; `chart` et `sparkline` restent null.
+L'hôte `<dz-chart>` est là, en bloc : donnez-lui sa hauteur en CSS, et la page ne bouge pas quand le graphique arrive
+dans le navigateur.
+
+<Aside>
+Les composants ne dessinent que dans le navigateur, après le premier rendu. Le code qui a besoin du graphique s'y
+exécute aussi : dans un gestionnaire d'événement, ou dans `afterNextRender`.
+</Aside>

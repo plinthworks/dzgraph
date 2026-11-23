@@ -619,8 +619,18 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
     if (a.scale === 'time' && time) {
       // Time (time-axis.md 3–7): the data's ends, ticks on the zone's wall clock, the target lowered while labels overlap.
       const zone = a.zone ?? 'UTC';
-      const lo = p.zoom?.min ?? a.min ?? p.data?.min ?? 0;
-      const hi = p.zoom?.max ?? a.max ?? p.data?.max ?? lo + 86_400_000;
+      let lo = p.zoom?.min ?? a.min ?? p.data?.min ?? 0;
+      let hi = p.zoom?.max ?? a.max ?? p.data?.max ?? lo + 86_400_000;
+      // One value only (axes.md 5): centred, a step on each side — the period around an aggregated one (a single
+      // year shows 2025–2027, never milliseconds of 1 January), else a day.
+      if (hi === lo) {
+        const by = a.period;
+        if (by && 'period' in by) [lo, hi] = [time.periodStart(lo - 1, by.period, zone), time.periodAfter(time.periodStart(lo, by.period, zone), by.period, zone)];
+        else {
+          const step = by ? by.step : 86_400_000;
+          [lo, hi] = [lo - step, lo + step];
+        }
+      }
       let target = a.ticks.target ?? tickTarget(length, p.across ? 'across' : 'upright');
       const format = safeFormat(a.ticks.format as Formatter<InstantMs> | null, path, problems, locale, 0);
       for (;;) {

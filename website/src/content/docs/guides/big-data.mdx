@@ -1,8 +1,110 @@
 ---
 title: "Big data"
-description: "Millions of points: columns, decimation, Canvas and WebGL2."
+description: "Millions of points: typed columns read without a copy, decimation, Canvas past 2 000 marks, WebGL2 past 100 000 points, and what the benches measured."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [big-data.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/big-data.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import LiveChart from '../../../components/LiveChart.astro';
+
+DzGraph draws lines of ten million points and scatters of millions and keeps zooming and panning them fluid. Nothing
+needs turning on for lines; marks in great numbers want the `canvas` feature, and dense scatters the `webgl` one.
+The pictures are the same whichever way they are painted.
+
+## Data in columns
+
+The fastest data is a pair of columns: `{ x, y }` as `Float64Array`s (`x` optional, `key` an optional array of
+strings). The chart reads them without a copy. On a time axis, `x` holds instants in milliseconds since 1970 (UTC).
+
+To show new numbers, write into the columns and give them again with `setData()`: the chart reads them again, and
+forgets what it had worked out from their old values.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+const n = 1_000_000;
+const x = new Float64Array(n);
+const y = new Float64Array(n);
+for (let i = 0; i < n; i++) {
+  x[i] = Date.UTC(2026, 0, 1) + i * 60_000;
+  y[i] = Math.sin(i / 5000) * 10 + 50;
+}
+
+const c = chart(document.getElementById('flow')!, { xAxis: { scale: 'time' }, series: [{ type: 'line', id: 'flow', name: 'Flow (made up)', data: { x, y } }] }, { types: [line], features: [timeAxis] });
+
+y[n - 1] = 75;
+c.setData('flow', { x, y });
+```
+
+A gap is `NaN` in a column (`null` in an array). On a line or an area, x going backwards is reported
+(`unsorted-x`); a scatter's x may come in any order.
+
+## Lines: decimation
+
+A line with more points than the plot has pixel columns is drawn from far fewer points: for each pixel column, the
+first, the last, the lowest and the highest (M4). It looks the same to the eye, every peak kept, and a frame costs
+about the same whatever the length. The tooltip, the keyboard and the data table always give the real points. Zoom
+into this line of a million made-up points: the detail appears as you go.
+
+<LiveChart
+  height={380}
+  features={['timeAxis', 'zoom']}
+  data={{ recipe: 'walk', count: 1000000 }}
+  options={{
+    title: { text: 'One million made-up readings, one a minute' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'walk', name: 'Reading', data: [] }],
+  }}
+/>
+
+The data table for screen readers lists at most 1 000 rows (those of the visible range when zoomed) and says how many
+it leaves out.
+
+## Many marks: Canvas
+
+With the `canvas` feature, a series drawing more than 2 000 marks (markers, columns, scatter points) is painted on a
+Canvas under the axes and labels, with the same colours and sizes, aligned to the pixel. Without it every series is
+drawn in SVG: the same picture, slower past a few thousand elements. Hovering finds the nearest point at once, however
+many there are.
+
+## Dense scatters: WebGL2
+
+With the `webgl` feature (it brings `canvas`), a scatter of more than 100 000 points is drawn by WebGL2. The points
+stay on the graphics card: a zoom or a pan moves the view, not the points, and costs almost no script. Colours,
+symbols, sizes and translucency are those of the Canvas picture, so piles read darker the same way. Lasso a part of
+this cloud of 200 000 made-up points, or zoom into it:
+
+<LiveChart
+  height={420}
+  features={['webgl', 'zoom', 'selection']}
+  data={{ recipe: 'cloud', count: 200000 }}
+  options={{
+    title: { text: 'Two made-up clouds, 200 000 points' },
+    selection: { shapes: ['lasso', 'rectangle'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Samples', data: [] }],
+  }}
+/>
+
+<Aside>
+A page has only about sixteen WebGL contexts. A chart opens one only when it first draws a dense scatter, and frees it
+when destroyed. Without WebGL2 (an old browser, too many contexts, the graphics card lost) the same picture is drawn on
+Canvas, and WebGL2 takes over again when it can.
+</Aside>
+
+## What the benches measured
+
+The thresholds come from measures, not guesses: Canvas draws 100 000 points in about 3 ms of script a frame, and its
+cost grows with each point, where WebGL2's does not. The benches run in real Chrome; the figures below are medians in
+milliseconds of script (2026-11-23), against 16.7 ms for 60 frames a second. They are in
+[bench/results](https://github.com/plinthworks/dzgraph/tree/main/bench/results); `npm run bench` measures again on
+your machine.
+
+| Chart | First drawing | A zoom frame | A pan frame |
+|---|---|---|---|
+| line, 10 million points | 328 | 2.7 | 2.3 |
+| time axis, 1 million points, navigator | 70 | 5.4 | 5.3 |
+| scatter, 100 000 points (Canvas) | 24 | 3.4 | 2.1 |
+| scatter, 1 million points (WebGL2) | 89 | 0.7 | 2.2 |
+| scatter, 10 million points (WebGL2) | 497 | 1.0 | 1.9 |
+
+The lasso stays live too: on a million points, each move of the pointer costs about 5 ms.

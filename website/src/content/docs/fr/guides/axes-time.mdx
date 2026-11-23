@@ -1,8 +1,197 @@
 ---
 title: "Axes et temps"
-description: "Échelles linéaire, par catégories, logarithmique et temporelle ; fuseaux ; graduations ; deux axes de valeurs."
+description: "Échelles linéaire, de catégories, logarithmique et de temps ; fuseaux horaires ; graduations ; deux axes de valeurs."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [time-axis.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/time-axis.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Un graphique a un axe x et un axe y, devinés d'après les données quand les options n'en disent rien. `xAxis` et
+`yAxis` prennent un axe, ou une liste d'axes. La `scale` d'un axe dit comment il change les valeurs en positions.
+
+| `scale` | Valeurs | Quand |
+|---|---|---|
+| `'linear'` | des nombres | par défaut pour des nombres |
+| `'category'` | des noms, une bande chacun | par défaut quand les x sont des chaînes |
+| `'log'` | des nombres positifs, chaque puissance de dix de même longueur | des valeurs sur plusieurs ordres de grandeur |
+| `'time'` | des instants et des jours, dans un fuseau | avec la fonction `timeAxis` |
+
+## Bornes et graduations
+
+Un axe de valeurs suit les données et arrondit ses bouts vers l'extérieur, sur des graduations : des valeurs de 13 à
+87 donnent un axe de 0 à 100. Les colonnes, les barres et les aires ont toujours zéro sur leur axe ; les lignes et les
+nuages de points ne l'imposent pas. `min` et `max` sont gardés tels quels. Les graduations tombent sur des pas ronds
+(1, 2, 2,5 ou 5 fois une puissance de dix), environ une tous les 64 px à la verticale ; `ticks.target` en demande un
+autre nombre. Les étiquettes suivent la langue du graphique, et les grands nombres se raccourcissent (`12 k`, `3,4 M`).
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  yAxis: {
+    scale: 'linear',
+    title: 'Poids',
+    min: 0,
+    ticks: { target: 4, format: (v, context) => `${v.toLocaleString(context.locale)} kg` },
+  },
+  series: [{ type: 'line', id: 'pumpkin', name: 'Citrouille', data: [2.5, 4.1, 6.8, 9.2] }],
+};
+```
+
+`ticks.grid` allume ou éteint les lignes de grille (allumées pour les axes de valeurs, éteintes pour l'axe x).
+`reversed` fait courir un axe de sa fin à son début. `opposite` le met de l'autre côté : un axe x en haut, un axe y à
+la fin du sens de lecture. `title` écrit le nom de l'axe au-delà de ses étiquettes.
+
+Un axe de catégories a une bande par catégorie, son étiquette centrée sous la bande. Des étiquettes qui se
+chevaucheraient sont tournées de 45°, puis une sur deux (sur trois…) est montrée, toujours la première.
+
+## L'échelle logarithmique
+
+`scale: 'log'` sur un axe de valeurs : base dix, chaque puissance de dix de même longueur. Une valeur nulle ou négative
+n'y a pas de place : le point devient un trou et la série signale `non-positive-log-value` une fois, avec le nombre de
+points. Il n'est jamais déplacé vers un petit nombre pour être dessiné.
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Fourmis d’une colonie inventée' },
+    xAxis: { title: 'Semaine' },
+    yAxis: { scale: 'log', title: 'Fourmis' },
+    series: [{ type: 'line', id: 'ants', name: 'Fourmis', data: [[1, 12], [2, 40], [3, 150], [4, 520], [5, 2100], [6, 7400], [7, 26000], [8, 61000]] }],
+  }}
+/>
+
+Empiler sur un axe logarithmique est signalé (`invalid-option`) : les parts d'une pile ne s'y additionnent pas.
+
+## Le temps
+
+`scale: 'time'` demande la fonction `timeAxis` (sans elle, l'axe est dessiné linéaire et le graphique signale
+`missing-module`). Il lit trois sortes de x :
+
+- des **instants** en nombres : des millisecondes depuis 1970 UTC ;
+- des **instants** en chaînes ISO avec un décalage : `2026-03-29T01:30:00+01:00`, `2026-03-29T00:30:00Z` ;
+- des **jours** : `2026-03-29`, placé au minuit de ce jour dans le fuseau de l'axe.
+
+Une date et heure sans décalage (`2026-03-29T01:30`) n'est jamais devinée : le point est un trou, et le graphique
+signale `ambiguous-instant`. Les graduations tombent sur des valeurs rondes de l'horloge (années, mois, jours,
+heures…). Une étiquette ne dit que ce qui change à son unité (« 2026 », « mars », « 3 », « 14:00 »), et quand les
+graduations sont des jours ou plus fines, une seconde ligne nomme le mois ou la date.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('eggs')!,
+  {
+    title: { text: 'Œufs pondus (inventés)' },
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [
+      {
+        type: 'column',
+        id: 'eggs',
+        name: 'Œufs',
+        data: [['2026-03-27', 5], ['2026-03-28', 7], ['2026-03-29', 6], ['2026-03-30', 8], ['2026-03-31', 4]],
+      },
+    ],
+  },
+  { types: [column], features: [timeAxis] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { timeAxis } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-eggs',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />`,
+})
+export class Eggs {
+  readonly types = [column];
+  readonly features = [timeAxis];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Œufs pondus (inventés)' },
+    xAxis: { scale: 'time', zone: 'Europe/Paris' },
+    series: [
+      {
+        type: 'column',
+        id: 'eggs',
+        name: 'Œufs',
+        data: [['2026-03-27', 5], ['2026-03-28', 7], ['2026-03-29', 6], ['2026-03-30', 8], ['2026-03-31', 4]],
+      },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'zoom', 'crosshair']}
+  data={{ recipe: 'walk', count: 4320 }}
+  options={{
+    title: { text: 'Un capteur inventé, un relevé par minute' },
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Relevé', data: [] }],
+  }}
+/>
+
+Trois jours de relevés, un par minute : glissez sur le tracé pour zoomer jusqu'aux heures et aux minutes, et les
+graduations suivent.
+
+## Les fuseaux horaires
+
+Un axe lit les instants dans son `zone`, un nom IANA (`'Europe/Paris'`, `'America/Los_Angeles'`) ; sans lui, le fuseau
+de la page. Graduations, étiquettes, infobulle et tableau de données lisent tous l'horloge de ce fuseau. Une graduation
+de jour tombe au minuit local, même un jour de 23 ou 25 heures ; une heure que l'horloge répète a deux graduations, une
+heure qu'elle saute n'en a aucune.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  xAxis: { scale: 'time', zone: 'Pacific/Auckland', min: '2026-04-04T00:00:00+13:00', max: '2026-04-06T00:00:00+12:00' },
+  series: [{ type: 'line', id: 'tide', name: 'Marée (m)', data: [[Date.UTC(2026, 3, 4, 3), 1.2], [Date.UTC(2026, 3, 4, 9), 2.6]] }],
+};
+```
+
+<Aside>
+Les jours et les instants sont deux choses différentes. Un jour n'a pas de fuseau ; un instant n'a pas de calendrier
+tant qu'un fuseau ne le lit pas. DzGraph ne change jamais l'un en l'autre sans le fuseau de l'axe : un graphique se lit
+de la même façon sur toutes les machines.
+</Aside>
+
+## Deux axes de valeurs
+
+Deux mesures d'unités différentes ont chacune leur axe de valeurs : donnez à `yAxis` une liste, le second `opposite`,
+et nommez-le sur sa série (`yAxis: 'y2'` ; les axes s'appellent `y`, `y2`, `y3`… sauf si vous leur donnez un `id`).
+Les graduations du second axe tombent sur les lignes de grille du premier : un seul jeu de lignes sert aux deux. Chaque
+axe montre les signes de ses séries avant son titre : le lecteur sait quelle série se lit sur quel axe sans s'en
+remettre à la couleur.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Pluie et chaleur (inventées)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: [{ title: 'Pluie (mm)' }, { title: 'Température (°C)', opposite: true }],
+    series: [
+      { type: 'column', id: 'rain', name: 'Pluie', data: [62, 48, 51, 44, 57, 39] },
+      { type: 'line', id: 'warmth', name: 'Température', yAxis: 'y2', data: [4, 6, 9, 12, 16, 19] },
+    ],
+  }}
+/>

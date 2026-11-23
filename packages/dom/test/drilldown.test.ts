@@ -98,6 +98,21 @@ describe('time, automatic (drilldown.md 6)', () => {
   });
 });
 
+describe('time, a year the data only begin (drilldown.md 6, found by the site\'s demo)', () => {
+  it('the level shows the whole year, not a year of data moved back to fit', async () => {
+    const day = 86_400_000;
+    const start = Date.UTC(2025, 0, 1);
+    // From 1 January 2025 to 4 February 2026: 2026 holds a month and a few days.
+    const data = Array.from({ length: 400 }, (_, i) => [start + i * day, 1] as [number, number]);
+    const { el, c } = mount({ drilldown: 'time', xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'column', data }] });
+    enterOn(el, 1);
+    await raf2();
+    // The year's last instant ends it: 1 January 2027 belongs to the next year.
+    expect(c.getView().range).toEqual({ min: Date.UTC(2026, 0, 1), max: Date.UTC(2027, 0, 1) - 1 });
+    expect(rows(el).map((r) => r[0])).toEqual(['January 2026', 'February 2026']);
+  });
+});
+
 describe('a slice with a detail, selectable too (drilldown.md 2, selection.md 12)', () => {
   it('a click drills, it does not select', async () => {
     const el = document.createElement('div');

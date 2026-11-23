@@ -3,6 +3,206 @@ title: "DzGrid"
 description: "Un graphique lié à une grille, et un graphique tiré de ce qu’une grille sélectionne."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [dzgrid-link.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/dzgrid-link.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+`@dzgraph/dzgrid` met un graphique à côté d'une grille [DzGrid](https://github.com/plinthworks/dzgrid), de deux façons :
+
+- `linkGrid()` lie un graphique et une grille qui montrent les mêmes lignes : ce que l'utilisateur sélectionne d'un
+  côté est sélectionné de l'autre.
+- `chartFromGrid()` remplit un graphique avec ce que l'utilisateur sélectionne dans la grille : un bloc de cellules,
+  des lignes cochées ou le tableau croisé.
+
+Le pont lit la grille par les parties qu'il utilise, sans importer DzGrid : toute version 1.x de DzGrid convient.
+
+## Installer
+
+```sh
+npm install @dzgraph/dzgrid
+```
+
+## Un point est une ligne
+
+Un point et une ligne se correspondent par leur clé : la `key` d'un point est l'identifiant de sa ligne, celui que
+donne `getRowId` de DzGrid. Donnez à chaque point la clé de sa ligne, et le lien le trouve. Une clé qu'un côté n'a pas
+est ignorée, jamais une erreur.
+
+## Lier un graphique et une grille
+
+`linkGrid()` les lie et renvoie la fonction qui les délie. Par défaut la sélection va dans les deux sens : les points
+que l'utilisateur sélectionne dans le graphique deviennent les lignes sélectionnées de la grille, et les lignes
+cochées dans la grille deviennent les points sélectionnés du graphique. Aucun côté ne renvoie l'écho. Le graphique a
+besoin de sa fonction et de son option `selection`.
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+import { linkGrid } from '@dzgraph/dzgrid';
+import { createGrid } from '@dzgrid/dom';
+import { EN } from '@dzgrid/dom/locales/en';
+
+type Hive = { readonly id: string; readonly hive: string; readonly honey: number };
+const HIVES: readonly Hive[] = [
+  { id: 'h1', hive: 'Ruche A', honey: 14 },
+  { id: 'h2', hive: 'Ruche B', honey: 22 },
+  { id: 'h3', hive: 'Ruche C', honey: 9 },
+  { id: 'h4', hive: 'Ruche D', honey: 17 },
+];
+
+const c = chart(
+  document.getElementById('honey')!,
+  {
+    title: { text: 'Miel par ruche (inventé)' },
+    selection: true,
+    xAxis: { scale: 'category', categories: HIVES.map((h) => h.hive) },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', data: HIVES.map((h) => ({ x: h.hive, y: h.honey, key: h.id })) }],
+  },
+  { types: [column], features: [selection] },
+);
+const grid = createGrid<Hive>(document.getElementById('hives')!, {
+  rows: HIVES,
+  getRowId: (h) => h.id,
+  messages: EN,
+  columns: [{ id: 'hive', header: 'Ruche' }, { id: 'honey', header: 'Miel (kg)', type: 'number' }],
+  selection: { mode: 'multi' },
+});
+const unlink = linkGrid(c, grid);
+```
+
+<LiveChart
+  height={320}
+  features={['selection']}
+  caption="Le côté graphique seulement : DzGrid n'est pas chargé sur cette page. Glissez sur les colonnes pour les sélectionner ; Maj + glisser ajoute."
+  options={{
+    title: { text: 'Miel par ruche (inventé)' },
+    selection: true,
+    xAxis: { scale: 'category', categories: ['Ruche A', 'Ruche B', 'Ruche C', 'Ruche D'] },
+    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', data: [{ x: 'Ruche A', y: 14, key: 'h1' }, { x: 'Ruche B', y: 22, key: 'h2' }, { x: 'Ruche C', y: 9, key: 'h3' }, { x: 'Ruche D', y: 17, key: 'h4' }] }],
+  }}
+/>
+
+`selection: false` coupe la sélection. Une sélection « toutes les lignes sauf celles-ci » de la grille (tout
+sélectionner, sur des pages venues d'un serveur) n'est pas portée au graphique : il ne peut connaître des lignes qu'on
+ne lui a jamais données.
+
+## Filtrer la grille par le graphique
+
+Avec `filter`, le lien pose le filtre d'une colonne de la grille. Les filtres de l'utilisateur sur les autres colonnes
+s'appliquent toujours.
+
+| `filter` | La grille montre |
+|---|---|
+| `{ column, by: 'selection' }` | les lignes dont `column` contient la clé d'un point sélectionné ; aucun sélectionné, aucun filtre |
+| `{ column, by: 'range' }` | les lignes dont le nombre de `column` est dans la plage visible du graphique ; toutes les données, aucun filtre |
+| `{ column, by: 'range', as: 'instant' }` | la même chose, pour une colonne de date et heure |
+
+Pour une plage, le filtre est posé quand un zoom ou un déplacement s'arrête, pas à chaque image : une grille servie
+par un serveur ne demande qu'une fois. Tant que le lien dure, il possède le filtre de cette colonne. Le délier le
+retire, sauf si l'utilisateur en a posé un autre depuis.
+
+## Un graphique tiré de la sélection de la grille
+
+`chartFromGrid()` remplit un graphique que l'app a fait : son élément, ses fonctions, son titre restent les vôtres. Le
+pont lui donne ses `series` et son `xAxis`. Les données viennent de la première de ces sources qui s'applique :
+
+1. le **tableau croisé** de la grille, quand il est actif (`pivot` donné) : ses groupes en catégories, une série par
+   colonne créée ;
+2. un **bloc de cellules** (`range` donné, deux cellules au moins) : ses lignes, ses colonnes ;
+3. les **lignes cochées** : ces lignes, dans l'ordre de la grille, chaque colonne visible.
+
+Sans aucune d'elles, le graphique garde ce qu'il montre : un clic hors de la grille lâche son bloc, et le graphique ne
+doit pas se vider quand l'utilisateur s'y rend.
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+import { chartFromGrid } from '@dzgraph/dzgrid';
+import { createGrid } from '@dzgrid/dom';
+import { EN } from '@dzgrid/dom/locales/en';
+import { EN_RANGE } from '@dzgrid/dom/locales/en-range';
+import { range } from '@dzgrid/dom/range';
+
+type Month = { readonly id: string; readonly month: string; readonly apples: number; readonly pears: number };
+
+const blocks = range();
+const grid = createGrid<Month>(document.getElementById('fruit')!, {
+  rows: [
+    { id: 'jan', month: 'janv.', apples: 5, pears: 1 },
+    { id: 'feb', month: 'févr.', apples: 8, pears: 2 },
+    { id: 'mar', month: 'mars', apples: 6, pears: 3 },
+  ],
+  getRowId: (m) => m.id,
+  messages: { ...EN, text: { ...EN.text, ...EN_RANGE.text } },
+  columns: [
+    { id: 'month', header: 'Mois' },
+    { id: 'apples', header: 'Pommes', type: 'number' },
+    { id: 'pears', header: 'Poires', type: 'number' },
+  ],
+  selection: { mode: 'multi' },
+  features: [blocks],
+});
+const c = chart(document.getElementById('fruit-chart')!, { title: { text: 'Fruits cueillis (inventés)' }, series: [] }, { types: [column, line] });
+const stop = chartFromGrid(c, grid, { range: blocks });
+```
+
+L'utilisateur sélectionne le bloc de janv. à mars, de Mois à Poires. Le graphique montre ceci :
+
+<LiveChart
+  height={320}
+  caption="Ce que chartFromGrid dessine de ce bloc (inventé). DzGrid n'est pas chargé sur cette page."
+  options={{
+    title: { text: 'Fruits cueillis (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
+    series: [
+      { type: 'column', id: 'grid:apples', name: 'Pommes', data: [{ x: 'janv.', y: 5, key: 'jan' }, { x: 'févr.', y: 8, key: 'feb' }, { x: 'mars', y: 6, key: 'mar' }] },
+      { type: 'column', id: 'grid:pears', name: 'Poires', data: [{ x: 'janv.', y: 1, key: 'jan' }, { x: 'févr.', y: 2, key: 'feb' }, { x: 'mars', y: 3, key: 'mar' }] },
+    ],
+  }}
+/>
+
+## Des colonnes aux séries
+
+- **Le nom des points.** Parmi les colonnes avant la première colonne de nombres, la première colonne de texte, de
+  choix, de oui/non, de jour ou de date et heure nomme les points. Une colonne de date et heure les met sur un axe de
+  temps, dans le fuseau de la grille (`timeZone`, UTC par défaut) ; une colonne de jours aussi, à leur minuit. Toute
+  autre les met sur un axe de catégories, avec le texte que montre la grille. Sans une telle colonne, les points sont
+  espacés également.
+- **Les séries.** Chaque colonne de nombres est une série, nommée par son en-tête, d'identifiant `grid:` suivi de
+  l'identifiant de la colonne. Les autres colonnes sont laissées de côté.
+- **Les valeurs** sont celles que montre la grille, ses modifications comprises, jamais sa mise en forme. Une case
+  vide, ou une valeur que la colonne refuse, est un trou. La clé d'un point est l'identifiant de sa ligne : `linkGrid()`
+  la trouve.
+- **Le type.** `type` s'il est donné ; sinon une ligne sur un axe de temps, et des colonnes autrement. Le choix de
+  l'utilisateur dans le menu du graphique l'emporte.
+
+Par défaut le graphique suit : il est rempli de nouveau quand l'utilisateur change le bloc ou les lignes cochées, et
+quand les lignes, les colonnes ou le tableau croisé changent — au plus une fois par image. `follow: false` prend une
+seule photo. Les lignes cochées par le code ne le remplissent pas de nouveau : `linkGrid()` à côté ne réduit donc pas le
+graphique à sa sélection.
+
+`gridTable()` donne le même tableau sans graphique : sa `source` (`pivot`, `block`, `rows` ou null), son `xAxis` et ses
+`series`.
+
+## Une entrée de menu
+
+`chartMenuItem()` fait une entrée pour le menu des cellules de DzGrid. Elle appelle votre fonction avec le contexte de
+la cellule ; le libellé est le vôtre, dans la langue de votre app.
+
+```ts
+import { chartMenuItem } from '@dzgraph/dzgrid';
+import { contextMenu } from '@dzgrid/dom/context-menu';
+
+type Month = { readonly id: string; readonly month: string; readonly apples: number };
+declare function openChart(month: string): void;
+
+const menu = contextMenu<Month>({
+  items: (_cell, defaults) => [...defaults, chartMenuItem('Graphique', (cell) => openChart(cell.row.month))],
+});
+```
+
+Mettez `menu` dans les fonctions de la grille, à côté de la fonction `range`.
+
+<Aside>
+Les valeurs et les libellés ne vont qu'au graphique : son infobulle, son tableau, ses exports. Jamais dans un problème,
+jamais dans un événement.
+</Aside>

@@ -3,6 +3,222 @@ title: "Series types"
 description: "Lines, areas, columns and bars, stacks, scatters, pies, donuts and gauges, and how to import them."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [the behaviour sheets](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/README.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+Each series type is its own import from `@dzgraph/core`, given to the chart in `types`: a page ships only the types it
+draws. `allTypes` gives them all. A series whose type the chart was not given is left out and reported
+(`unknown-series-type`).
+
+| Type | Import | Draws |
+|---|---|---|
+| `'line'` | `line` | points joined in x order |
+| `'area'` | `area` | a line with its surface filled down to zero |
+| `'column'` | `column` | upright rectangles from zero, side by side in each category |
+| `'bar'` | `bar` | columns turned across: the chart becomes horizontal |
+| `'scatter'` | `scatter` | one marker per point, placed by two values |
+| `'pie'`, `'donut'` | `pie`, `donut` | the parts of one whole, as slices |
+| `'gauge'` | `gauge` | one value on a half ring |
+
+## Lines and areas
+
+Points are joined in x order by straight segments; a gap breaks the line (see [Data](../data/#gaps)). Markers show on
+every point when there is room to read them; a denser line keeps one about every 80 px. `marker: true` puts one on
+every point, `false` none. Each series has its own marker symbol (circle, square, diamond, triangle…), so series are
+told apart without colour.
+
+An area is a line with its surface filled down to zero, translucent, the line on top. Areas and columns always have
+zero on their axis; lines and scatters fit their data.
+
+## Columns and bars
+
+Columns stand side by side in each category's band, in series order. Negative values go down from a stronger zero
+line. A chart with bars is horizontal: the categories run down from the top, the values grow along the reading
+direction. A chart has one orientation: bars and columns together are reported (`mixed-orientation`).
+
+## Stacks
+
+Columns, bars or areas with the same `stack` name pile on each other (`stack: true` is the stack named `default`).
+Positive values pile upwards, negative ones downwards. `stacking: 'percent'` on the y axis turns each pile into
+shares of its total, from 0 to 100 %. The tooltip gives a part's value, its share and the pile's total; the data
+table adds a total column.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('harvest')!,
+  {
+    title: { text: 'Harvest by plot (made up)' },
+    xAxis: { scale: 'category', categories: ['June', 'July', 'August', 'September'] },
+    yAxis: { title: 'kg' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Beans', stack: 'veg', data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Peas', stack: 'veg', data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Squash', stack: 'veg', data: [0, 30, 95, 140] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [column];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Harvest by plot (made up)' },
+    xAxis: { scale: 'category', categories: ['June', 'July', 'August', 'September'] },
+    yAxis: { title: 'kg' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Beans', stack: 'veg', data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Peas', stack: 'veg', data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Squash', stack: 'veg', data: [0, 30, 95, 140] },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Harvest by plot (made up)' },
+    xAxis: { scale: 'category', categories: ['June', 'July', 'August', 'September'] },
+    yAxis: { title: 'kg' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Beans', stack: 'veg', data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Peas', stack: 'veg', data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Squash', stack: 'veg', data: [0, 30, 95, 140] },
+    ],
+  }}
+/>
+
+Lines do not stack: a stacked line would read as its own values, which it is not. `stack` on a line is reported
+(`unknown-option`); an app that wants a running total computes it.
+
+## Mixing types
+
+Columns, bars, lines, areas and scatters mix on one x axis, drawn in series order. A line over categories passes
+through the middle of each band. Two measures of different units go on two value axes (see
+[Axes and time](../axes-time/#two-value-axes)). A pie or a gauge does not mix with them: a chart has one coordinate
+system, the one of its first series.
+
+## Scatter plots
+
+Each point is a marker placed by its x and its y, both axes fitted to the data. Markers are slightly translucent, so
+piles of points read darker. Past 2 000 markers they are painted on a Canvas, past 100 000 with WebGL2 (the `canvas`
+and `webgl` features, see [Big data](../big-data/)).
+
+<LiveChart
+  height={340}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Leaf length and width (made up)' },
+    xAxis: { title: 'Length (cm)' },
+    yAxis: { title: 'Width (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [] }],
+  }}
+  features={['canvas']}
+/>
+
+## Pies and donuts
+
+A pie's data are slices: pairs `['Apples', 120]`, points `{ name, y, key }`, or values alone. Slices start at the top
+and follow clockwise, in data order. Past seven slices, the six largest stay and the rest join one slice « Others »,
+with any slice under 2 % (`others: false` stops it). A donut's hole holds the total; `hole` sets its size (0 to 0.9, default 0.6) and `center` what it says.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Seeds sown (made up)' },
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Seeds',
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  }}
+/>
+
+Labels sit outside, with a leader line and the share in %. When they do not fit, the pie shows its legend instead. One
+pie or donut per chart.
+
+## Gauges
+
+A gauge shows one value (`data: 72`) on a half ring from `min` (0) to `max` (100). `thresholds` draw a thin ring of
+ranges outside the arc; the label of the range the value falls in is written under the value, so it is not told by
+colour alone.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  title: { text: 'Water tank (made up)' },
+  series: [
+    {
+      type: 'gauge',
+      id: 'tank',
+      name: 'Water tank (%)',
+      data: 64,
+      thresholds: [
+        { from: 0, to: 20, label: 'Low', color: 'low' },
+        { from: 20, to: 80, label: 'Fine' },
+        { from: 80, to: 100, label: 'Full' },
+      ],
+    },
+  ],
+};
+```
+
+<LiveChart
+  height={280}
+  options={{
+    title: { text: 'Water tank (made up)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Water tank (%)',
+        data: 64,
+        thresholds: [
+          { from: 0, to: 20, label: 'Low' },
+          { from: 20, to: 80, label: 'Fine' },
+          { from: 80, to: 100, label: 'Full' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Colours
+
+A series takes the theme's colours in order. `color` picks another: a place in the palette (`color: 3`, counting from
+1), or a colour of your own, `{ token: 'brand' }`, which you define in CSS as `--dzgraph-color-brand`. A threshold's
+`color` names such a colour too. Colours are never written in the options: they live in CSS, so light and dark mode
+and the contrast checks hold.
+
+<Aside>
+Colour is never the only way to tell series apart: each has its marker symbol, its sign in the legend and its name in
+the tooltip and the data table.
+</Aside>

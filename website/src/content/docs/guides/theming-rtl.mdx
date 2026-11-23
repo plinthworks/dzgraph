@@ -3,6 +3,153 @@ title: "Theme and right to left"
 description: "The CSS variables, light and dark, the series palette, right-to-left pages."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [direction.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/direction.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+A chart draws its shapes from the options and takes every colour and font from CSS variables. Its words, numbers and
+dates follow the page's language, and its layout follows the page's direction.
+
+## The theme sheet
+
+`@dzgraph/theme/dzgraph.css` sets the variables, in a cascade layer named `dzgraph.theme`: any rule of your own that
+is not in a layer wins over it, whatever its specificity. Load it once:
+
+```ts
+import '@dzgraph/theme/dzgraph.css';
+```
+
+`dzgraph.unlayered.css` is the same sheet without the layer, for an app whose own reset is not in a layer and would
+otherwise win over the theme. Without either sheet a chart draws its geometry but no colours: no colour is written in
+the library's code.
+
+The variables come in two families: `--tz-*`, the palette shared with DzGrid and DzTooltip (a page that themes its
+grids themes its charts), and `--dzgraph-*`, the chart's own.
+
+| Variable | What it sets |
+|---|---|
+| `--tz-bg`, `--tz-fg`, `--tz-fg-muted`, `--tz-border`, `--tz-accent` | the shared palette: background, text, muted text, lines, accent |
+| `--dzgraph-series-1` … `--dzgraph-series-8` | the series' colours, in a fixed order |
+| `--dzgraph-background`, `--dzgraph-plot-background` | the chart's and the plot's background |
+| `--dzgraph-text`, `--dzgraph-text-muted` | titles, labels, legend |
+| `--dzgraph-axis-line`, `--dzgraph-tick`, `--dzgraph-grid-line` | axes, ticks and gridlines, kept quiet |
+| `--dzgraph-focus` | the keyboard's focus ring, the zoom band |
+| `--dzgraph-others`, `--dzgraph-track` | a pie's « Others » slice, a gauge's empty scale |
+| `--dzgraph-font-title`, `-subtitle`, `-axis-title`, `-tick-label`, `-legend`, `-data-label` | the fonts, by role |
+
+## Light and dark
+
+Each colour of the theme is a light and dark pair (`light-dark()`): the chart follows the page's `color-scheme`. A
+`data-theme="light"` or `data-theme="dark"` attribute on the chart or one of its parents chooses one; this site sets
+it on the page, which is why its switch changes the charts too. A picture exported keeps the colours of the screen,
+unless it asks for another theme (see [Export and print](../exporting/)).
+
+## Your colours and fonts
+
+Set the variables on `.dzgraph`, the class of every chart, with the values of your own design system:
+
+```css
+.dzgraph {
+  --tz-accent: var(--brand-accent);
+  --dzgraph-series-1: var(--brand-primary);
+  --dzgraph-color-harvest: var(--brand-harvest);
+  --dzgraph-font-title: 600 18px var(--brand-font);
+}
+```
+
+A series takes the palette's colours in order. `color: 3` gives it the third; `color: { token: 'harvest' }` gives it
+`--dzgraph-color-harvest`, a variable you define. A colour is never written in the options, so a theme change reaches
+every chart. Past eight series the palette starts again, and each series keeps its own marker symbol.
+
+The eight colours of the palette were chosen together: neighbours stay apart for colour-blind readers, and each holds
+3:1 against the background in both modes. When you replace them, check the same.
+
+## The chart's words
+
+The chart's language is the `locale` option when it is given, else the `lang` of the chart's element or its nearest
+parent, else the browser's. It sets the numbers and dates (`Intl`) and the words: « No data », the summary and the
+points' names for screen readers, the menu, the data table. English and French are built in; any other language
+writes its numbers and dates in its own way, with English words, until you give yours with `messages`:
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, type Messages } from '@dzgraph/dom';
+
+const words: Partial<Messages> = {
+  noData: 'Nothing picked yet',
+  seriesHidden: (name) => `${name} put away`,
+  seriesShown: (name) => `${name} back`,
+};
+
+chart(
+  document.getElementById('picked')!,
+  { locale: 'en-GB', series: [{ type: 'column', id: 'picked', name: 'Picked', data: [] }] },
+  { types: [column], messages: words },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import type { Messages } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-picked',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 300px" [options]="options()" [types]="types" [messages]="words" />`,
+})
+export class Picked {
+  readonly types = [column];
+  readonly words: Partial<Messages> = {
+    noData: 'Nothing picked yet',
+    seriesHidden: (name) => `${name} put away`,
+    seriesShown: (name) => `${name} back`,
+  };
+  readonly options = signal<ChartOptions>({ locale: 'en-GB', series: [{ type: 'column', id: 'picked', name: 'Picked', data: [] }] });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+The language and direction are read again at every drawing: a page that switches them sees its charts follow.
+
+## Right to left
+
+A chart takes the direction of its element (its `dir` attribute or its CSS `direction`), unless the options give
+`dir: 'rtl'` or `'ltr'`. Right to left is designed in, not added:
+
+- Everything placed by reading direction changes sides: the title starts on the right, the legend runs from the
+  right, the y axis stands at the start (on the right) and an `opposite` one on the left.
+- Bars grow from the start side, the right.
+- The x axis is not mirrored: categories and time still run left to right, as is most common for numbers and dates.
+  `mirror: true` runs them right to left, and the arrow keys turn with it.
+- Numbers and dates are written by the locale: its digits, its separators and their order.
+- A label in the other direction (a Latin name in an Arabic chart) keeps its own direction inside its box.
+
+This chart's element is in Arabic, right to left; its title and series names stay in this page's language:
+
+<LiveChart
+  height={360}
+  language="ar"
+  options={{
+    title: { text: 'Jars sold (made up)' },
+    xAxis: { scale: 'category', categories: ['يناير', 'فبراير', 'مارس', 'أبريل'] },
+    series: [
+      { type: 'bar', id: 'plum', name: 'Plum', data: [1240, 1810, 2260, 1930] },
+      { type: 'bar', id: 'quince', name: 'Quince', data: [860, 1120, 1540, 2010] },
+    ],
+  }}
+/>
+
+<Aside>
+Write CSS with logical sides (`inline-start`, `margin-inline-end`) around a chart too: the same page then reads well
+in both directions.
+</Aside>

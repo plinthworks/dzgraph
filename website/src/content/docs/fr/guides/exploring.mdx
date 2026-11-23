@@ -3,6 +3,297 @@ title: "Explorer"
 description: "Zoom, navigateur, viseur, comparaison, mesure, sélection, agrégation, exploration par clic, menu, la vue en JSON, graphiques liés."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [view-state.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/view-state.md) (en anglais).
-:::
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Chaque façon d'explorer est une fonction de `@dzgraph/dom`, importée à part et donnée à `chart()` dans `features`
+(voir [Types de séries et fonctions](../../getting-started/typescript/#types-de-séries-et-fonctions)). Ce que
+l'utilisateur trouve en explorant — une plage, une sélection, une comparaison — est sa **vue** : du JSON simple, que
+l'app peut garder et rendre.
+
+## Zoomer et déplacer
+
+Avec la fonction `zoom`, un glissement sur le tracé zoome sur la plage de x qu'il couvre ; Maj + glissement déplace la
+plage une fois zoomé ; Ctrl (⌘ sur Mac) + molette zoome autour du pointeur, et la molette seule fait toujours défiler
+la page. Sur un écran tactile, un pincement zoome et un glissement d'un doigt déplace la plage. Les axes de valeurs
+s'ajustent aux points visibles, et un bouton « Réinitialiser le zoom » revient au tout. Le graphique ne zoome jamais
+au-delà des bouts des données.
+
+`rangeChange` donne les bornes visibles (`null` pour le tout) ; `setRange()` les fixe depuis l'app, avec des nombres
+ou, sur un axe de temps, des dates ISO.
+
+## Le navigateur et les boutons de plage
+
+`navigator: true`, avec la fonction `navigatorStrip` (qui apporte `zoom`), dessine sous le tracé une bande avec toute
+la plage de x et une fenêtre sur la partie visible. Glissez la fenêtre pour déplacer la plage, une poignée pour en
+déplacer un bout ; les deux poignées sont des curseurs pour le clavier. Sur un axe de temps, des boutons au-dessus du
+tracé (« 1 m », « 3 m », « Début d'année », « 1 an », « Tout ») montrent le dernier mois, les trois derniers mois,
+l'année en cours, la dernière année ou tout (`rangeButtons: false` les masque) ; un bouton plus long que les données
+est désactivé.
+
+`crosshair: true`, avec la fonction `crosshair`, ajoute des lignes qui passent par le pointeur et ses valeurs sur les
+axes (`{ horizontal: true }` pour la ligne horizontale aussi).
+
+<LiveChart
+  height={420}
+  features={['timeAxis', 'navigatorStrip', 'crosshair']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'Un capteur inventé, une mesure par minute' },
+    crosshair: true,
+    navigator: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, crosshair, navigatorStrip, timeAxis } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('sensor')!,
+  { navigator: true, crosshair: true, xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'line', id: 'sensor', data: [['2026-01-01T00:00:00Z', 100], ['2026-01-01T00:01:00Z', 101]] }] },
+  { types: [line], features: [timeAxis, navigatorStrip, crosshair] },
+);
+c.on('rangeChange', (e) => console.log(e.range));
+c.setRange({ min: '2026-01-01T00:00:00Z', max: '2026-01-01T00:01:00Z' });
+```
+
+## Les modes : zoomer, sélectionner, mesurer
+
+Un glissement sur le tracé fait une chose à la fois. Avec au moins deux des fonctions `zoom`, `selection` et
+`measure`, une rangée de boutons au début du bord haut du tracé choisit laquelle : « Zoom », « Sélection »,
+« Mesure ». `setMode()` choisit depuis l'app, et `modeChange` dit quand l'utilisateur l'a fait. Un graphique qui n'a
+que `selection` sélectionne au glissement.
+
+<LiveChart
+  height={400}
+  features={['zoom', 'selection', 'measure', 'canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Deux nuages inventés' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Échantillons', data: [] }],
+  }}
+/>
+
+## Mesurer
+
+En mode mesure, appuyez sur un point et glissez vers un autre : une ligne les joint, et une étiquette donne l'écart en
+valeur, en pourcentage et le long de x (une durée sur un axe de temps). Les deux points peuvent être de séries
+différentes. Échap, un clic ailleurs ou de nouvelles données l'enlèvent ; un zoom la garde sur ses points. Au clavier,
+M sur le point qui a le focus commence une mesure, les flèches déplacent son bout, M la garde. `measure` donne les
+deux points, `null` quand elle s'en va.
+
+## Sélectionner
+
+`selection: true`, avec la fonction `selection`, laisse l'utilisateur sélectionner des points : une plage de x sur
+des lignes et des aires, un rectangle sur des nuages, des colonnes et des barres ; `shapes` liste celles offertes
+(`rectangle`, `range`, `lasso`). Le lasso est exact, même sur un million de points. Maj ajoute, Alt retire ; un clic
+sélectionne un point, Maj + clic l'ajoute ; Échap ou un clic dans le vide du tracé efface. Au clavier, Espace
+sélectionne le point qui a le focus. Les points sélectionnés gardent leur couleur et les autres s'estompent.
+
+La sélection est faite de données, pas de pixels : elle survit au zoom, au redimensionnement et aux séries masquées.
+`selectionChange` donne les indices, les clés et les valeurs de x par série ; `selectBy()` sélectionne depuis l'app
+par clé ou par x.
+
+```ts
+import { scatter } from '@dzgraph/core';
+import { chart, selection } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('trees')!,
+  { selection: true, series: [{ type: 'scatter', id: 'trees', data: [{ x: 2, y: 3, key: 'oak' }, { x: 4, y: 1, key: 'elm' }, { x: 5, y: 4, key: 'yew' }] }] },
+  { types: [scatter], features: [selection] },
+);
+c.on('selectionChange', (e) => console.log(e.count, e.series.map((s) => s.keys)));
+c.selectBy('key', ['oak', 'yew']);
+```
+
+## La comparaison et le menu
+
+`compare` sur un axe des y, avec la fonction `compare`, dessine chaque série par rapport à son premier point visible :
+`value` en écart, `percent` en variation en pourcentage, `index` en base 100. `compareTo` fixe la base à un x. Un zoom
+déplace une base qui n'est pas fixée. L'infobulle donne la valeur comparée, puis la valeur brute.
+
+La fonction `menu` ajoute un bouton « Options du graphique » à la fin du bord haut. `menu: true` offre tout ce qui a
+un sens pour les données ; `{ items }` choisit : le type d'une série (`type`), l'agrégation (`aggregation`), l'échelle
+(`scale`, linéaire ou logarithmique), la comparaison (`compare`), et avec `exporting`, `export` et `print`. Un choix
+fait partie de la vue.
+
+<LiveChart
+  height={360}
+  features={['compare', 'menu']}
+  options={{
+    title: { text: 'Deux boutiques inventées, comparées à janvier' },
+    menu: { items: ['compare', 'scale', 'type'] },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin'] },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique du nord', data: [120, 132, 128, 150, 161, 158] },
+      { type: 'line', id: 'south', name: 'Boutique du sud', data: [80, 78, 90, 99, 97, 112] },
+    ],
+  }}
+/>
+
+## L'agrégation
+
+`aggregate` sur l'axe des x, avec la fonction `aggregation`, dessine un point par période d'un axe de temps (`hour`,
+`day`, `week`, `month`, `quarter`, `year`, selon le calendrier du fuseau) ou par tranche d'un axe de nombres
+(`{ step }`). Chaque série dit comment (`aggregate` : `sum`, `mean`, `min`, `max`, `count`) ; les colonnes et les
+barres font la somme par défaut, les autres la moyenne. Une période sans point est un trou, pas un zéro. L'infobulle
+nomme la période et le nombre de points qu'elle contient.
+
+```ts
+import { column } from '@dzgraph/core';
+import { aggregation, chart, timeAxis } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('rain')!,
+  {
+    xAxis: { scale: 'time', zone: 'Europe/Paris', aggregate: 'month' },
+    series: [{ type: 'column', id: 'rain', name: 'Pluie (mm)', aggregate: 'sum', data: [['2026-01-05', 12], ['2026-01-19', 4], ['2026-02-02', 9]] }],
+  },
+  { types: [column], features: [timeAxis, aggregation] },
+);
+```
+
+## Le détail par clic
+
+Un clic ou Entrée sur un point qui a un détail montre ce détail à sa place ; un fil d'Ariane au-dessus du tracé
+revient en arrière, comme Retour arrière et Alt + ←. Revenir rend le niveau tel qu'il était. `drill` donne le chemin
+des clés.
+
+`drilldown: 'time'`, avec la fonction `drilldown` (qui apporte `aggregation`), fait partir un axe de temps des années
+et descend d'une année vers ses mois, d'un mois vers ses jours. Cliquez sur une année, puis sur un mois :
+
+<LiveChart
+  height={360}
+  features={['timeAxis', 'drilldown']}
+  data={{ recipe: 'walk', count: 600000 }}
+  options={{
+    title: { text: 'Un capteur inventé, moyenne par année' },
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'sensor', name: 'Mesure', aggregate: 'mean', data: [] }],
+  }}
+/>
+
+Le `drilldown` d'une série donne le détail de chaque point par la clé du point (`details`), ou le charge (`load`, une
+fonction qui renvoie une promesse de séries) ; un chargement qui échoue ou dure plus de 10 s le dit et propose de
+réessayer. Cliquez sur un fruit :
+
+<LiveChart
+  height={340}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Récolte du verger (inventée)' },
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires', 'Prunes'] },
+    series: [
+      {
+        type: 'column',
+        id: 'fruit',
+        name: 'Cagettes',
+        data: { y: [52, 31, 18], key: ['apples', 'pears', 'plums'] },
+        drilldown: {
+          details: {
+            apples: [{ type: 'column', id: 'apples', name: 'Pommes', data: [['Gala', 22], ['Reinette', 17], ['Boskoop', 13]] }],
+            pears: [{ type: 'column', id: 'pears', name: 'Poires', data: [['Comice', 19], ['Conférence', 12]] }],
+            plums: [{ type: 'column', id: 'plums', name: 'Prunes', data: [['Mirabelle', 11], ['Quetsche', 7]] }],
+          },
+        },
+      },
+    ],
+  }}
+/>
+
+## Les touches pour explorer
+
+| Touche | Ce qu'elle fait |
+|---|---|
+| + − | zoomer ou dézoomer autour du point qui a le focus |
+| Maj + ← → | déplacer la plage visible (en mode sélection : étendre la sélection) |
+| 0 | revenir au tout |
+| Espace | sélectionner ou désélectionner le point qui a le focus |
+| M | commencer une mesure sur le point qui a le focus, puis la garder |
+| Entrée | le détail d'un point |
+| Retour arrière, Alt + ← | remonter d'un niveau de détail |
+| Échap | enlever la mesure, effacer la sélection |
+
+## La vue en JSON
+
+La vue contient ce que l'utilisateur a changé en explorant, et seulement cela : les séries masquées, la plage
+visible, la comparaison, la sélection, l'agrégation, le niveau de détail, le type d'une série, l'échelle. Elle nomme
+les séries par leur id et les points par leur clé (ou leur indice), jamais par leurs valeurs. `getView()` la donne,
+`setView()` la rend, `viewChange` dit ce qui a changé et qui l'a changé. Ce qu'elle nomme et qui n'existe plus est
+laissé de côté et signalé (`invalid-view`). Le mode et une mesure n'en font pas partie : c'est la façon dont
+l'utilisateur travaille, pas ce qu'il a trouvé.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line, type ChartView } from '@dzgraph/core';
+import { chart, zoom } from '@dzgraph/dom';
+
+const c = chart(document.getElementById('load')!, { series: [{ type: 'line', id: 'load', data: [12, 15, 11, 18, 16] }] }, { types: [line], features: [zoom] });
+
+const saved = localStorage.getItem('load-view');
+if (saved) c.setView(JSON.parse(saved) as ChartView);
+c.on('viewChange', (e) => {
+  if (e.source === 'user') localStorage.setItem('load-view', JSON.stringify(e.view));
+});
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal, viewChild } from '@angular/core';
+import { line, type ChartOptions, type ChartView } from '@dzgraph/core';
+import { zoom } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-load',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 300px" [options]="options()" [types]="types" [features]="features" (viewChange)="saved.set($event.view)" />
+    <button type="button" (click)="restore()">Rendre la vue</button>
+  `,
+})
+export class Load {
+  readonly types = [line];
+  readonly features = [zoom];
+  readonly chart = viewChild.required(DzChart);
+  readonly saved = signal<ChartView | null>(null);
+  readonly options = signal<ChartOptions>({ series: [{ type: 'line', id: 'load', data: [12, 15, 11, 18, 16] }] });
+
+  restore(): void {
+    const view = this.saved();
+    if (view) this.chart().chart?.setView(view);
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Des graphiques liés
+
+`linkCharts()` fait que des graphiques se suivent, par valeur et jamais par pixel : le viseur et l'infobulle au même
+x, la même plage visible, les mêmes points sélectionnés (par clé ou par x), le même niveau de détail. Il renvoie la
+fonction qui les délie ; un graphique détruit quitte ses groupes de lui-même.
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart, crosshair, linkCharts, selection, zoom, type ChartSetup } from '@dzgraph/dom';
+
+const setup: ChartSetup = { types: [line, column], features: [zoom, crosshair, selection] };
+const price = chart(document.getElementById('price')!, { crosshair: true, series: [{ type: 'line', data: [10, 12, 11, 14] }] }, setup);
+const volume = chart(document.getElementById('volume')!, { crosshair: true, series: [{ type: 'column', data: [300, 420, 380, 510] }] }, setup);
+
+const unlink = linkCharts([price, volume], { crosshair: true, zoom: 'x', selection: 'x' });
+unlink();
+```

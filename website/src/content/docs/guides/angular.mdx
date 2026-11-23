@@ -3,6 +3,255 @@ title: "Angular in depth"
 description: "<dz-chart> and <dz-sparkline>: signals, outputs, the chart’s methods, server rendering."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [angular.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/angular.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+`@dzgraph/angular` gives two standalone components: `<dz-chart>` and `<dz-sparkline>`. The
+[Angular](../../getting-started/angular/) page draws a first chart. This page goes further: options made from signals,
+what each output carries, the chart's methods, two charts that follow each other, sparklines, and the server.
+
+## Inputs
+
+| Input | What it is |
+|---|---|
+| `options` | Required. The chart's `ChartOptions`. A new value updates the chart. |
+| `types` | The series types the chart may draw. Default `allTypes`. |
+| `features` | The features the chart may use. Default `allFeatures`. |
+| `messages` | Words to use instead of the built-in ones. |
+| `animate` | A hook to drive the animations yourself. |
+
+`options` is compared by identity: give a new object, never change the one the chart has. A top-level field the new
+value no longer has goes back to its default: take the title out, and the chart has none.
+
+`types`, `features`, `messages` and `animate` are the chart's setup. A new value of one of them draws a new chart, and
+the user's zoom, hidden series and selection start again. Keep them in fields of the component, as below.
+
+## Options from signals
+
+Make the options a `computed` of your signals. When a signal changes, the chart gets new options and updates. A
+series that keeps its `id` is updated in place.
+
+```ts
+import { Component, computed, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { crosshair } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+type Shop = 'harbour' | 'market';
+const HONEY: Record<Shop, readonly number[]> = {
+  harbour: [14, 22, 19, 27, 31, 26],
+  market: [9, 12, 18, 24, 29, 35],
+};
+
+@Component({
+  selector: 'app-honey',
+  imports: [DzChart],
+  template: `
+    <button type="button" (click)="shop.set('harbour')">Harbour shop</button>
+    <button type="button" (click)="shop.set('market')">Market stall</button>
+    <dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />
+  `,
+})
+export class Honey {
+  readonly types = [column];
+  readonly features = [crosshair];
+  readonly shop = signal<Shop>('harbour');
+  readonly options = computed<ChartOptions>(() => ({
+    title: { text: 'Jars of honey sold (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [{ type: 'column', id: 'jars', name: this.shop() === 'harbour' ? 'Harbour shop' : 'Market stall', data: HONEY[this.shop()] }],
+  }));
+}
+```
+
+<LiveChart
+  height={320}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Jars of honey sold (made up)' },
+    crosshair: true,
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    series: [{ type: 'column', id: 'jars', name: 'Harbour shop', data: [14, 22, 19, 27, 31, 26] }],
+  }}
+/>
+
+## What each output carries
+
+Each event of the chart is an output of the same name. Most outputs carry the event's detail, as `on()` gives it. A
+few carry the useful part only:
+
+| Output | `$event` |
+|---|---|
+| `pointHover` | the point under the pointer (`PointRef`), or null when it leaves |
+| `pointClick`, `pointFocus` | the point (`PointRef`: `seriesId`, `index`, `key`) |
+| `rangeChange` | the visible range (`min`, `max`), or null for the whole data |
+| `modeChange` | the mode: `'zoom'`, `'selection'` or `'measure'` |
+| `problems` | the list of problems |
+| `legendToggle`, `viewChange`, `measure`, `selectionChange`, `drill` | the event's detail |
+
+So `(pointClick)="open($event.seriesId, $event.index)"`, not `$event.point`.
+
+## The chart's methods
+
+The component's `chart` is the chart itself, with all its methods. It is null before the chart is drawn (after the
+first render, in the browser) and on the server, so call it with `?.`.
+
+The user's view (zoom, hidden series, selection, comparison) is plain data. Here a button keeps it, and another brings
+it back:
+
+```ts
+import { Component, viewChild } from '@angular/core';
+import type { ChartOptions, ChartView } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-saved-view',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 300px" [options]="options" />
+    <button type="button" (click)="keep()">Keep this view</button>
+    <button type="button" (click)="restore()">Back to the kept view</button>
+  `,
+})
+export class SavedView {
+  readonly dz = viewChild.required(DzChart);
+  readonly options: ChartOptions = {
+    title: { text: 'Bees seen per hour (made up)' },
+    series: [{ type: 'line', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }],
+  };
+  private kept: ChartView | null = null;
+
+  keep(): void {
+    this.kept = this.dz().chart?.getView() ?? null;
+  }
+  restore(): void {
+    if (this.kept) this.dz().chart?.setView(this.kept);
+  }
+}
+```
+
+## Two charts that follow each other
+
+`linkCharts()` from `@dzgraph/dom` links charts: the same crosshair, the same zoom, the same selection. In Angular,
+link them once both are drawn. Each `<dz-chart>` draws its chart after the first render; a `read` callback of
+`afterNextRender` runs after that, in the same render.
+
+<CodeTabs>
+<Fragment slot="angular">
+
+```ts
+import { afterNextRender, Component, DestroyRef, inject, viewChildren } from '@angular/core';
+import type { ChartOptions } from '@dzgraph/core';
+import { linkCharts } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-garden',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 240px" [options]="heat" />
+    <dz-chart style="block-size: 240px" [options]="bees" />
+  `,
+})
+export class Garden {
+  readonly charts = viewChildren(DzChart);
+  readonly heat: ChartOptions = {
+    title: { text: 'Heat (made up)' },
+    crosshair: true,
+    series: [{ type: 'line', id: 'heat', name: 'Heat (°C)', data: [14, 17, 21, 24, 23, 19, 15] }],
+  };
+  readonly bees: ChartOptions = {
+    title: { text: 'Bees seen (made up)' },
+    crosshair: true,
+    series: [{ type: 'column', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }],
+  };
+
+  constructor() {
+    let unlink = () => {};
+    // The charts are drawn in the first render's main phase; the read phase comes after it.
+    afterNextRender({
+      read: () => {
+        const charts = this.charts().flatMap((dz) => (dz.chart ? [dz.chart] : []));
+        unlink = linkCharts(charts, { crosshair: true, zoom: 'x' });
+      },
+    });
+    inject(DestroyRef).onDestroy(() => unlink());
+  }
+}
+```
+
+</Fragment>
+<Fragment slot="ts">
+
+```ts
+import { column, line } from '@dzgraph/core';
+import { chart, crosshair, linkCharts, zoom } from '@dzgraph/dom';
+
+const heat = chart(
+  document.getElementById('heat')!,
+  { title: { text: 'Heat (made up)' }, crosshair: true, series: [{ type: 'line', id: 'heat', name: 'Heat (°C)', data: [14, 17, 21, 24, 23, 19, 15] }] },
+  { types: [line], features: [crosshair, zoom] },
+);
+const bees = chart(
+  document.getElementById('bees')!,
+  { title: { text: 'Bees seen (made up)' }, crosshair: true, series: [{ type: 'column', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }] },
+  { types: [column], features: [crosshair, zoom] },
+);
+const unlink = linkCharts([heat, bees], { crosshair: true, zoom: 'x' });
+```
+
+</Fragment>
+</CodeTabs>
+
+A chart destroyed leaves its links by itself; `unlink` stops them all.
+
+## Sparklines
+
+`<dz-sparkline>` takes `values` (required; `null` is a gap) and `options`: `type` (`line`, `area`, `column`,
+`winloss`), `min` and `max`, `markers` (`last`, `minmax`, `none`), `label`, `locale`, `messages`. A new value of either
+draws it again. Its `sparkline` gives its `problems`.
+
+Give several sparklines the same `min` and `max`, and they compare:
+
+```ts
+import { Component } from '@angular/core';
+import { DzSparkline } from '@dzgraph/angular';
+
+type Hive = { readonly name: string; readonly weights: readonly number[] };
+
+@Component({
+  selector: 'app-hives',
+  imports: [DzSparkline],
+  template: `
+    @for (hive of hives; track hive.name) {
+      <p class="hive">{{ hive.name }} <dz-sparkline [values]="hive.weights" [options]="{ type: 'column', min: 0, max: 40, label: hive.name }" /></p>
+    }
+  `,
+})
+export class Hives {
+  readonly hives: readonly Hive[] = [
+    { name: 'Hive A', weights: [12, 18, 25, 31, 36, 38] },
+    { name: 'Hive B', weights: [10, 11, 15, 14, 19, 22] },
+  ];
+}
+```
+
+A sparkline is 6em by 1.2em, in line with the text. Size it with the app's global CSS, on `.dzgraph-sparkline` (the
+drawing is made by script, so a component's scoped styles do not reach it):
+
+```css
+.hive .dzgraph-sparkline { inline-size: 8em; block-size: 2em; }
+```
+
+## On the server
+
+On the server, both components draw nothing and fail on nothing; `chart` and `sparkline` stay null. The host
+`<dz-chart>` is there, as a block: give it its height in CSS, and the page does not move when the chart arrives in the
+browser.
+
+<Aside>
+The components draw in the browser only, after the first render. Code that needs the chart runs there too: in an
+event handler, or in `afterNextRender`.
+</Aside>

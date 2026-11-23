@@ -3,6 +3,188 @@ title: "Data"
 description: "The shapes a series takes: values, pairs, points, typed columns; keys; gaps."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [big-data.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/big-data.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+A series' `data` takes four shapes. Pick the one your data already has: the chart reads each without asking you to
+convert. Pies and donuts take slices, and a gauge one value (see [Series types](../series-types/)).
+
+## Values alone
+
+A list of numbers: each value's x is its place in the list, or the category at that place.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+  series: [{ type: 'column', id: 'cups', name: 'Cups of tea', data: [4, 6, 3, 7, 5] }],
+};
+```
+
+## Pairs and points
+
+Pairs `[x, y]` give each value its own x: a number, a category's name, or a date on a [time axis](../axes-time/#time).
+Points `{ x, y }` say the same, and can carry a `key` and a `name`; the tooltip and the data table show the `name`
+instead of x.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const pairs: ChartOptions = {
+  series: [{ type: 'scatter', id: 'plants', name: 'Plants', data: [[12, 3.1], [18, 4.4], [25, 6.0]] }],
+};
+
+export const points: ChartOptions = {
+  series: [
+    {
+      type: 'line',
+      id: 'pond',
+      name: 'Pond depth (m)',
+      data: [
+        { x: 1, y: 1.4, key: 'p-1', name: 'First survey' },
+        { x: 2, y: 1.1, key: 'p-2', name: 'Second survey' },
+      ],
+    },
+  ],
+};
+```
+
+When x values are strings and the axis has no `scale`, the axis is a category axis, its categories in the order the
+data gives them. When the axis lists its `categories`, a string it does not list gets a band of its own at the end,
+and the chart reports it (`invalid-data`).
+
+## Typed columns
+
+For big series, give columns: one array per field, all of one length. A `Float64Array` for `y` is read as it is,
+without a copy, so new numbers cost almost nothing. `x` may be absent: the points are then evenly spaced.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const count = 100_000;
+const x = new Float64Array(count);
+const y = new Float64Array(count);
+for (let i = 0; i < count; i++) {
+  x[i] = i;
+  y[i] = Math.sin(i / 500) * 10;
+}
+chart(document.getElementById('wave')!, { series: [{ type: 'line', id: 'wave', data: { x, y } }] }, { types: [line] });
+```
+
+The [Big data](../big-data/) guide says how such series are drawn.
+
+## Gaps
+
+`null` is a gap: the line breaks, the column is absent, the table cell is empty. A point alone between two gaps is
+shown as a marker, or it would not be seen. In a typed column, `NaN` is a gap.
+
+<LiveChart
+  height={320}
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    xAxis: { scale: 'category', categories: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'] },
+    series: [
+      { type: 'line', id: 'hive-a', name: 'Hive A', data: [12, 18, null, 26, 31, null, 22, 17, 11] },
+      { type: 'line', id: 'hive-b', name: 'Hive B', data: [8, 11, 15, 19, null, 24, null, 14, 9] },
+    ],
+  }}
+/>
+
+A value that is not a number in an array you wrote (`NaN`, `Infinity`, a string where a number goes) is drawn as a
+gap too, and the chart reports it once for the series: a `non-finite-value` or `invalid-data` problem, with how many
+points. It never says what the value was.
+
+## Keys
+
+A point's `key` is its identity. Selection, [linked charts](../exploring/) and the [DzGrid bridge](../dzgrid/) use it
+to tell which point is which, whatever its place in the data. Typed columns take keys as a `key` array.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  series: [
+    {
+      type: 'column',
+      id: 'orders',
+      name: 'Orders',
+      data: { x: ['North', 'South', 'East'], y: [42, 35, 28], key: ['shop-n', 'shop-s', 'shop-e'] },
+    },
+  ],
+};
+```
+
+Two points of one series with the same key: the later one is left out of selection and links, and the chart reports
+`duplicate-key`.
+
+## The order of x
+
+Lines and areas are drawn in the order of the data. When x goes backwards, the line is drawn as given (it may cross
+itself), without the [decimation](../big-data/) that keeps long lines quick, and the chart reports `unsorted-x` once
+for the series. Sort the data when the order means nothing.
+
+## New data
+
+`setData()` replaces one series' values: the cheapest way to show new numbers. `update()` with new `series` replaces
+them whole, matched by `id`. Either way, what the user did (a zoom, a hidden series, a selection) stays.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('kettle')!,
+  { title: { text: 'Kettle temperature (made up)' }, series: [{ type: 'line', id: 'temp', name: 'Temperature (°C)', data: [18, 24, 37] }] },
+  { types: [line] },
+);
+
+const readings = [18, 24, 37];
+setInterval(() => {
+  readings.push(Math.min(100, readings.at(-1)! + 9));
+  c.setData('temp', readings);
+}, 1000);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, computed, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-kettle',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 320px" [options]="options()" [types]="types" />
+    <button type="button" (click)="read()">New reading</button>
+  `,
+})
+export class Kettle {
+  readonly types = [line];
+  readonly readings = signal<readonly number[]>([18, 24, 37]);
+  readonly options = computed<ChartOptions>(() => ({
+    title: { text: 'Kettle temperature (made up)' },
+    series: [{ type: 'line', id: 'temp', name: 'Temperature (°C)', data: this.readings() }],
+  }));
+
+  read(): void {
+    this.readings.update((r) => [...r, Math.min(100, r.at(-1)! + 9)]);
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<Aside>
+The chart never writes to your arrays. A typed `y` is read as it is; `x` is always copied, and so is a `y` that holds
+`Infinity`.
+</Aside>

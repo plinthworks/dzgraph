@@ -1,8 +1,112 @@
 ---
 title: "Gros volumes"
-description: "Des millions de points : colonnes, décimation, Canvas et WebGL2."
+description: "Des millions de points : colonnes typées lues sans copie, décimation, Canvas au-delà de 2 000 marques, WebGL2 au-delà de 100 000 points, et ce qu’ont mesuré les bancs d’essai."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [big-data.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/big-data.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+DzGraph dessine des lignes de dix millions de points et des nuages de millions de points, et garde le zoom et le
+déplacement fluides. Rien n'est à activer pour les lignes ; les marques en très grand nombre demandent la fonction
+`canvas`, et les nuages denses la fonction `webgl`. L'image est la même quelle que soit la façon de la peindre.
+
+## Des données en colonnes
+
+Les données les plus rapides sont deux colonnes : `{ x, y }` en `Float64Array` (`x` facultatif, `key` un tableau de
+chaînes facultatif). Le graphique les lit sans copie. Sur un axe de temps, `x` contient des instants en millisecondes
+depuis 1970 (UTC).
+
+Pour montrer de nouveaux chiffres, écrivez dans les colonnes et redonnez-les avec `setData()` : le graphique les relit
+et oublie ce qu'il avait calculé à partir de leurs anciennes valeurs.
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart, timeAxis } from '@dzgraph/dom';
+
+const n = 1_000_000;
+const x = new Float64Array(n);
+const y = new Float64Array(n);
+for (let i = 0; i < n; i++) {
+  x[i] = Date.UTC(2026, 0, 1) + i * 60_000;
+  y[i] = Math.sin(i / 5000) * 10 + 50;
+}
+
+const c = chart(document.getElementById('flow')!, { xAxis: { scale: 'time' }, series: [{ type: 'line', id: 'flow', name: 'Débit (inventé)', data: { x, y } }] }, { types: [line], features: [timeAxis] });
+
+y[n - 1] = 75;
+c.setData('flow', { x, y });
+```
+
+Un trou est `NaN` dans une colonne (`null` dans un tableau). Sur une ligne ou une aire, un x qui recule est signalé
+(`unsorted-x`) ; les x d'un nuage peuvent venir dans n'importe quel ordre.
+
+## Les lignes : la décimation
+
+Une ligne qui a plus de points que le tracé n'a de colonnes de pixels est dessinée à partir de bien moins de points :
+pour chaque colonne de pixels, le premier, le dernier, le plus bas et le plus haut (M4). À l'œil c'est la même ligne,
+chaque pic gardé, et une image coûte à peu près la même chose quelle que soit la longueur. L'infobulle, le clavier et
+le tableau de données donnent toujours les vrais points. Zoomez dans cette ligne d'un million de points inventés : le
+détail apparaît à mesure.
+
+<LiveChart
+  height={380}
+  features={['timeAxis', 'zoom']}
+  data={{ recipe: 'walk', count: 1000000 }}
+  options={{
+    title: { text: 'Un million de mesures inventées, une par minute' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'walk', name: 'Mesure', data: [] }],
+  }}
+/>
+
+Le tableau de données des lecteurs d'écran liste au plus 1 000 lignes (celles de la plage visible une fois zoomé) et
+dit combien il en laisse de côté.
+
+## Beaucoup de marques : Canvas
+
+Avec la fonction `canvas`, une série qui dessine plus de 2 000 marques (marqueurs, colonnes, points de nuage) est
+peinte sur un Canvas sous les axes et les étiquettes, avec les mêmes couleurs et les mêmes tailles, alignée sur le
+pixel. Sans elle, chaque série est dessinée en SVG : la même image, plus lente au-delà de quelques milliers d'éléments.
+Le survol trouve le point le plus proche tout de suite, quel que soit leur nombre.
+
+## Les nuages denses : WebGL2
+
+Avec la fonction `webgl` (qui apporte `canvas`), un nuage de plus de 100 000 points est dessiné par WebGL2. Les points
+restent sur la carte graphique : un zoom ou un déplacement bouge la vue, pas les points, et ne coûte presque aucun
+script. Couleurs, symboles, tailles et transparence sont ceux de l'image Canvas, si bien que les amas paraissent plus
+sombres de la même façon. Sélectionnez au lasso une partie de ce nuage de 200 000 points inventés, ou zoomez dedans :
+
+<LiveChart
+  height={420}
+  features={['webgl', 'zoom', 'selection']}
+  data={{ recipe: 'cloud', count: 200000 }}
+  options={{
+    title: { text: 'Deux nuages inventés, 200 000 points' },
+    selection: { shapes: ['lasso', 'rectangle'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Échantillons', data: [] }],
+  }}
+/>
+
+<Aside>
+Une page n'a qu'environ seize contextes WebGL. Un graphique n'en ouvre un que lorsqu'il dessine son premier nuage
+dense, et le libère quand il est détruit. Sans WebGL2 (un vieux navigateur, trop de contextes, la carte graphique
+perdue), la même image est dessinée sur Canvas, et WebGL2 reprend la main dès qu'il le peut.
+</Aside>
+
+## Ce qu'ont mesuré les bancs d'essai
+
+Les seuils viennent de mesures, pas de suppositions : Canvas dessine 100 000 points en environ 3 ms de script par
+image, et son coût croît avec chaque point, ce que ne fait pas celui de WebGL2. Les bancs d'essai tournent dans un vrai
+Chrome ; les chiffres ci-dessous sont des médianes en millisecondes de script (2026-11-23), à comparer aux 16,7 ms de
+60 images par seconde. Ils sont dans [bench/results](https://github.com/plinthworks/dzgraph/tree/main/bench/results) ;
+`npm run bench` les mesure à nouveau sur votre machine.
+
+| Graphique | Premier dessin | Une image de zoom | Une image de déplacement |
+|---|---|---|---|
+| ligne, 10 millions de points | 328 | 2,7 | 2,3 |
+| axe de temps, 1 million de points, navigateur | 70 | 5,4 | 5,3 |
+| nuage, 100 000 points (Canvas) | 24 | 3,4 | 2,1 |
+| nuage, 1 million de points (WebGL2) | 89 | 0,7 | 2,2 |
+| nuage, 10 millions de points (WebGL2) | 497 | 1,0 | 1,9 |
+
+Le lasso reste vivant lui aussi : sur un million de points, chaque mouvement du pointeur coûte environ 5 ms.

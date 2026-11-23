@@ -3,6 +3,139 @@ title: "Export and print"
 description: "SVG, PNG, CSV, download and print, made in the page."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [export.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/export.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+The `exporting` feature turns a chart into a file: a picture (SVG, PNG), its numbers (CSV), or a printed page. Everything
+is made in the page; nothing is sent to a server. Without the feature, the export methods do nothing and report a
+`missing-module` problem.
+
+## What a picture shows
+
+A picture is the **view**, as on screen: the visible range, without the hidden series, with the selection, the
+comparison, the aggregation and the drill level, and with the title, the axes and the legend. The tools are left out:
+no mode bar, menu button, zoom reset button, breadcrumb, navigator or range buttons, and no tooltip, crosshair or
+focus ring. A picture shows the data, not the tools.
+
+- **Colours** are those of the screen (a dark page exports dark), unless the picture asks for `theme: 'light'` or
+  `'dark'`. The background is always painted, never transparent.
+- **Size**: the chart's size on screen. `width` and `height` lay the chart out again at that size (labels, ticks and
+  legend fit it); they do not stretch the picture.
+- **SVG** is a standalone document: colours and fonts are written as values, so it needs no theme. It has
+  `role="img"`, a `<title>` (the chart's title) and a `<desc>` (the summary screen readers hear), the language and the
+  direction. A dense scatter gives one element per point: use PNG for it.
+- **PNG** is drawn at `scale` device pixels per CSS pixel (by default the screen's, at least 2). Marks the screen
+  paints with Canvas or WebGL2 are in it too.
+- **The file name** comes from the title (letters, digits and hyphens), else « chart »; `exporting.filename` sets it.
+
+## From the code
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart, exporting } from '@dzgraph/dom';
+
+const c = chart(
+  document.getElementById('harvest')!,
+  {
+    title: { text: 'Crates picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [12, 19, 15, 22, 17] }],
+    exporting: { filename: 'crates' },
+  },
+  { types: [column], features: [exporting] },
+);
+
+document.getElementById('save')!.addEventListener('click', () => void c.download('png'));
+
+const svg = c.exportSvg({ theme: 'light' }); // a standalone SVG document
+const png = await c.exportPng({ width: 1200, height: 630, scale: 2 }); // a Blob, for a link preview
+const csv = c.exportCsv(); // the numbers, as text
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal, viewChild } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { exporting } from '@dzgraph/dom';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-crates',
+  imports: [DzChart],
+  template: `
+    <dz-chart style="block-size: 320px" [options]="options()" [types]="types" [features]="features" />
+    <button type="button" (click)="save()">Save as PNG</button>
+  `,
+})
+export class Crates {
+  readonly chart = viewChild.required(DzChart);
+  readonly types = [column];
+  readonly features = [exporting];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Crates picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [12, 19, 15, 22, 17] }],
+    exporting: { filename: 'crates' },
+  });
+
+  async save(): Promise<void> {
+    await this.chart().chart?.download('png');
+  }
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+`exportSvg()` and `exportCsv()` give text (null without the feature); `exportPng()` gives a `Blob`; `download()`
+saves a file in the format named (`'png'`, `'svg'` or `'csv'`).
+
+## The user's menu
+
+With the `menu` feature, `menu: true` puts a small button at the top of the chart; its « Download » item opens PNG, SVG
+and CSV, and « Print » prints. `menu: { items: ['export', 'print'] }` offers only those two. Try it on this chart:
+
+<LiveChart
+  height={340}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Crates picked (made up)' },
+    menu: { items: ['export', 'print'] },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [{ type: 'column', id: 'crates', name: 'Crates', data: [12, 19, 15, 22, 17] }],
+  }}
+/>
+
+## The numbers as CSV
+
+The CSV has the same columns as the [data table](../accessibility/#the-data-table): the x values, then one column
+per visible series. It has the rows the table shows (the visible range, or all the data when the table was switched to
+it), but every one of them, with no limit.
+
+- Values are raw: `1234.5`, never « 1 234,5 € »; an empty cell for a gap.
+- Times are ISO 8601 with their offset, in the axis's zone (`2026-03-08T02:00:00+01:00`); days alone (`2026-03-08`)
+  when every time is a midnight.
+- By default it is universal: commas between cells, a dot for decimals, UTF-8 with a byte order mark so a spreadsheet
+  reads accents. `exporting: { csv: { locale: true } }` (or `exportCsv({ locale: true })`) writes semicolons and a
+  decimal comma when the chart's language writes decimals with a comma, which a French spreadsheet opens as columns.
+- A text cell that starts like a formula (`=`, `+`, `-`, `@`) is written after an apostrophe, so a spreadsheet does not
+  run it. Numbers are never touched.
+
+## Printing
+
+`print()` prints the chart alone on a page: the picture above, in light colours (paper is light), fitted to the page's
+width. `print({ table: true })` adds the data table under it. It prints from a hidden frame: the page around the
+chart does not move, and the chart on screen keeps its view and its focus.
+
+A page printed whole, with the browser's Print, prints each chart in light colours too, without its tools, and never
+cut between two sheets. That part is the theme's work: it holds even without the `exporting` feature.
+
+<Aside>
+Nothing leaves the browser: the export never calls a remote service, so a chart of private numbers stays private.
+</Aside>

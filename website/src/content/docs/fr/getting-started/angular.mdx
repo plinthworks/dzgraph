@@ -23,7 +23,8 @@ Chargez le thème une fois, dans les styles de l'app (`styles` de `angular.json`
 
 Les options sont une entrée en signal : une nouvelle valeur met le graphique à jour, et ce que l'utilisateur a fait (un
 zoom, une série masquée, une sélection) reste. `types` et `features` valent par défaut tous les types de séries et
-toutes les fonctions (`allTypes`, `allFeatures`) ; donnez-en moins pour embarquer moins.
+toutes les fonctions (`allTypes`, `allFeatures`) ; donnez-en moins et le graphique ne dessine et ne fait que
+ceux-là. Le composant importe les deux listes : elles sont dans le paquet livré dans tous les cas.
 
 <CodeTabs>
 <Fragment slot="angular">
@@ -97,7 +98,9 @@ c.on('pointClick', (e) => console.log('Point choisi', e.point.index));
 
 ## Sorties
 
-Chaque événement du graphique est une sortie du composant, avec le même détail : `problems`, `pointHover`,
+Chaque événement du graphique est une sortie du composant. Les événements de point (`pointHover`, `pointClick`,
+`pointFocus`) donnent le `PointRef` lui-même, `rangeChange` la plage, `modeChange` le mode et `problems` la liste ; les
+autres donnent le détail de l'événement : `problems`, `pointHover`,
 `pointClick`, `pointFocus`, `legendToggle`, `rangeChange`, `viewChange`, `modeChange`, `measure`, `selectionChange`,
 `drill`.
 

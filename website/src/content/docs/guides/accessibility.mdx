@@ -3,6 +3,146 @@ title: "Accessibility"
 description: "The keyboard, screen readers, the data table, colour and contrast, reduced motion."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [screen-reader.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/screen-reader.md).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../components/CodeTabs.astro';
+import LiveChart from '../../../components/LiveChart.astro';
+
+A chart is for everyone who reads the page: with a mouse, with a keyboard, with a screen reader, without telling
+colours apart, or on paper. None of this is an option to turn on: every chart does it.
+
+<LiveChart
+  height={480}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Jars of jam sold (made up)' },
+    description: 'Plum jam sells best in late summer.',
+    crosshair: true,
+    dataTable: true,
+    xAxis: { scale: 'category', categories: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] },
+    series: [
+      { type: 'line', id: 'plum', name: 'Plum', data: [14, 22, 41, 66, 58, 30] },
+      { type: 'line', id: 'quince', name: 'Quince', data: [8, 9, 12, 18, 35, 52] },
+    ],
+  }}
+/>
+
+Press Tab to reach the chart's points, then the arrow keys; the data table under the chart is the one screen readers
+read.
+
+## The keyboard
+
+The chart's points are one tab stop: Tab lands on the point focused last (the first time, the first point of the first
+visible series). Tab again goes on to the legend's items, then out of the chart.
+
+| Key | What it does |
+|---|---|
+| ← → | the previous or next point along x, as drawn (a mirrored axis turns them with it) |
+| ↑ ↓ | the series above or below, at the same x; in bars, along the categories |
+| Home, End | the series' first and last point |
+| Page Up, Page Down | a tenth of the series' points |
+| Enter | a click on the point (`pointClick`) |
+| Escape | hides the tooltip; the focus stays |
+| `+` `-` `0` | with `zoom`: zoom in and out around the point, back to the whole |
+
+The focused point has a visible ring (`--dzgraph-focus`), and the crosshair and tooltip of a hover. Every point can be
+reached, also those a dense line draws without a marker: the ring shows where it is. The legend's items are toggle
+buttons: Enter or Space hides or shows a series.
+
+## Screen readers
+
+The chart is a figure named by its title, described by a summary written for it: its kind, its series and the range
+of each, then the app's `description` when it gives one. Each visible series is a list (« Plum, 6 points »), each
+point an item read as « Plum, Aug: 66. Point 4 of 6. ». A series of more than 500 points is not written out: one item
+stands for the focused point and changes as the focus moves.
+
+Axes, gridlines, tick labels and the legend's signs are hidden from screen readers: what they say is in the summary,
+the points and the data table. A polite live region says what the user changed (« Quince hidden »); data updates are
+not announced. The words are English or French, after the page's language; others can be given (see
+[the chart's words](../theming-rtl/#the-charts-words)).
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jam')!,
+  {
+    title: { text: 'Jars of jam sold (made up)' },
+    description: 'Plum jam sells best in late summer.',
+    dataTable: true,
+    xAxis: { scale: 'category', categories: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] },
+    series: [
+      { type: 'line', id: 'plum', name: 'Plum', data: [14, 22, 41, 66, 58, 30] },
+      { type: 'line', id: 'quince', name: 'Quince', data: [8, 9, 12, 18, 35, 52] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jam',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 480px" [options]="options()" [types]="types" />`,
+})
+export class Jam {
+  readonly types = [line];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Jars of jam sold (made up)' },
+    description: 'Plum jam sells best in late summer.',
+    dataTable: true,
+    xAxis: { scale: 'category', categories: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] },
+    series: [
+      { type: 'line', id: 'plum', name: 'Plum', data: [14, 22, 41, 66, 58, 30] },
+      { type: 'line', id: 'quince', name: 'Quince', data: [8, 9, 12, 18, 35, 52] },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## The data table
+
+Every chart has a table with the same numbers: a caption (the title), a first column of x values, then one column per
+visible series, values written as in the tooltip. It is hidden from sight but read by screen readers, after the chart;
+`dataTable: true` shows it under the chart.
+
+- It has at most 1 000 rows; past that, its last row says how many were left out (the [CSV
+  export](../exporting/#the-numbers-as-csv) gives them all).
+- Zoomed, it shows the visible range and says so in its caption; a button under it switches to all the data and back.
+  `dataTable: { show: true, rows: 'all' }` starts with all the data.
+
+## Never colour alone
+
+Colour is never the only way to tell series apart:
+
+- Each series has its own marker symbol: circle, square, diamond, triangle, triangle pointing down, then again. A line
+  shows markers on every point when they are far enough apart, and about every 80 px when it is dense, each series
+  from its own offset. `marker: true` puts one on every point.
+- The legend shows each series' sign: its line with its marker, or a square.
+- The theme's eight series colours were chosen for colour-blind readers (neighbours stay apart), and each stands at
+  least 3:1 against the chart's background, in light and dark; text stands at 4.5:1. A test holds these contrasts.
+- In forced colours (Windows high contrast), the chart takes the system's colours and keeps its symbols.
+
+## Motion
+
+A chart appears and changes with a short, sober animation. Under `prefers-reduced-motion: reduce` there is none: the
+end state shows at once. `animation: false` turns it off for every reader.
+
+<Aside>
+The chart does its part; the page does the rest: give the chart a title, put it near the text that speaks of it, and
+say in `description` what a reader should see in it.
+</Aside>

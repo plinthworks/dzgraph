@@ -1,8 +1,227 @@
 ---
 title: "Types de séries"
-description: "Lignes, aires, colonnes et barres, piles, nuages, secteurs, anneaux et jauges, et comment les importer."
+description: "Lignes, aires, colonnes et barres, empilements, nuages de points, secteurs, anneaux et jauges, et comment les importer."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [les fiches de comportement](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/README.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Chaque type de série s'importe à part depuis `@dzgraph/core` et se donne au graphique dans `types` : une page n'embarque
+que les types qu'elle dessine. `allTypes` les donne tous. Une série dont le graphique n'a pas reçu le type est laissée
+de côté et signalée (`unknown-series-type`).
+
+| Type | Import | Dessine |
+|---|---|---|
+| `'line'` | `line` | les points reliés dans l'ordre des x |
+| `'area'` | `area` | une ligne dont la surface est remplie jusqu'à zéro |
+| `'column'` | `column` | des rectangles debout depuis zéro, côte à côte dans chaque catégorie |
+| `'bar'` | `bar` | des colonnes couchées : le graphique devient horizontal |
+| `'scatter'` | `scatter` | un marqueur par point, placé par deux valeurs |
+| `'pie'`, `'donut'` | `pie`, `donut` | les parts d'un tout, en secteurs |
+| `'gauge'` | `gauge` | une valeur sur un demi-anneau |
+
+## Lignes et aires
+
+Les points sont reliés dans l'ordre des x par des segments droits ; un trou coupe la ligne (voir
+[Les données](../data/#les-trous)). Les marqueurs se montrent sur chaque point quand il y a la place de les lire ; une
+ligne plus dense en garde un environ tous les 80 px. `marker: true` en met un sur chaque point, `false` aucun. Chaque
+série a son symbole (rond, carré, losange, triangle…), si bien que les séries se distinguent sans la couleur.
+
+Une aire est une ligne dont la surface est remplie jusqu'à zéro, translucide, la ligne par-dessus. Les aires et les
+colonnes ont toujours zéro sur leur axe ; les lignes et les nuages de points suivent leurs données.
+
+## Colonnes et barres
+
+Les colonnes se tiennent côte à côte dans la bande de chaque catégorie, dans l'ordre des séries. Les valeurs négatives
+descendent depuis une ligne de zéro plus marquée. Un graphique avec des barres est horizontal : les catégories
+descendent depuis le haut, les valeurs grandissent dans le sens de lecture. Un graphique a une seule orientation : des
+barres et des colonnes ensemble sont signalées (`mixed-orientation`).
+
+## Empilements
+
+Des colonnes, des barres ou des aires de même nom de `stack` s'empilent (`stack: true` est la pile nommée `default`).
+Les valeurs positives s'empilent vers le haut, les négatives vers le bas. `stacking: 'percent'` sur l'axe y fait de
+chaque pile des parts de son total, de 0 à 100 %. L'infobulle donne la valeur d'une part, son pourcentage et le total
+de la pile ; le tableau de données ajoute une colonne de total.
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { column } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('harvest')!,
+  {
+    title: { text: 'Récolte par parcelle (inventée)' },
+    xAxis: { scale: 'category', categories: ['juin', 'juillet', 'août', 'septembre'] },
+    yAxis: { title: 'kg' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Haricots', stack: 'veg', data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Petits pois', stack: 'veg', data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Courges', stack: 'veg', data: [0, 30, 95, 140] },
+    ],
+  },
+  { types: [column] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-harvest',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 320px" [options]="options()" [types]="types" />`,
+})
+export class Harvest {
+  readonly types = [column];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Récolte par parcelle (inventée)' },
+    xAxis: { scale: 'category', categories: ['juin', 'juillet', 'août', 'septembre'] },
+    yAxis: { title: 'kg' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Haricots', stack: 'veg', data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Petits pois', stack: 'veg', data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Courges', stack: 'veg', data: [0, 30, 95, 140] },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Récolte par parcelle (inventée)' },
+    xAxis: { scale: 'category', categories: ['juin', 'juillet', 'août', 'septembre'] },
+    yAxis: { title: 'kg' },
+    series: [
+      { type: 'column', id: 'beans', name: 'Haricots', stack: 'veg', data: [40, 85, 120, 60] },
+      { type: 'column', id: 'peas', name: 'Petits pois', stack: 'veg', data: [70, 55, 20, 10] },
+      { type: 'column', id: 'squash', name: 'Courges', stack: 'veg', data: [0, 30, 95, 140] },
+    ],
+  }}
+/>
+
+Les lignes ne s'empilent pas : une ligne empilée se lirait comme ses propres valeurs, ce qu'elle n'est pas. `stack` sur
+une ligne est signalé (`unknown-option`) ; une app qui veut un cumul le calcule.
+
+## Mélanger les types
+
+Colonnes, barres, lignes, aires et nuages de points se mélangent sur un même axe x, dessinés dans l'ordre des séries.
+Une ligne sur des catégories passe par le milieu de chaque bande. Deux mesures d'unités différentes vont sur deux axes
+de valeurs (voir [Axes et temps](../axes-time/#deux-axes-de-valeurs)). Un secteur ou une jauge ne se mélange pas avec
+eux : un graphique a un seul système de coordonnées, celui de sa première série.
+
+## Nuages de points
+
+Chaque point est un marqueur placé par son x et son y, les deux axes ajustés aux données. Les marqueurs sont un peu
+translucides : les amas de points paraissent plus sombres. Au-delà de 2 000 marqueurs ils sont peints sur un Canvas,
+au-delà de 100 000 avec WebGL2 (les fonctions `canvas` et `webgl`, voir [Gros volumes](../big-data/)).
+
+<LiveChart
+  height={340}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Longueur et largeur des feuilles (inventées)' },
+    xAxis: { title: 'Longueur (cm)' },
+    yAxis: { title: 'Largeur (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [] }],
+  }}
+  features={['canvas']}
+/>
+
+## Secteurs et anneaux
+
+Les données d'un secteur sont des parts : des paires `['Pommes', 120]`, des points `{ name, y, key }`, ou des valeurs
+seules. Les parts partent du haut et suivent le sens des aiguilles d'une montre, dans l'ordre des données. Au-delà de
+sept parts, les six plus grandes restent et les autres se regroupent en une part « Autres », avec toute part sous 2 %
+(`others: false` l'empêche). Le trou d'un anneau porte le total ; `hole` règle sa taille (de 0 à 0,9, 0,6 par défaut)
+et `center` ce qu'il dit.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Graines semées (inventées)' },
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Graines',
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  }}
+/>
+
+Les étiquettes sont à l'extérieur, avec un trait de rappel et la part en %. Quand elles ne tiennent pas, le secteur
+montre sa légende à la place. Un seul secteur ou anneau par graphique.
+
+## Jauges
+
+Une jauge montre une valeur (`data: 72`) sur un demi-anneau de `min` (0) à `max` (100). `thresholds` dessine un fin
+anneau de plages autour de l'arc ; l'étiquette de la plage où tombe la valeur est écrite sous la valeur, pour qu'elle
+ne se lise pas à la seule couleur.
+
+```ts
+import type { ChartOptions } from '@dzgraph/core';
+
+export const options: ChartOptions = {
+  title: { text: 'Cuve d’eau (inventée)' },
+  series: [
+    {
+      type: 'gauge',
+      id: 'tank',
+      name: 'Cuve d’eau (%)',
+      data: 64,
+      thresholds: [
+        { from: 0, to: 20, label: 'Basse', color: 'low' },
+        { from: 20, to: 80, label: 'Correcte' },
+        { from: 80, to: 100, label: 'Pleine' },
+      ],
+    },
+  ],
+};
+```
+
+<LiveChart
+  height={280}
+  options={{
+    title: { text: 'Cuve d’eau (inventée)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Cuve d’eau (%)',
+        data: 64,
+        thresholds: [
+          { from: 0, to: 20, label: 'Basse' },
+          { from: 20, to: 80, label: 'Correcte' },
+          { from: 80, to: 100, label: 'Pleine' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Les couleurs
+
+Une série prend les couleurs du thème dans l'ordre. `color` en choisit une autre : une place dans la palette
+(`color: 3`, en comptant depuis 1), ou une couleur à vous, `{ token: 'brand' }`, que vous définissez en CSS comme
+`--dzgraph-color-brand`. Le `color` d'un seuil nomme aussi une telle couleur. Les couleurs ne s'écrivent jamais dans les
+options : elles vivent dans le CSS, si bien que le clair, le sombre et les contrôles de contraste tiennent.
+
+<Aside>
+La couleur n'est jamais le seul moyen de distinguer les séries : chacune a son symbole, son signe dans la légende et
+son nom dans l'infobulle et le tableau de données.
+</Aside>

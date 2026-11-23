@@ -3,6 +3,149 @@ title: "Accessibilité"
 description: "Le clavier, les lecteurs d’écran, le tableau de données, couleurs et contrastes, mouvement réduit."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [screen-reader.md](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/screen-reader.md) (en anglais).
-:::
+import { Aside } from '@astrojs/starlight/components';
+import CodeTabs from '../../../../components/CodeTabs.astro';
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Un graphique est pour tous ceux qui lisent la page : à la souris, au clavier, avec un lecteur d'écran, sans distinguer
+les couleurs, ou sur papier. Rien de cela n'est une option à activer : chaque graphique le fait.
+
+<LiveChart
+  height={480}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Pots de confiture vendus (inventés)' },
+    description: 'La confiture de prunes se vend surtout à la fin de l’été.',
+    crosshair: true,
+    dataTable: true,
+    xAxis: { scale: 'category', categories: ['mai', 'juin', 'juil.', 'août', 'sept.', 'oct.'] },
+    series: [
+      { type: 'line', id: 'plum', name: 'Prune', data: [14, 22, 41, 66, 58, 30] },
+      { type: 'line', id: 'quince', name: 'Coing', data: [8, 9, 12, 18, 35, 52] },
+    ],
+  }}
+/>
+
+Appuyez sur Tab pour atteindre les points du graphique, puis sur les flèches ; le tableau de données sous le
+graphique est celui que lisent les lecteurs d'écran.
+
+## Le clavier
+
+Les points du graphique sont un seul arrêt de tabulation : Tab arrive sur le dernier point qui avait le focus (la
+première fois, le premier point de la première série visible). Tab encore passe aux éléments de la légende, puis sort
+du graphique.
+
+| Touche | Ce qu'elle fait |
+|---|---|
+| ← → | le point précédent ou suivant le long de x, tel que dessiné (un axe inversé les tourne avec lui) |
+| ↑ ↓ | la série au-dessus ou au-dessous, au même x ; dans des barres, le long des catégories |
+| Début, Fin | le premier et le dernier point de la série |
+| Page préc., Page suiv. | un dixième des points de la série |
+| Entrée | un clic sur le point (`pointClick`) |
+| Échap | cache l'infobulle ; le focus reste |
+| `+` `-` `0` | avec `zoom` : zoomer et dézoomer autour du point, revenir au tout |
+
+Le point qui a le focus porte un anneau visible (`--dzgraph-focus`), ainsi que le viseur et l'infobulle du survol.
+Chaque point est atteignable, même ceux qu'une ligne dense dessine sans marqueur : l'anneau montre où il est. Les
+éléments de la légende sont des boutons à bascule : Entrée ou Espace masque ou affiche une série.
+
+## Les lecteurs d'écran
+
+Le graphique est une figure nommée par son titre, décrite par un résumé écrit pour elle : son genre, ses séries et
+l'étendue de chacune, puis la `description` de l'app quand elle en donne une. Chaque série visible est une liste
+(« Prune, 6 points »), chaque point un élément lu « Prune, août : 66. Point 4 sur 6. ». Une série de plus de
+500 points n'est pas écrite en entier : un élément tient lieu du point qui a le focus et change quand le focus bouge.
+
+Les axes, le quadrillage, les étiquettes des graduations et les signes de la légende sont cachés aux lecteurs
+d'écran : ce qu'ils disent est dans le résumé, les points et le tableau de données. Une zone vivante polie dit ce que
+l'utilisateur a changé (« Coing masquée ») ; les mises à jour des données ne sont pas annoncées. Les mots sont en
+anglais ou en français, selon la langue de la page ; d'autres peuvent être donnés (voir
+[les mots du graphique](../theming-rtl/#les-mots-du-graphique)).
+
+<CodeTabs>
+<Fragment slot="ts">
+
+```ts
+import { line } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('jam')!,
+  {
+    title: { text: 'Pots de confiture vendus (inventés)' },
+    description: 'La confiture de prunes se vend surtout à la fin de l’été.',
+    dataTable: true,
+    xAxis: { scale: 'category', categories: ['mai', 'juin', 'juil.', 'août', 'sept.', 'oct.'] },
+    series: [
+      { type: 'line', id: 'plum', name: 'Prune', data: [14, 22, 41, 66, 58, 30] },
+      { type: 'line', id: 'quince', name: 'Coing', data: [8, 9, 12, 18, 35, 52] },
+    ],
+  },
+  { types: [line] },
+);
+```
+
+</Fragment>
+<Fragment slot="angular">
+
+```ts
+import { Component, signal } from '@angular/core';
+import { line, type ChartOptions } from '@dzgraph/core';
+import { DzChart } from '@dzgraph/angular';
+
+@Component({
+  selector: 'app-jam',
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 480px" [options]="options()" [types]="types" />`,
+})
+export class Jam {
+  readonly types = [line];
+  readonly options = signal<ChartOptions>({
+    title: { text: 'Pots de confiture vendus (inventés)' },
+    description: 'La confiture de prunes se vend surtout à la fin de l’été.',
+    dataTable: true,
+    xAxis: { scale: 'category', categories: ['mai', 'juin', 'juil.', 'août', 'sept.', 'oct.'] },
+    series: [
+      { type: 'line', id: 'plum', name: 'Prune', data: [14, 22, 41, 66, 58, 30] },
+      { type: 'line', id: 'quince', name: 'Coing', data: [8, 9, 12, 18, 35, 52] },
+    ],
+  });
+}
+```
+
+</Fragment>
+</CodeTabs>
+
+## Le tableau de données
+
+Chaque graphique a un tableau des mêmes chiffres : une légende (le titre), une première colonne de valeurs de x, puis
+une colonne par série visible, les valeurs écrites comme dans l'infobulle. Il est caché à la vue mais lu par les
+lecteurs d'écran, après le graphique ; `dataTable: true` le montre sous le graphique.
+
+- Il a au plus 1 000 lignes ; au-delà, sa dernière ligne dit combien ont été laissées de côté (l'[export
+  CSV](../exporting/#les-chiffres-en-csv) les donne toutes).
+- Zoomé, il montre la plage visible et le dit dans sa légende ; un bouton dessous passe à toutes les données et
+  revient. `dataTable: { show: true, rows: 'all' }` commence avec toutes les données.
+
+## Jamais la couleur seule
+
+La couleur n'est jamais le seul moyen de distinguer les séries :
+
+- Chaque série a son propre symbole de marqueur : cercle, carré, losange, triangle, triangle pointe en bas, puis de
+  nouveau. Une ligne montre un marqueur sur chaque point quand ils sont assez espacés, et environ tous les 80 px quand
+  elle est dense, chaque série à partir de son propre décalage. `marker: true` en met un sur chaque point.
+- La légende montre le signe de chaque série : sa ligne avec son marqueur, ou un carré.
+- Les huit couleurs de séries du thème ont été choisies pour les lecteurs daltoniens (des voisines restent
+  distinctes), et chacune tient au moins 3:1 sur le fond du graphique, en clair et en sombre ; le texte tient 4.5:1. Un
+  test garde ces contrastes.
+- En couleurs forcées (contraste élevé de Windows), le graphique prend les couleurs du système et garde ses symboles.
+
+## Le mouvement
+
+Un graphique apparaît et change avec une animation courte et sobre. Sous `prefers-reduced-motion: reduce` il n'y en a
+aucune : l'état final s'affiche d'un coup. `animation: false` l'arrête pour tous les lecteurs.
+
+<Aside>
+Le graphique fait sa part ; la page fait le reste : donnez un titre au graphique, placez-le près du texte qui en parle,
+et dites dans `description` ce qu'un lecteur doit y voir.
+</Aside>
