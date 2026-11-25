@@ -1,0 +1,59 @@
+---
+/**
+ * The gauge workshop (owner 2026-11-25): every part of a gauge set with buttons, the chart following live, the options
+ * written under it. The controls are built by demo/gauge-workshop.ts, shared with the playground; the chart is made
+ * here, from the library's sources, when the workshop comes near the screen.
+ *
+ *   <GaugeWorkshop />
+ */
+const lang = Astro.currentLocale === 'fr' ? 'fr' : 'en';
+---
+
+<dzgraph-gauge-workshop class="not-content" data-lang={lang}>
+  <div class="gw" lang={lang}></div>
+</dzgraph-gauge-workshop>
+
+<script>
+  import { gaugeWorkshop } from './demo/gauge-workshop';
+
+  class DzgraphGaugeWorkshop extends HTMLElement {
+    #seen: IntersectionObserver | null = null;
+    #destroy: (() => void) | null = null;
+
+    connectedCallback() {
+      if (this.#seen || this.#destroy) return;
+      this.#seen = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        this.#seen?.disconnect();
+        this.#seen = null;
+        void this.#build();
+      }, { rootMargin: '400px 0px' });
+      this.#seen.observe(this);
+    }
+
+    async #build() {
+      const host = this.querySelector<HTMLElement>('.gw');
+      if (!host) return;
+      const [{ allTypes }, dom] = await Promise.all([import('@dzgraph/core'), import('@dzgraph/dom')]);
+      if (!this.isConnected) return;
+      gaugeWorkshop(host, this.dataset.lang === 'fr' ? 'fr' : 'en', (box, options) => {
+        // The workshop's options are typed; the chart checks them and says what it refuses.
+        const c = dom.chart(box, options as never /* Partial<ChartOptions>: the series are always given */, { types: allTypes });
+        c.on('problems', (d) => {
+          for (const p of d.problems) console.warn('dzgraph workshop', p.code, p.path);
+        });
+        this.#destroy = () => c.destroy();
+        return c;
+      });
+    }
+
+    disconnectedCallback() {
+      this.#seen?.disconnect();
+      this.#seen = null;
+      this.#destroy?.();
+      this.#destroy = null;
+    }
+  }
+
+  if (!customElements.get('dzgraph-gauge-workshop')) customElements.define('dzgraph-gauge-workshop', DzgraphGaugeWorkshop);
+</script>

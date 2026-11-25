@@ -24,6 +24,11 @@ dzgraph-live-chart .dzgraph-demo-host {
 dzgraph-live-chart .dzgraph-demo-host[data-auto-height] {
   block-size: auto;
 }
+/* The colour names the demos' thresholds use (a gauge's zones): an app defines its own, on the chart's root. */
+dzgraph-live-chart .dzgraph {
+  --dzgraph-color-cold: var(--dzgraph-series-3);
+  --dzgraph-color-calm: var(--dzgraph-series-4);
+}
 dzgraph-live-chart .dzgraph-demo-caption {
   margin-block-start: 0.5rem;
   font-size: var(--sl-text-sm);

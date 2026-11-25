@@ -213,6 +213,19 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   the data table shown takes no fixed height (the table is inside the chart's element, past its height); the
   `dataTable` page says so. Chrome: 142 pages, every demo drawn, no console message, every link answers. Gate green
   (1 205). Committed.
+- **The richer gauge (owner 2026-11-24, before batch 4).** The owner asked for a gauge from −2000 to 2000 with ticks,
+  coloured zones on the arc and labels, and for clients to draw any chart. Decided: proposal A (ARCHITECTURE D.26):
+  `origin`, `ticks: { step, labels }`, `thresholdsOn: 'ring' | 'track'`, all optional (gauge.md 13–18, written
+  first); then, as a phase of its own, custom series types made public (an ADR to write). Done: 12 core tests first,
+  the playground case `gauge-rich` and its 8 reference images (240 in all, green), the site's gauge page (both
+  languages, a live demo of the owner's example), the facts regenerated. Core budget raised to its measure + 5 %
+  (12 630 B). Then the bar (owner, same day): `shape: 'bar'` on the gauge, not a type of its own, and
+  `orientation: 'horizontal' | 'vertical'` (gauge.md 19–24); 14 more core tests, the cases `gauge-bar` and
+  `gauge-bar-upright` and their 16 reference images, two demos on the gauge page. Appearing now grows only a rect that
+  draws a point. Core budget raised to its measure + 5 % (14 340 B). Then (owner 2026-11-25) `thickness` in pixels for both shapes
+  (gauge.md 25), numbers on the arc no longer overlap one another (rule 14), and the gauge workshop: every part set
+  with buttons, the options written live, on the site's gauge page and in the playground (`playground/workshop.html`),
+  one module for both (`website/src/components/demo/gauge-workshop.ts`). Gate green (1 267). Committed.
 
 ## Working rules
 

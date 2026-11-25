@@ -62,7 +62,7 @@ export default defineConfig({
         fr: { label: 'Français', lang: 'fr' },
       },
       // The charts' theme on every page: its palette (--tz-*) is the site's accent too.
-      customCss: ['@dzgraph/theme/dzgraph.css', './src/styles/custom.css'],
+      customCss: ['@dzgraph/theme/dzgraph.css', './src/styles/custom.css', './src/components/demo/gauge-workshop.css'],
       sidebar: [
         { label: 'Getting started', translations: { fr: 'Prise en main' }, items: ['typescript', 'angular'].map((page) => ({ slug: `getting-started/${page}` })) },
         { label: 'Gallery', translations: { fr: 'Galerie' }, items: [{ autogenerate: { directory: 'gallery' } }] },

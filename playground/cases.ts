@@ -140,6 +140,27 @@ export const cases: Record<string, Case> = {
       series: [{ type: 'gauge', name: 'Remplissage', data: 72, thresholds: [{ from: 0, to: 60, label: 'Normal' }, { from: 60, to: 85, label: 'Élevé' }, { from: 85, to: 100, label: 'Plein' }] }],
     }),
   },
+  'gauge-rich': {
+    title: 'Jauge de −2000 à 2000, zones sur l’arc (gauge.md 13–15)',
+    options: () => ({
+      title: 'Bilan fictif du réservoir',
+      series: [{ type: 'gauge', name: 'Bilan', min: -2000, max: 2000, origin: 0, data: -1700, ticks: { step: 100, labels: 500 }, thresholdsOn: 'track', thresholds: [{ from: -2000, to: -1500, color: 'cold', label: 'Froid' }, { from: -500, to: 500, color: 'calm', label: 'Normal' }] }],
+    }),
+  },
+  'gauge-bar': {
+    title: 'Jauge en barre, de −2000 à 2000 (gauge.md 19–23)',
+    options: () => ({
+      title: 'Bilan fictif du réservoir',
+      series: [{ type: 'gauge', shape: 'bar', name: 'Bilan', min: -2000, max: 2000, origin: 0, data: -1700, ticks: { step: 100, labels: 500 }, thresholdsOn: 'track', thresholds: [{ from: -2000, to: -1500, color: 'cold', label: 'Froid' }, { from: -500, to: 500, color: 'calm', label: 'Normal' }] }],
+    }),
+  },
+  'gauge-bar-upright': {
+    title: 'Jauge en barre debout, comme un thermomètre (gauge.md 20, 22)',
+    options: () => ({
+      title: 'Température fictive de la serre',
+      series: [{ type: 'gauge', shape: 'bar', orientation: 'vertical', name: 'Température (°C)', min: -10, max: 40, origin: 0, data: 23, ticks: { step: 5, labels: 10 }, thresholdsOn: 'track', thresholds: [{ from: -10, to: 0, color: 'cold', label: 'Gel' }, { from: 18, to: 26, color: 'calm', label: 'Idéal' }] }],
+    }),
+  },
   many: {
     title: 'Beaucoup de catégories',
     options: () => ({ title: 'Rangs du verger', series: [{ type: 'column', name: 'Arbres', data: Array.from({ length: 30 }, (_, i) => [`Rang nord n° ${i + 1}`, 10 + ((i * 17) % 23)]) }] }),

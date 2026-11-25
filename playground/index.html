@@ -20,6 +20,8 @@
   .case { margin: 0; background: var(--tz-bg); border: 1px solid var(--tz-border); border-radius: 8px; padding: 12px; }
   .case figcaption { color: var(--tz-fg-muted); margin-block-end: 8px; }
   .chart { block-size: 400px; }
+  /* The colour names the cases' thresholds use (gauge.md 6): an app defines its own. */
+  .chart .dzgraph { --dzgraph-color-cold: var(--dzgraph-series-3); --dzgraph-color-calm: var(--dzgraph-series-4); }
   body[data-single] { padding: 0; background: var(--tz-bg); }
   body[data-single] nav, body[data-single] figcaption { display: none; }
   body[data-single] .case { border: 0; border-radius: 0; padding: 0; inline-size: 640px; }

@@ -69,3 +69,24 @@ page `dataTable` dit pourquoi).
 À décider par le propriétaire, en plus du lot 2 : les `messages` donnés remplacent un groupe de mots entier (`menu`,
 `exporting`, `drill`, `shapes`) au lieu de le compléter ; les commentaires de `DzChart` promettent encore « pass only
 those you use to ship less », ce qui est faux tant que `allTypes`/`allFeatures` sont ses valeurs par défaut.
+
+## La jauge enrichie (2026-11-24, avant le lot 4)
+
+Demande du propriétaire : une jauge de −2000 à 2000, une graduation tous les 100, des zones colorées dans l'arc (−2000 à
+−1500 en bleu, −500 à 500 en vert), des étiquettes ; et, plus largement, que le client puisse créer n'importe quel
+graphique. Décision : la proposition A (ARCHITECTURE D.26) — `origin`, `ticks: { step, labels }`, `thresholdsOn: 'ring' |
+'track'` ; puis, en phase à part, les types de séries sur mesure rendus publics (ADR à écrire avec le propriétaire).
+Fiche d'abord (gauge.md 13–18), 12 tests du cœur qui échouaient, le code, le cas `gauge-rich` du playground et ses 8
+images de référence, la page `gauge` du site (les deux langues, une démo de l'exemple du propriétaire). Les noms de
+couleur se posent sur la racine `.dzgraph` quand ils prennent une couleur de la palette (ses variables y vivent) : la
+page le dit. Budget du cœur relevé à sa mesure + 5 % (12 630 o).
+
+Puis la jauge en barre (le propriétaire, même jour) : `shape: 'bar'` sur la jauge, pas un type à part, et
+`orientation: 'horizontal' | 'vertical'` (choix du propriétaire). Fiche (gauge.md 19–24), 14 tests du cœur, les cas
+`gauge-bar` et `gauge-bar-upright` et leurs 16 images, deux démos sur la page `gauge`. L'apparition ne fait plus grandir
+qu'un rectangle qui dessine un point (la piste et les zones de la barre sont là d'emblée). Budget du cœur relevé à sa
+mesure + 5 % (14 340 o).
+
+Puis l'atelier (le propriétaire, 2026-11-25) : chaque partie de la jauge réglée avec des boutons, les noms tapés, les
+options écrites en direct ; sur la page `gauge` du site et dans le playground, un seul module pour les deux. Avec lui,
+`thickness` (pixels, les deux formes, gauge.md 25), et l'arc qui omet un nombre qui en chevaucherait un autre (règle 14).

@@ -112,8 +112,9 @@ export function appearFrom(scene: Scene, opts: { readonly fromXMax?: boolean } =
         // A gauge's value fills from its scale's start (gauge.md 11); a track or a ring is there at once.
         if (p.kind === 'arc' && p.point && p.grows) return p.grows === 'start' ? { ...p, endAngle: p.startAngle } : { ...p, startAngle: p.endAngle };
         if (p.kind === 'arc' && p.point) return { ...p, startAngle: opening, endAngle: opening };
-        if (p.kind === 'rect') {
-          // The base: opposite the rounded free end (a column the plot cut grows from where it is drawn from).
+        if (p.kind === 'rect' && p.point) {
+          // The base: opposite the rounded free end (a column the plot cut grows from where it is drawn from). A rect
+          // that draws no point (a bar gauge's track and zones, gauge.md 24) is there at once.
           switch (p.roundEnd) {
             case 'y-max':
               return { ...p, height: 0 };

@@ -454,7 +454,7 @@
             "code": "0"
           },
           "feature": null,
-          "source": "packages/core/src/series/gauge.ts#L28"
+          "source": "packages/core/src/series/gauge.ts#L38"
         },
         {
           "name": "max",
@@ -464,7 +464,7 @@
             "code": "100"
           },
           "feature": null,
-          "source": "packages/core/src/series/gauge.ts#L32"
+          "source": "packages/core/src/series/gauge.ts#L42"
         },
         {
           "name": "thresholds",
@@ -472,10 +472,68 @@
           "required": false,
           "default": null,
           "feature": null,
-          "source": "packages/core/src/series/gauge.ts#L33"
+          "source": "packages/core/src/series/gauge.ts#L43"
+        },
+        {
+          "name": "origin",
+          "type": "number",
+          "required": false,
+          "default": {
+            "token": "scaleMin"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L48"
+        },
+        {
+          "name": "ticks",
+          "type": "GaugeTicks",
+          "required": false,
+          "default": null,
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L50"
+        },
+        {
+          "name": "thresholdsOn",
+          "type": "'ring' | 'track'",
+          "required": false,
+          "default": {
+            "code": "'ring'"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L55"
+        },
+        {
+          "name": "shape",
+          "type": "'arc' | 'bar'",
+          "required": false,
+          "default": {
+            "code": "'arc'"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L60"
+        },
+        {
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "required": false,
+          "default": {
+            "code": "'horizontal'"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L65"
+        },
+        {
+          "name": "thickness",
+          "type": "number",
+          "required": false,
+          "default": {
+            "token": "gaugeThickness"
+          },
+          "feature": null,
+          "source": "packages/core/src/series/gauge.ts#L70"
         }
       ],
-      "source": "packages/core/src/series/gauge.ts#L174"
+      "source": "packages/core/src/series/gauge.ts#L517"
     }
   ],
   "axis": [

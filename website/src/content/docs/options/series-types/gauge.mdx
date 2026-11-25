@@ -1,13 +1,14 @@
 ---
 title: "gauge"
-description: "A gauge: one value on a half ring. Its own options: min, max, thresholds."
+description: "A gauge: one value on a half ring or a bar. Its own options: min, max, thresholds, origin, ticks, thresholdsOn, shape, orientation, thickness."
 ---
 
 import CodeTabs from '../../../../components/CodeTabs.astro';
+import GaugeWorkshop from '../../../../components/GaugeWorkshop.astro';
 import LiveChart from '../../../../components/LiveChart.astro';
 import OptionFacts from '../../../../components/OptionFacts.astro';
 
-One value on a half ring, from `min` to `max`.
+One value on a half ring, or on a bar, from `min` to `max`.
 
 <OptionFacts seriesType="gauge" />
 
@@ -23,6 +24,173 @@ The `label` of the range the value falls in is written under the value, so it is
 names a colour you define in CSS as `--dzgraph-color-<name>` (here `--dzgraph-color-low`); without it the range is
 neutral. A threshold of another shape is `invalid-option` (`series[i].thresholds[0]`). A gauge stands alone and has no
 legend by default: its title names it.
+
+## A scale either side of zero
+
+Three options make a richer gauge; a gauge without them is drawn as above.
+
+- `origin` is where the fill starts (by default `min`). With `origin: 0` on a scale from −2000 to 2000, a value below
+  zero fills towards the left end, one above towards the right end (in right to left, the other way round). An origin
+  off the scale is `invalid-option` (`series[i].origin`) and `min` is used.
+- `ticks: { step, labels }` draws a short tick inside the arc at every multiple of `step`, and a longer one with its
+  number at every multiple of `labels`. The numbers then write the scale's ends, so they are not written twice. A
+  number that would cover the value is left out. A `step` that is not a positive number, or that would draw more than
+  200 ticks, is `invalid-option` (`series[i].ticks.step`) and no tick is drawn; a `labels` that is not a multiple of
+  `step` (`series[i].ticks.labels`) gives no numbers.
+- `thresholdsOn: 'track'` paints the thresholds on the arc itself, the whole thickness, and writes each one's label
+  around the arc at its middle. The value becomes a narrower arc, edged with the background, so the zones show on both
+  its sides. The value's own zone is still named under the value. Labels that would overlap: the later one is left out.
+
+Ticks and zone labels are pictures of the scale and the thresholds: screen readers, the tooltip and the data table say
+the value, the scale and the threshold, as before.
+
+```ts
+import { gauge } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('balance')!,
+  {
+    series: [
+      {
+        type: 'gauge',
+        id: 'balance',
+        name: 'Tank balance',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Cold', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  },
+  { types: [gauge] },
+);
+```
+
+The colour names are yours to define. Set them on the chart's root, `.dzgraph`, when they take a colour of the chart's
+own palette (its variables live there):
+
+```css
+#balance .dzgraph {
+  --dzgraph-color-cold: var(--dzgraph-series-3);
+  --dzgraph-color-calm: var(--dzgraph-series-4);
+}
+```
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Tank balance (made up)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'balance',
+        name: 'Tank balance',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Cold', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## As a bar
+
+`shape: 'bar'` draws the same gauge as a straight bar; every option above holds for it. `orientation: 'vertical'`
+stands it upright, as a thermometer (by default it lies across). Across, `min` is at the reading direction's start
+(on the right in right to left); upright, `min` is at the bottom. Another word for either is `invalid-option`
+(`series[i].shape`, `series[i].orientation`): the arc is drawn, or the bar lies across.
+
+Across, the value is written on top with its zone's label, then the zones' labels, the bar, and the ticks and their
+numbers under it. Upright, the ticks and numbers are on the inline-end side, the zones' labels on the other. Numbers
+that would overlap are left out (the later one). The bar is 24 px thick at most.
+
+```ts
+import type { GaugeSeriesOptions } from '@dzgraph/core';
+
+const balance: GaugeSeriesOptions = {
+  type: 'gauge',
+  shape: 'bar', // orientation: 'vertical' to stand it upright
+  min: -2000,
+  max: 2000,
+  origin: 0,
+  data: -1700,
+  ticks: { step: 100, labels: 500 },
+  thresholdsOn: 'track',
+  thresholds: [], // as above
+};
+```
+
+<LiveChart
+  height={220}
+  options={{
+    title: { text: 'Tank balance (made up)' },
+    series: [
+      {
+        type: 'gauge',
+        shape: 'bar',
+        name: 'Tank balance',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Cold', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+<LiveChart
+  height={360}
+  options={{
+    title: { text: 'Greenhouse temperature (made up)' },
+    series: [
+      {
+        type: 'gauge',
+        shape: 'bar',
+        orientation: 'vertical',
+        name: 'Temperature (°C)',
+        data: 23,
+        min: -10,
+        max: 40,
+        origin: 0,
+        ticks: { step: 5, labels: 10 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -10, to: 0, label: 'Frost', color: 'cold' },
+          { from: 18, to: 26, label: 'Ideal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Try it
+
+Set each part with its buttons, or type a number or a name: the gauge follows, and its options are written under
+it, ready to copy. `thickness` sets the arc's or the bar's thickness in pixels (by default a quarter of the radius for
+the arc, 24 px for the bar); a box too small for it gives what room it has, and a value that is not a positive
+number is `invalid-option` (`series[i].thickness`).
+
+<GaugeWorkshop />
 
 ## Example
 

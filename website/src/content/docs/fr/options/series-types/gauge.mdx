@@ -1,13 +1,14 @@
 ---
 title: "gauge"
-description: "Une jauge : une seule valeur sur un demi-anneau. Ses options propres : min, max, thresholds."
+description: "Une jauge : une seule valeur sur un demi-anneau ou une barre. Ses options propres : min, max, thresholds, origin, ticks, thresholdsOn, shape, orientation, thickness."
 ---
 
 import CodeTabs from '../../../../../components/CodeTabs.astro';
+import GaugeWorkshop from '../../../../../components/GaugeWorkshop.astro';
 import LiveChart from '../../../../../components/LiveChart.astro';
 import OptionFacts from '../../../../../components/OptionFacts.astro';
 
-Une seule valeur sur un demi-anneau, de `min` à `max`.
+Une seule valeur sur un demi-anneau, ou sur une barre, de `min` à `max`.
 
 <OptionFacts seriesType="gauge" />
 
@@ -24,6 +25,174 @@ l'échelle revient à 0–100.
 seule couleur. `color` nomme une couleur que vous définissez en CSS sous le nom `--dzgraph-color-<nom>` (ici
 `--dzgraph-color-low`) ; sans elle, la plage est neutre. Un seuil d'une autre forme donne `invalid-option`
 (`series[i].thresholds[0]`). Une jauge est seule et n'a pas de légende par défaut : son titre la nomme.
+
+## Une échelle de part et d'autre de zéro
+
+Trois options font une jauge plus riche ; une jauge sans elles se dessine comme ci-dessus.
+
+- `origin` est le point de départ du remplissage (par défaut `min`). Avec `origin: 0` sur une échelle de −2000 à 2000,
+  une valeur sous zéro remplit vers l'extrémité gauche, une valeur au-dessus vers l'extrémité droite (de droite à
+  gauche, l'inverse). Une origine hors de l'échelle donne `invalid-option` (`series[i].origin`) et `min` est pris.
+- `ticks: { step, labels }` trace une petite graduation dans l'arc à chaque multiple de `step`, et une plus longue avec
+  son nombre à chaque multiple de `labels`. Les nombres écrivent alors les bouts de l'échelle, qui ne sont pas écrits
+  deux fois. Un nombre qui couvrirait la valeur est omis. Un `step` qui n'est pas un nombre positif, ou qui tracerait
+  plus de 200 graduations, donne `invalid-option` (`series[i].ticks.step`) et aucune graduation ; un `labels` qui n'est
+  pas un multiple de `step` (`series[i].ticks.labels`) ne donne aucun nombre.
+- `thresholdsOn: 'track'` peint les seuils sur l'arc lui-même, sur toute son épaisseur, et écrit l'étiquette de chacun
+  autour de l'arc, en son milieu. La valeur devient un arc plus étroit, bordé du fond, pour que les zones se voient de
+  part et d'autre. La zone de la valeur reste nommée sous la valeur. Des étiquettes qui se chevaucheraient : la
+  suivante est omise.
+
+Graduations et étiquettes de zones sont des images de l'échelle et des seuils : les lecteurs d'écran, l'infobulle et le
+tableau de données disent la valeur, l'échelle et le seuil, comme avant.
+
+```ts
+import { gauge } from '@dzgraph/core';
+import { chart } from '@dzgraph/dom';
+
+chart(
+  document.getElementById('balance')!,
+  {
+    series: [
+      {
+        type: 'gauge',
+        id: 'balance',
+        name: 'Bilan du réservoir',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Froid', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  },
+  { types: [gauge] },
+);
+```
+
+Les noms de couleur sont à vous de les définir. Posez-les sur la racine du graphique, `.dzgraph`, quand ils prennent
+une couleur de la palette du graphique (ses variables y sont définies) :
+
+```css
+#balance .dzgraph {
+  --dzgraph-color-cold: var(--dzgraph-series-3);
+  --dzgraph-color-calm: var(--dzgraph-series-4);
+}
+```
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Bilan du réservoir (inventé)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'balance',
+        name: 'Bilan du réservoir',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Froid', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## En barre
+
+`shape: 'bar'` dessine la même jauge en barre droite ; toutes les options ci-dessus valent pour elle.
+`orientation: 'vertical'` la met debout, comme un thermomètre (par défaut elle est couchée). Couchée, `min` est au
+début du sens de lecture (à droite de droite à gauche) ; debout, `min` est en bas. Un autre mot pour l'une ou l'autre
+est `invalid-option` (`series[i].shape`, `series[i].orientation`) : l'arc est dessiné, ou la barre est couchée.
+
+Couchée : la valeur en haut avec le nom de sa zone, puis les noms des zones, la barre, et sous elle les traits et
+leurs nombres. Debout : les traits et les nombres du côté de fin de ligne, les noms des zones de l'autre côté. Des
+nombres qui se chevaucheraient sont omis (le suivant). La barre fait au plus 24 px d'épaisseur.
+
+```ts
+import type { GaugeSeriesOptions } from '@dzgraph/core';
+
+const balance: GaugeSeriesOptions = {
+  type: 'gauge',
+  shape: 'bar', // orientation: 'vertical' pour la mettre debout
+  min: -2000,
+  max: 2000,
+  origin: 0,
+  data: -1700,
+  ticks: { step: 100, labels: 500 },
+  thresholdsOn: 'track',
+  thresholds: [], // comme ci-dessus
+};
+```
+
+<LiveChart
+  height={220}
+  options={{
+    title: { text: 'Bilan du réservoir (fictif)' },
+    series: [
+      {
+        type: 'gauge',
+        shape: 'bar',
+        name: 'Bilan du réservoir',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Froid', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+<LiveChart
+  height={360}
+  options={{
+    title: { text: 'Température de la serre (fictive)' },
+    series: [
+      {
+        type: 'gauge',
+        shape: 'bar',
+        orientation: 'vertical',
+        name: 'Température (°C)',
+        data: 23,
+        min: -10,
+        max: 40,
+        origin: 0,
+        ticks: { step: 5, labels: 10 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -10, to: 0, label: 'Gel', color: 'cold' },
+          { from: 18, to: 26, label: 'Idéal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## À vous de jouer
+
+Réglez chaque partie avec ses boutons, ou tapez un nombre ou un nom : la jauge suit, et ses options sont écrites
+dessous, prêtes à copier. `thickness` règle l'épaisseur de l'arc ou de la barre en pixels (par défaut un quart du rayon
+pour l'arc, 24 px pour la barre) ; une place trop petite donne ce qu'elle peut, et une valeur qui n'est pas un nombre
+positif est `invalid-option` (`series[i].thickness`).
+
+<GaugeWorkshop />
 
 ## Exemple
 
