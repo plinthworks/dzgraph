@@ -1,14 +1,15 @@
 /**
  * `<dz-chart>` (angular.md, D.13): a DzGraph chart in an Angular template. Its options are a signal input: a new
  * value updates the chart, never re-creates it. One output per event. Drawn in the browser only (nothing on the
- * server); destroyed with the component.
+ * server); destroyed with the component. Its series types, features and words are the app's, on the tag or through
+ * `provideDzGraph()` (angular.md 9): it imports none itself, so the app ships only those it names.
  */
 import { isPlatformBrowser } from '@angular/common';
 import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, effect, ElementRef, inject, input, output, PLATFORM_ID, untracked } from '@angular/core';
 import type { ChartOptions, PointRef, Problem } from '@dzgraph/core';
-import { allTypes } from '@dzgraph/core';
 import type { SeriesType } from '@dzgraph/core/internal';
-import { allFeatures, chart, type Chart, type ChartEvents, type ChartSetup, type Feature } from '@dzgraph/dom';
+import { chart, type Chart, type ChartEvents, type ChartSetup, type Feature } from '@dzgraph/dom';
+import { DZGRAPH_CONFIG } from './providers.js';
 
 @Component({
   selector: 'dz-chart',
@@ -20,11 +21,16 @@ import { allFeatures, chart, type Chart, type ChartEvents, type ChartSetup, type
 export class DzChart {
   /** The chart's options (ChartOptions). */
   readonly options = input.required<ChartOptions>();
-  /** The series types it may draw: every type by default; pass only those you use to ship less (ADR 0005). */
-  readonly types = input<readonly SeriesType[]>(allTypes);
-  /** The features it may use (time axes, zoom, navigator, Canvas, WebGL2): every one by default (ADR 0006, 0008). */
-  readonly features = input<readonly Feature[]>(allFeatures);
-  /** Words to use instead of the built-in ones. */
+  /**
+   * The series types it may draw (ADR 0005): `[line, column]`, or `allTypes`. Here or through `provideDzGraph()`.
+   */
+  readonly types = input<readonly SeriesType[]>();
+  /**
+   * The features it may use (time axes, zoom, navigator, Canvas, WebGL2; ADR 0006, 0008). Here or through
+   * `provideDzGraph()`.
+   */
+  readonly features = input<readonly Feature[]>();
+  /** Words to use instead of the built-in ones, word by word (words.md). Here or through `provideDzGraph()`. */
   readonly messages = input<ChartSetup['messages']>();
   /** Drive the animations yourself (animation.md 6). */
   readonly animate = input<ChartSetup['animate']>();
@@ -56,12 +62,16 @@ export class DzChart {
 
   constructor() {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const app = inject(DZGRAPH_CONFIG);
     const create = () => {
       this.instance?.destroy();
-      const messages = untracked(this.messages);
+      // A binding wins over the app's provider (angular.md 9).
+      const messages = untracked(this.messages) ?? app.messages;
       const animate = untracked(this.animate);
       const options = untracked(this.options);
-      const c = chart(host, options, { types: untracked(this.types), features: untracked(this.features), ...(messages ? { messages } : {}), ...(animate ? { animate } : {}) });
+      const types = untracked(this.types) ?? app.types ?? [];
+      const features = untracked(this.features) ?? app.features ?? [];
+      const c = chart(host, options, { types, features, ...(messages ? { messages } : {}), ...(animate ? { animate } : {}) });
       this.instance = c;
       this.given = options;
       c.on('problems', (d) => this.problems.emit(d.problems));

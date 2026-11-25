@@ -21,9 +21,7 @@ An option that needs a feature the chart was not given is not an error: the char
 `missing-module`, the feature's name in the problem's detail (a time axis is then drawn linear). Without `canvas`,
 every series is drawn in SVG, however many points it has.
 
-`<dz-chart>` takes them as its `[features]` input, every feature by default: the component imports `allFeatures` for
-that default, so every feature is in the app's bundle whatever it passes. Passing fewer still limits what the chart
-does.
+`<dz-chart>` takes them as its `[features]` input, or once for the whole app with `provideDzGraph({ types, features })` (`@dzgraph/angular`) in `bootstrapApplication` or a route; a binding on the tag wins. The component imports none itself, so the app ships only those it names; `provideDzGraph({ types: allTypes, features: allFeatures })` gives everything. Neither: no feature.
 
 ## Example
 

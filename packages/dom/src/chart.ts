@@ -9,10 +9,10 @@
  * 4. the aids (summary, keyboard items, legend buttons, data table) — when the layout changes.
  */
 import type { ChartOptions, ChartUpdate, Group, PointRef, Problem, Scene, SeriesOptions } from '@dzgraph/core';
-import type { Aggregated, ChartLayout, ChartModel, ChartView, Extent, Range, SelectShape, SeriesType, View } from '@dzgraph/core/internal';
+import type { AggregateSpec, Aggregated, ChartLayout, ChartModel, ChartView, Extent, Range, SelectShape, SeriesType, View } from '@dzgraph/core/internal';
 import { appearFrom, clampRange, composeScene, extentOf, hasDetail, screenStep, layout, normalize, pointAt, seriesName, summary, validOrder, viewFromJson, viewToJson, withKey, xValueLabel } from '@dzgraph/core/internal';
 import { createMeasurer } from './measure.js';
-import { messagesFor, type Messages } from './messages.js';
+import { messagesFor, type MessageOverrides, type Messages } from './messages.js';
 import { SvgPainter } from './svg-painter.js';
 import type { GestureFrame } from './gestures.js';
 import { resolveFeatures, type Feature } from './features.js';
@@ -38,10 +38,10 @@ export interface ChartSetup {
    */
   readonly features?: readonly Feature[];
   /**
-   * Words to use instead of the built-in ones (any language; English and French ship).
+   * Words to use instead of the built-in ones (any language; English and French ship), word by word (words.md).
    * @default {pageLanguageWords}
    */
-  readonly messages?: Partial<Messages>;
+  readonly messages?: MessageOverrides;
   /** Drive the animations yourself (animation.md 6), GSAP for instance: called instead of DzGraph's own timing. */
   readonly animate?: (animation: AnimateHook) => void;
 }
@@ -233,6 +233,15 @@ function carrySelection(before: ChartModel | null, after: ChartModel, sel: Reado
   return out;
 }
 
+/**
+ * An automatic time drill's first level (drilldown.md 6): the x axis's own period when the drill knows it (years or
+ * months), years otherwise.
+ */
+function drillStart(model: ChartModel): AggregateSpec {
+  const own = model.xAxes[0]?.aggregate;
+  return own && 'period' in own && (own.period === 'year' || own.period === 'month') ? own : { period: 'year' };
+}
+
 /** The id a series has in the options: its own, or its default by position (normalize.ts). */
 const idOf = (s: { readonly id?: unknown }, i: number) => (typeof s.id === 'string' && !s.id.startsWith('#') ? s.id : `#${i + 1}`);
 
@@ -407,9 +416,9 @@ export const chart: CreateChart = (element, initial, setup) => {
     const r = normalize(withData, setup.types, { zone: new Intl.DateTimeFormat().resolvedOptions().timeZone, kit: features.kit });
     const before = source;
     source = r.model;
-    // The user's aggregation (the menu, setView), else the x axis's option (aggregation.md).
-    // An automatic time drill starts by years (drilldown.md 6).
-    const spec = aggChoice !== undefined ? aggChoice : source.drill === 'time' ? { period: 'year' as const } : (source.xAxes[0]?.aggregate ?? null);
+    // The user's aggregation (the menu, setView), else the x axis's option (aggregation.md); an automatic time drill's
+    // first level otherwise (drilldown.md 6).
+    const spec = aggChoice !== undefined ? aggChoice : source.drill === 'time' ? drillStart(source) : (source.xAxes[0]?.aggregate ?? null);
     agg = spec ? (source.kit.aggregation?.apply(source, spec) ?? null) : null;
     model = agg?.model ?? source;
     found = r.problems;
@@ -801,7 +810,7 @@ export const chart: CreateChart = (element, initial, setup) => {
   // ---- The chart menu (menu.md). ----
   const menuPart =
     features.menu?.(root, {
-      state: () => ({ model, source, words: words.messages, typeNames: setup.types.map((t) => t.name as string), compares: features.compares, aggregates: features.aggregates, exports: features.exporting !== null, chosen: { types: typeChoice, scale: scaleChoice, aggregation: aggChoice !== undefined ? aggChoice : source?.drill === 'time' ? { period: 'year' } : undefined, compare: compareChoice } }),
+      state: () => ({ model, source, words: words.messages, typeNames: setup.types.map((t) => t.name as string), compares: features.compares, aggregates: features.aggregates, exports: features.exporting !== null, chosen: { types: typeChoice, scale: scaleChoice, aggregation: aggChoice !== undefined ? aggChoice : source?.drill === 'time' ? drillStart(source) : undefined, compare: compareChoice } }),
       choose: (c) => {
         const w = c.kind;
         // Outputs leave the view as it is (menu.md 9).

@@ -18,11 +18,13 @@ français sont fournis. Le graphique les choisit selon la langue de sa [`locale`
 l'attribut `lang` le plus proche, sinon du navigateur ; toute autre langue reçoit les mots anglais.
 
 `messages` met les mots de l'app par-dessus, pour toute langue : quelques mots à changer, ou tous les mots d'une langue
-que DzGraph ne fournit pas. Son type est `Partial<Messages>` (`Messages` de `@dzgraph/dom`). Un groupe de mots (`menu`,
-`exporting`, `drill`, `shapes`) est remplacé en entier : donnez tous ses mots. Un mot qui dépend d'une valeur est une
-fonction (`seriesName: (place) => …`).
+que DzGraph ne fournit pas. Son type est `MessageOverrides` (de `@dzgraph/dom`) : n'importe quel mot seul, à toute
+profondeur. Un groupe de mots (`menu`, `exporting`, `drill`, `shapes`) est fusionné mot par mot :
+`{ drill: { retry: 'Encore' } }` change ce mot et garde les autres du groupe. Un mot qui dépend d'une valeur est une
+fonction (`seriesName: (place) => …`), remplacée en entier. Une clé sans mot du graphique est ignorée.
 
-`<dz-chart>` les prend par son entrée `[messages]` ; une nouvelle valeur dessine un nouveau graphique.
+`<dz-chart>` les prend par son entrée `[messages]`, ou une fois pour toute l'app avec `provideDzGraph({ messages })` ;
+une nouvelle valeur dessine un nouveau graphique.
 
 ## Exemple
 
@@ -31,9 +33,9 @@ fonction (`seriesName: (place) => …`).
 
 ```ts
 import { line } from '@dzgraph/core';
-import { chart, type Messages } from '@dzgraph/dom';
+import { chart, type MessageOverrides } from '@dzgraph/dom';
 
-const words: Partial<Messages> = {
+const words: MessageOverrides = {
   noData: 'Rien de mesuré pour le moment',
   seriesName: (place) => `Capteur ${place}`,
 };
@@ -47,7 +49,7 @@ chart(document.getElementById('sensors')!, { title: { text: 'Capteurs du jardin 
 ```ts
 import { Component } from '@angular/core';
 import { line, type ChartOptions } from '@dzgraph/core';
-import type { Messages } from '@dzgraph/dom';
+import type { MessageOverrides } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
@@ -57,7 +59,7 @@ import { DzChart } from '@dzgraph/angular';
 })
 export class Sensors {
   readonly types = [line];
-  readonly words: Partial<Messages> = {
+  readonly words: MessageOverrides = {
     noData: 'Rien de mesuré pour le moment',
     seriesName: (place) => `Capteur ${place}`,
   };

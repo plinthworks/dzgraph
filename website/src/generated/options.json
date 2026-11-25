@@ -829,7 +829,7 @@
       "feature": null,
       "source": "packages/dom/src/chart.ts#L33",
       "angular": true,
-      "angularDefault": "allTypes"
+      "angularDefault": null
     },
     {
       "name": "features",
@@ -841,11 +841,11 @@
       "feature": null,
       "source": "packages/dom/src/chart.ts#L39",
       "angular": true,
-      "angularDefault": "allFeatures"
+      "angularDefault": null
     },
     {
       "name": "messages",
-      "type": "Partial<Messages>",
+      "type": "MessageOverrides",
       "required": false,
       "default": {
         "token": "pageLanguageWords"

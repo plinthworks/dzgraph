@@ -18,11 +18,13 @@ The chart picks them by the language of its [`locale`](../../chart/locale/), els
 around it, else of the browser; any other language gets the English words.
 
 `messages` puts the app's words on top, for any language: some words to change, or every word of a language DzGraph
-does not ship. Its type is `Partial<Messages>` (`Messages` from `@dzgraph/dom`). A group of words (`menu`,
-`exporting`, `drill`, `shapes`) is replaced whole, so give all of its words. A word that depends on a value is a
-function (`seriesName: (place) => …`).
+does not ship. Its type is `MessageOverrides` (from `@dzgraph/dom`): any word alone, at any depth. A group of words
+(`menu`, `exporting`, `drill`, `shapes`) is merged word by word: `{ drill: { retry: 'Again' } }` changes that word
+and keeps the group's others. A word that depends on a value is a function (`seriesName: (place) => …`), replaced
+whole. A key the chart has no word for is ignored.
 
-`<dz-chart>` takes them as its `[messages]` input; a new value draws a new chart.
+`<dz-chart>` takes them as its `[messages]` input, or once for the whole app with `provideDzGraph({ messages })`; a new
+value draws a new chart.
 
 ## Example
 
@@ -31,9 +33,9 @@ function (`seriesName: (place) => …`).
 
 ```ts
 import { line } from '@dzgraph/core';
-import { chart, type Messages } from '@dzgraph/dom';
+import { chart, type MessageOverrides } from '@dzgraph/dom';
 
-const words: Partial<Messages> = {
+const words: MessageOverrides = {
   noData: 'Nothing measured yet',
   seriesName: (place) => `Sensor ${place}`,
 };
@@ -47,7 +49,7 @@ chart(document.getElementById('sensors')!, { title: { text: 'Garden sensors (mad
 ```ts
 import { Component } from '@angular/core';
 import { line, type ChartOptions } from '@dzgraph/core';
-import type { Messages } from '@dzgraph/dom';
+import type { MessageOverrides } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
@@ -57,7 +59,7 @@ import { DzChart } from '@dzgraph/angular';
 })
 export class Sensors {
   readonly types = [line];
-  readonly words: Partial<Messages> = {
+  readonly words: MessageOverrides = {
     noData: 'Nothing measured yet',
     seriesName: (place) => `Sensor ${place}`,
   };

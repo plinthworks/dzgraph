@@ -123,8 +123,30 @@ export interface Messages {
 
 const BUILT_IN: Readonly<Record<string, Messages>> = { en, fr };
 
-/** The messages for a locale (its language), English otherwise, with the app's overrides on top. */
-export function messagesFor(locale: string, overrides?: Partial<Messages>): Messages {
+/** An app's words (words.md): any word alone, at any depth; a group's other words stay built in. */
+export type MessageOverrides = Overrides<Messages>;
+type Overrides<T> = { readonly [K in keyof T]?: T[K] extends string | ((...args: never[]) => unknown) ? T[K] : Overrides<T[K]> };
+
+/** The messages for a locale (its language), English otherwise, with the app's words on top, word by word (words.md). */
+export function messagesFor(locale: string, overrides?: MessageOverrides): Messages {
   const language = locale.toLowerCase().split('-')[0] ?? 'en';
-  return { ...(BUILT_IN[language] ?? en), ...overrides };
+  const base = BUILT_IN[language] ?? en;
+  // Walked as plain records: both are trees of words and sentences, of the same shape.
+  return overrides ? (over(base as unknown as Readonly<Record<string, unknown>>, overrides) as unknown as Messages) : base;
+}
+
+const isGroup = (v: unknown): v is Readonly<Record<string, unknown>> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** `base` with the app's words: groups merged, a word or a sentence replaced, a key `base` lacks ignored (words.md 2, 3). */
+function over(base: Readonly<Record<string, unknown>>, given: Readonly<Record<string, unknown>>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const k of Object.keys(given)) {
+    // Only the keys the built-in words have: `__proto__` and the like are never assigned.
+    if (!Object.hasOwn(base, k)) continue;
+    const b = base[k];
+    const v = given[k];
+    if (v === undefined) continue;
+    out[k] = isGroup(b) && isGroup(v) ? over(b, v) : v;
+  }
+  return out;
 }

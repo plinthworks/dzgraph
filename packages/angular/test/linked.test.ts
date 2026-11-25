@@ -4,19 +4,21 @@
 import { afterNextRender, Component, DestroyRef, inject, viewChildren } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
-import type { ChartOptions } from '@dzgraph/core';
-import { linkCharts, type Chart } from '@dzgraph/dom';
+import { allTypes, type ChartOptions } from '@dzgraph/core';
+import { allFeatures, linkCharts, type Chart } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
   imports: [DzChart],
   template: `
-    <dz-chart style="block-size: 200px" [options]="heat" />
-    <dz-chart style="block-size: 200px" [options]="bees" />
+    <dz-chart style="block-size: 200px" [options]="heat" [types]="types" [features]="features" />
+    <dz-chart style="block-size: 200px" [options]="bees" [types]="types" [features]="features" />
   `,
 })
 class Garden {
   readonly charts = viewChildren(DzChart);
+  readonly types = allTypes;
+  readonly features = allFeatures;
   readonly heat: ChartOptions = { animation: false, crosshair: true, series: [{ type: 'line', id: 'heat', data: [14, 17, 21, 24, 23, 19, 15] }] };
   readonly bees: ChartOptions = { animation: false, crosshair: true, series: [{ type: 'column', id: 'bees', data: [12, 30, 52, 61, 58, 44, 23] }] };
   linked: Chart[] = [];

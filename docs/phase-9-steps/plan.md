@@ -50,8 +50,9 @@ des millisecondes, et une colonne seule ajoutait une demi-unité ; descendre dan
 commencer décalait l'année pour tenir dans les données. Le README d'Angular (`$event.point`) et deux phrases de la prise
 en main Angular (le détail des sorties ; `types`/`features` ne réduisent pas le paquet livré) corrigés.
 
-À décider par le propriétaire : `DzChart` prend `allTypes` et `allFeatures` par défaut, si bien qu'une app Angular
-embarque tout quoi qu'elle passe. `drilldown: 'time'` part toujours des années, même avec `xAxis.aggregate` donné.
+Décidé le 2026-11-25 (le propriétaire : « fais au mieux », ARCHITECTURE D.27) : `DzChart` n'importe plus aucun type
+ni aucune fonction, `provideDzGraph()` les donne une fois pour l'app (angular.md 9) ; `drilldown: 'time'` part du
+niveau de l'axe quand c'est l'année ou le mois (drilldown.md 6) ; `messages` fusionne mot par mot (words.md).
 
 ## Lot 3 — une page par option (fait le 2026-11-23)
 

@@ -2,15 +2,17 @@
 import { Component, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, it, expect } from 'vitest';
-import type { ChartOptions, PointRef } from '@dzgraph/core';
-import type { ChartEvents } from '@dzgraph/dom';
-import { DzChart } from '@dzgraph/angular';
+import { allTypes, type ChartOptions, type PointRef, type Problem } from '@dzgraph/core';
+import { allFeatures, type ChartEvents } from '@dzgraph/dom';
+import { DzChart, provideDzGraph } from '@dzgraph/angular';
 
 @Component({
   imports: [DzChart],
-  template: `<dz-chart style="block-size: 300px" [options]="options()" (legendToggle)="toggled.push($event)" (pointClick)="clicked.push($event)" (viewChange)="views.push($event.changed)" />`,
+  template: `<dz-chart style="block-size: 300px" [options]="options()" [types]="types" [features]="features" (legendToggle)="toggled.push($event)" (pointClick)="clicked.push($event)" (viewChange)="views.push($event.changed)" />`,
 })
 class Host {
+  readonly types = allTypes;
+  readonly features = allFeatures;
   readonly options = signal<ChartOptions>({
     animation: false,
     series: [
@@ -121,6 +123,45 @@ describe('<dz-chart> before it is drawn and on the server (angular.md 5, 7)', ()
     await frame();
     expect(fixture.componentInstance.chart().chart).toBeNull();
     expect(fixture.nativeElement.querySelector('dz-chart svg')).toBeNull();
+    fixture.destroy();
+  });
+});
+
+// The app's types, features and words, on the tag or once for the app (angular.md 9).
+@Component({
+  imports: [DzChart],
+  template: `<dz-chart style="block-size: 200px" [options]="options" (problems)="problems.push($event)" />`,
+})
+class Bare {
+  readonly options: ChartOptions = { animation: false, series: [{ type: 'line', id: 'a', data: [1, 2, 3] }] };
+  readonly problems: (readonly Problem[])[] = [];
+  readonly chart = viewChild.required(DzChart);
+}
+
+async function mountBare() {
+  const fixture = TestBed.createComponent(Bare);
+  document.body.appendChild(fixture.nativeElement);
+  fixture.nativeElement.style.inlineSize = '400px';
+  await fixture.whenStable();
+  await frame();
+  return fixture;
+}
+
+describe('what <dz-chart> ships (angular.md 9)', () => {
+  it('no types bound, none provided: it imports none, and the chart says so', async () => {
+    TestBed.resetTestingModule();
+    const fixture = await mountBare();
+    expect(fixture.componentInstance.chart().chart!.problems.map((p) => [p.code, p.path])).toEqual([['unknown-series-type', 'series[0].type']]);
+    fixture.destroy();
+  });
+
+  it('provided once for the app: drawn without a binding', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: [provideDzGraph({ types: allTypes, features: allFeatures, messages: { chart: 'Graphique maison' } })] });
+    const fixture = await mountBare();
+    const c = fixture.componentInstance.chart().chart!;
+    expect(c.problems).toEqual([]);
+    expect(fixture.nativeElement.querySelector('.dzgraph')?.getAttribute('aria-label')).toBe('Graphique maison');
     fixture.destroy();
   });
 });

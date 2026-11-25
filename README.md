@@ -96,7 +96,7 @@ sparkline(el, [3, 5, null, 4, 8], { type: 'area', label: 'Visits' }); // about 2
 ```ts
 import { DzChart, DzSparkline } from '@dzgraph/angular';
 // <dz-chart [options]="options()" [types]="types" [features]="features" (pointClick)="open($event.point)" (viewChange)="save($event.view)" />
-// types and features default to allTypes and allFeatures; `chart` gives the methods (exportPng, setView…).
+// types and features on the tag, or once: provideDzGraph({ types, features }); `chart` gives the methods (exportPng, setView…).
 ```
 
 ## DzTooltip and DzGrid

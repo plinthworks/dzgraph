@@ -98,6 +98,28 @@ describe('time, automatic (drilldown.md 6)', () => {
   });
 });
 
+describe('time, from the axis\'s own period (drilldown.md 6, Phase 9)', () => {
+  it('an axis by months starts at the months, a month drills into its days', async () => {
+    const day = 86_400_000;
+    const start = Date.UTC(2025, 0, 1);
+    const data = Array.from({ length: 730 }, (_, i) => [start + i * day, 1] as [number, number]);
+    const { el, c } = mount({ drilldown: 'time', xAxis: { scale: 'time', zone: 'UTC', aggregate: 'month' }, series: [{ type: 'column', data }] });
+    expect(rows(el)).toHaveLength(24);
+    expect(rows(el)[1]).toEqual(['February 2025', '28']);
+    enterOn(el, 1);
+    await raf2();
+    expect(rows(el)).toHaveLength(28);
+    expect(c.getView().aggregation).toEqual({ period: 'day' });
+  });
+
+  it('an axis by days, finer than the drill knows: it starts at the years', () => {
+    const day = 86_400_000;
+    const data = Array.from({ length: 730 }, (_, i) => [Date.UTC(2025, 0, 1) + i * day, 1] as [number, number]);
+    const { el } = mount({ drilldown: 'time', xAxis: { scale: 'time', zone: 'UTC', aggregate: 'day' }, series: [{ type: 'column', data }] });
+    expect(rows(el).map((r) => r[0])).toEqual(['2025', '2026']);
+  });
+});
+
 describe('time, a year the data only begin (drilldown.md 6, found by the site\'s demo)', () => {
   it('the level shows the whole year, not a year of data moved back to fit', async () => {
     const day = 86_400_000;

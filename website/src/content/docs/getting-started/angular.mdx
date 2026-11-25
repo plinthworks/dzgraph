@@ -22,9 +22,24 @@ Load the theme once, in the app's styles (`angular.json`'s `styles`, or a `@impo
 ## A chart
 
 The options are a signal input: a new value updates the chart, and what the user did (a zoom, a hidden series, a
-selection) stays. `types` and `features` default to every series type and every feature (`allTypes`,
-`allFeatures`); give fewer and the chart draws and does only those. The component
-imports both lists, so they are in the bundle either way.
+selection) stays. `types` and `features` are the series types and features the chart may use: on the tag, or once for
+the whole app with `provideDzGraph({ types, features })` in `bootstrapApplication` (a binding wins). The component
+imports none itself, so the app ships only those it names; `provideDzGraph({ types: allTypes, features: allFeatures })`
+gives everything.
+
+```ts
+import { Component } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { allTypes } from '@dzgraph/core';
+import { allFeatures } from '@dzgraph/dom';
+import { provideDzGraph } from '@dzgraph/angular';
+
+@Component({ selector: 'app-root', template: '' })
+class App {}
+
+// Every type and every feature for every chart of the app; name fewer to ship less.
+void bootstrapApplication(App, { providers: [provideDzGraph({ types: allTypes, features: allFeatures })] });
+```
 
 <CodeTabs>
 <Fragment slot="angular">
@@ -111,19 +126,22 @@ drawn (after the first render, in the browser) and on the server.
 
 ```ts
 import { Component, signal, viewChild } from '@angular/core';
-import type { ChartOptions } from '@dzgraph/core';
+import { column, type ChartOptions } from '@dzgraph/core';
+import { exporting } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
   selector: 'app-report',
   imports: [DzChart],
   template: `
-    <dz-chart style="block-size: 300px" [options]="options()" />
+    <dz-chart style="block-size: 300px" [options]="options()" [types]="types" [features]="features" />
     <button type="button" (click)="save()">Save as CSV</button>
   `,
 })
 export class Report {
   readonly chart = viewChild.required(DzChart);
+  readonly types = [column];
+  readonly features = [exporting];
   readonly options = signal<ChartOptions>({ series: [{ type: 'column', id: 'jars', name: 'Jars sold', data: [14, 22, 19] }] });
 
   async save(): Promise<void> {

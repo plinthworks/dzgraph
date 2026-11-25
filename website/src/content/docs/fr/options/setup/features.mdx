@@ -21,9 +21,7 @@ Une option qui demande une fonction que le graphique n'a pas reçue n'est pas un
 elle et signale `missing-module`, avec le nom de la fonction dans le détail du problème (un axe de temps est alors tracé
 linéaire). Sans `canvas`, chaque série est dessinée en SVG, quel que soit son nombre de points.
 
-`<dz-chart>` les prend par son entrée `[features]`, toutes par défaut : le composant importe `allFeatures` pour ce
-défaut, si bien que toutes les fonctions sont dans le paquet de l'app quoi qu'elle passe. En passer moins limite tout de
-même ce que fait le graphique.
+`<dz-chart>` les prend par son entrée `[features]`, ou une fois pour toute l'app avec `provideDzGraph({ types, features })` (`@dzgraph/angular`) dans `bootstrapApplication` ou une route ; une liaison sur la balise l'emporte. Le composant n'en importe aucun lui-même : l'app ne livre que ceux qu'elle nomme ; `provideDzGraph({ types: allTypes, features: allFeatures })` donne tout. Ni l'un ni l'autre : aucune fonction.
 
 ## Exemple
 

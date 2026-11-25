@@ -16,8 +16,8 @@ what each output carries, the chart's methods, two charts that follow each other
 | Input | What it is |
 |---|---|
 | `options` | Required. The chart's `ChartOptions`. A new value updates the chart. |
-| `types` | The series types the chart may draw. Default `allTypes`. |
-| `features` | The features the chart may use. Default `allFeatures`. |
+| `types` | The series types the chart may draw; else those of `provideDzGraph()`, else none. |
+| `features` | The features the chart may use; else those of `provideDzGraph()`, else none. |
 | `messages` | Words to use instead of the built-in ones. |
 | `animate` | A hook to drive the animations yourself. |
 
@@ -103,20 +103,23 @@ it back:
 
 ```ts
 import { Component, viewChild } from '@angular/core';
-import type { ChartOptions, ChartView } from '@dzgraph/core';
+import { line, type ChartOptions, type ChartView } from '@dzgraph/core';
+import { zoom } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
   selector: 'app-saved-view',
   imports: [DzChart],
   template: `
-    <dz-chart style="block-size: 300px" [options]="options" />
+    <dz-chart style="block-size: 300px" [options]="options" [types]="types" [features]="features" />
     <button type="button" (click)="keep()">Keep this view</button>
     <button type="button" (click)="restore()">Back to the kept view</button>
   `,
 })
 export class SavedView {
   readonly dz = viewChild.required(DzChart);
+  readonly types = [line];
+  readonly features = [zoom];
   readonly options: ChartOptions = {
     title: { text: 'Bees seen per hour (made up)' },
     series: [{ type: 'line', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }],
@@ -143,20 +146,22 @@ link them once both are drawn. Each `<dz-chart>` draws its chart after the first
 
 ```ts
 import { afterNextRender, Component, DestroyRef, inject, viewChildren } from '@angular/core';
-import type { ChartOptions } from '@dzgraph/core';
-import { linkCharts } from '@dzgraph/dom';
+import { column, line, type ChartOptions } from '@dzgraph/core';
+import { crosshair, linkCharts, zoom } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
   selector: 'app-garden',
   imports: [DzChart],
   template: `
-    <dz-chart style="block-size: 240px" [options]="heat" />
-    <dz-chart style="block-size: 240px" [options]="bees" />
+    <dz-chart style="block-size: 240px" [options]="heat" [types]="types" [features]="features" />
+    <dz-chart style="block-size: 240px" [options]="bees" [types]="types" [features]="features" />
   `,
 })
 export class Garden {
   readonly charts = viewChildren(DzChart);
+  readonly types = [line, column];
+  readonly features = [crosshair, zoom];
   readonly heat: ChartOptions = {
     title: { text: 'Heat (made up)' },
     crosshair: true,

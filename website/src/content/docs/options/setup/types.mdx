@@ -17,8 +17,7 @@ Each series type is its own import from `@dzgraph/core` (`line`, `area`, `column
 bytes. A series of a type the chart was not given is left out and reported `unknown-series-type` at its `type`, with
 the type's name.
 
-`<dz-chart>` takes them as its `[types]` input, every type by default: the component imports `allTypes` for that
-default, so every type is in the app's bundle whatever it passes. Passing fewer still limits what the chart draws.
+`<dz-chart>` takes them as its `[types]` input, or once for the whole app with `provideDzGraph({ types, features })` (`@dzgraph/angular`) in `bootstrapApplication` or a route; a binding on the tag wins. The component imports none itself, so the app ships only those it names; `provideDzGraph({ types: allTypes, features: allFeatures })` gives everything. Neither: no type, and each series is reported.
 
 ## Example
 

@@ -1,6 +1,8 @@
 # The accepted public type surface — written by scripts/api.mjs, checked by `npm run check:api`.
 # Changed only by an owner decision: `node scripts/api.mjs --accept "<decision>"` (see scripts/api.mjs).
 # history: owner 2026-11-23: the 1.0.0 surface, reviewed (Phase 8b)
+# history: owner 2026-11-25 (« fais au mieux »): messages merged word by word (words.md); <dz-chart> imports no type or feature, provideDzGraph() (angular.md 9) — @dzgraph/dom#ChartSetup
+# history: owner 2026-11-25: new exports for the above — @dzgraph/dom#MessageOverrides
 
 @ @dzgraph/dom
 ## AnimateHook
@@ -94,7 +96,7 @@
   export interface ChartSetup {
       readonly types: readonly SeriesType[];
       readonly features?: readonly Feature[];
-      readonly messages?: Partial<Messages>;
+      readonly messages?: MessageOverrides;
       readonly animate?: (animation: AnimateHook) => void;
   }
 ## CreateChart
@@ -313,6 +315,8 @@
   export declare const webgl: Feature;
 ## zoom
   export declare const zoom: Feature;
+## MessageOverrides
+  export type MessageOverrides = Overrides<Messages>;
 
 @ @dzgraph/dom/sparkline
 ## SparklineHandle

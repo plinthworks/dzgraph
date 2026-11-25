@@ -13,7 +13,8 @@ import { DzChart, DzSparkline } from '@dzgraph/angular';
 })
 ```
 
-- Inputs: `options` (required), `types` and `features` (default `allTypes`, `allFeatures`), `messages`, `animate`.
+- Inputs: `options` (required), `types`, `features`, `messages`, `animate`. Types, features and words also once for the
+  app: `provideDzGraph({ types, features, messages })`; a binding wins. The component imports none itself.
 - A new `options` value updates the chart; the user's view (zoom, hidden series, selection) is kept.
 - `chart` gives the chart's methods (`exportPng`, `setView`…) once it is drawn; nothing runs on the server (SSR).
 

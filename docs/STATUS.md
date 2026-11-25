@@ -225,7 +225,11 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   draws a point. Core budget raised to its measure + 5 % (14 340 B). Then (owner 2026-11-25) `thickness` in pixels for both shapes
   (gauge.md 25), numbers on the arc no longer overlap one another (rule 14), and the gauge workshop: every part set
   with buttons, the options written live, on the site's gauge page and in the playground (`playground/workshop.html`),
-  one module for both (`website/src/components/demo/gauge-workshop.ts`). Gate green (1 267). Committed.
+  one module for both (`website/src/components/demo/gauge-workshop.ts`). Gate green (1 267). Committed (70ac02a).
+- **Three choices left to Claude (owner 2026-11-25, « fais au mieux », ARCHITECTURE D.27).** `<dz-chart>` imports no
+  type or feature: `provideDzGraph()` or the tag (angular.md 9); the time drill starts at the axis's own year or month
+  (drilldown.md 6); `messages` merged word by word (words.md, new sheet). API changes accepted in `api/`. Site pages
+  and the three Angular examples that leaned on the old defaults fixed. Committed.
 
 ## Working rules
 

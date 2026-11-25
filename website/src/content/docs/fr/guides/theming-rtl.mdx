@@ -78,9 +78,9 @@ jusqu'à ce que vous donniez les vôtres avec `messages` :
 
 ```ts
 import { column } from '@dzgraph/core';
-import { chart, type Messages } from '@dzgraph/dom';
+import { chart, type MessageOverrides } from '@dzgraph/dom';
 
-const words: Partial<Messages> = {
+const words: MessageOverrides = {
   noData: 'Rien de cueilli pour l’instant',
   seriesHidden: (name) => `${name} rangée`,
   seriesShown: (name) => `${name} de retour`,
@@ -99,7 +99,7 @@ chart(
 ```ts
 import { Component, signal } from '@angular/core';
 import { column, type ChartOptions } from '@dzgraph/core';
-import type { Messages } from '@dzgraph/dom';
+import type { MessageOverrides } from '@dzgraph/dom';
 import { DzChart } from '@dzgraph/angular';
 
 @Component({
@@ -109,7 +109,7 @@ import { DzChart } from '@dzgraph/angular';
 })
 export class Picked {
   readonly types = [column];
-  readonly words: Partial<Messages> = {
+  readonly words: MessageOverrides = {
     noData: 'Rien de cueilli pour l’instant',
     seriesHidden: (name) => `${name} rangée`,
     seriesShown: (name) => `${name} de retour`,

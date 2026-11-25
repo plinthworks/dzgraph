@@ -18,3 +18,8 @@ Writes `<dz-chart [options]="options()" [types]="types" (pointClick)="…" />` i
    `dzChart.chart?.exportPng()`, `print()`, `getView()`…
 8. Phase 7a: `<dz-sparkline [values] [options]>` (sparkline.md): signal inputs, a new value draws it again; its
    `sparkline` gives its `problems`.
+9. Phase 9 (owner 2026-11-25, « fais au mieux »): the component ships only what the app gives it, as `chart()` does
+   (ADR 0005, 0006). `[types]`, `[features]` and `[messages]` on the tag, or once for the whole app with
+   `provideDzGraph({ types, features, messages })` in `bootstrapApplication` or a route; a binding wins over the
+   provider. Neither: no series type and no feature, and the chart reports each series it cannot draw, as `chart()`
+   does. Everything: `provideDzGraph({ types: allTypes, features: allFeatures })`.

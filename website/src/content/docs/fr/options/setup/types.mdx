@@ -17,9 +17,7 @@ Chaque type de série s'importe à part depuis `@dzgraph/core` (`line`, `area`, 
 compte pas les octets. Une série d'un type que le graphique n'a pas reçu est laissée de côté et signalée
 `unknown-series-type` sur son `type`, avec le nom du type.
 
-`<dz-chart>` les prend par son entrée `[types]`, tous par défaut : le composant importe `allTypes` pour ce défaut, si
-bien que tous les types sont dans le paquet de l'app quoi qu'elle passe. En passer moins limite tout de même ce que le
-graphique dessine.
+`<dz-chart>` les prend par son entrée `[types]`, ou une fois pour toute l'app avec `provideDzGraph({ types, features })` (`@dzgraph/angular`) dans `bootstrapApplication` ou une route ; une liaison sur la balise l'emporte. Le composant n'en importe aucun lui-même : l'app ne livre que ceux qu'elle nomme ; `provideDzGraph({ types: allTypes, features: allFeatures })` donne tout. Ni l'un ni l'autre : aucun type, et chaque série est signalée.
 
 ## Exemple
 
