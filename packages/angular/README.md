@@ -19,3 +19,5 @@ import { DzChart, DzSparkline } from '@dzgraph/angular';
 - `chart` gives the chart's methods (`exportPng`, `setView`…) once it is drawn; nothing runs on the server (SSR).
 
 See the [repository's README](https://github.com/plinthworks/dzgraph#readme). Licence: MIT.
+
+Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/getting-started/angular/).

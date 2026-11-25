@@ -16,3 +16,5 @@ worst adjacent CVD ΔE 8.4 light and dark (target ≥ 8, OKLab ×100), worst adj
 and every colour at least 3:1 on the chart's surface in both modes (`scripts/test/theme.test.ts` holds the contrast).
 The light steps of aqua, yellow and magenta are the darker ones so they clear 3:1 on white. Past eight series the
 colours start again; each series keeps its own marker symbol, so identity never rests on colour alone.
+
+Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/guides/theming-rtl/).

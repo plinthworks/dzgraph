@@ -1,8 +1,367 @@
 ---
 title: "Galerie"
-description: "Un graphique vivant pour chaque type et chaque façon d’explorer."
+description: "Un graphique vivant pour chaque type de série et chaque façon d’explorer, chacun relié à sa page."
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [les fiches de comportement](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/README.md) (en anglais).
-:::
+import LiveChart from '../../../../components/LiveChart.astro';
+
+Chaque graphique ci-dessous est dessiné en direct dans cette page depuis les sources de DzGraph, avec des données
+inventées. Survolez-les, prenez le clavier, passez le site en sombre : chacun suit. Chacun renvoie à la page qui dit ses
+options, avec le code pour l’écrire.
+
+## Types de séries
+
+### Courbes
+
+Des points reliés dans l’ordre des x ; un trou là où manque une valeur. [Sa page](../options/series-types/line/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Ruche A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Ruche B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  }}
+/>
+
+### Aires empilées
+
+Une courbe dont la surface est remplie, ici l’une sur l’autre. [Sa page](../options/series-types/area/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visiteurs, empilés (inventés)' },
+    xAxis: { scale: 'category', categories: ['lun.', 'mar.', 'mer.', 'jeu.', 'ven.'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Serre', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Verger', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  }}
+/>
+
+### Colonnes
+
+Côte à côte dans chaque catégorie, sous zéro aussi. [Sa page](../options/series-types/column/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fruits cueillis (inventés)' },
+    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars', 'avr.'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Pommes', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Poires', data: [1, 2, 3, 4] },
+    ],
+  }}
+/>
+
+### Barres
+
+Des colonnes couchées, pour les noms longs. [Sa page](../options/series-types/bar/).
+
+<LiveChart
+  height={260}
+  options={{
+    title: { text: 'Pots vendus (inventés)' },
+    xAxis: { scale: 'category', categories: ['Prune', 'Coing', 'Cerise'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Pots vendus', data: [1250, 860, 2240] }],
+  }}
+/>
+
+### Nuage de points
+
+Un marqueur par point, placé par deux valeurs ; 3 000 points, dessinés sur un canevas. [Sa page](../options/series-types/scatter/).
+
+<LiveChart
+  height={340}
+  features={['canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Longueur et largeur des feuilles (inventées)' },
+    xAxis: { title: 'Longueur (cm)' },
+    yAxis: { title: 'Largeur (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Feuilles', data: [] }],
+  }}
+/>
+
+### Camembert
+
+Les parts d’un tout. [Sa page](../options/series-types/pie/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Graines semées (inventées)' },
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Graines',
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  }}
+/>
+
+### Anneau
+
+Un camembert troué, un total dedans. [Sa page](../options/series-types/donut/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Graines semées (inventées)' },
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Graines',
+        hole: 0.5,
+        center: { label: 'Sachets', value: '1 400' },
+        data: [['Carottes', 420], ['Betteraves', 260], ['Laitues', 380], ['Radis', 190], ['Épinards', 150]],
+      },
+    ],
+  }}
+/>
+
+### Jauge
+
+Une valeur sur son échelle, avec graduations et zones nommées. [Sa page](../options/series-types/gauge/), où chaque
+partie se règle avec des boutons.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Bilan du réservoir (inventé)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'balance',
+        name: 'Bilan du réservoir',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Froid', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+### Jauge en barre
+
+La même jauge, droite. [Sa page](../options/series-types/gauge/#en-barre).
+
+<LiveChart
+  height={200}
+  options={{
+    title: { text: 'Cuve d’eau (inventée)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Cuve d’eau (%)',
+        data: 64,
+        shape: 'bar',
+        ticks: { step: 10, labels: 20 },
+        thresholds: [
+          { from: 0, to: 20, label: 'Bas', color: 'cold' },
+          { from: 20, to: 80, label: 'Bien', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Explorer
+
+### Zoomer
+
+Glissez sur le tracé, pincez, ou prenez les touches ; 20 000 points. [Sa page](../options/features/zoom/).
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'zoom']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'Un capteur inventé : glissez sur le tracé pour zoomer' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+### Navigateur et périodes
+
+Toute la série sous le graphique, une fenêtre à déplacer dessus, et des boutons pour les périodes courantes ; 100 000
+points. [Sa page](../options/features/navigator-strip/).
+
+<LiveChart
+  height={420}
+  features={['timeAxis', 'navigatorStrip', 'crosshair']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'Un capteur inventé, 100 000 mesures' },
+    navigator: true,
+    rangeButtons: true,
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Mesure', data: [] }],
+  }}
+/>
+
+### Réticule
+
+Des lignes qui suivent le pointeur, leurs valeurs sur les axes. [Sa page](../options/features/crosshair/).
+
+<LiveChart
+  height={300}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Abeilles vues par heure (inventées)' },
+    crosshair: { horizontal: true },
+    series: [{ type: 'column', id: 'bees', name: 'Abeilles', data: [12, 30, 52, 61, 58, 44, 23] }],
+  }}
+/>
+
+### Comparer
+
+Les séries en pourcentage de leur premier point visible ; zoomez, la base suit. [Sa page](../options/features/compare/).
+
+<LiveChart
+  height={320}
+  features={['compare', 'zoom']}
+  options={{
+    title: { text: 'Deux boutiques inventées, en pourcentage du premier point visible' },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'Boutique nord', data: [120, 132, 128, 150, 161, 158, 170] },
+      { type: 'line', id: 'south', name: 'Boutique sud', data: [80, 78, 90, 99, 97, 104, 112] },
+    ],
+  }}
+/>
+
+### Mesurer
+
+L’écart entre deux points. [Sa page](../options/features/measure/).
+
+<LiveChart
+  height={320}
+  features={['zoom', 'measure']}
+  options={{
+    title: { text: 'Un haricot inventé : choisissez Mesure, puis glissez' },
+    series: [{ type: 'line', id: 'plant', name: 'Hauteur (cm)', data: [3, 5, 8, 12, 17, 21, 24, 26, 27] }],
+  }}
+/>
+
+### Sélectionner
+
+Un rectangle ou un lasso choisit des points. [Sa page](../options/features/selection/).
+
+<LiveChart
+  height={380}
+  features={['selection', 'zoom', 'canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Deux nuages inventés : choisissez Sélection, puis glissez' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+### Regrouper
+
+200 000 mesures, une colonne par mois : la plus haute. [Sa page](../options/features/aggregation/).
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'aggregation']}
+  data={{ recipe: 'walk', count: 200000 }}
+  options={{
+    title: { text: 'Un capteur inventé, sa plus haute mesure de chaque mois' },
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'month' },
+    series: [{ type: 'column', id: 'sensor', name: 'Plus haute mesure', aggregate: 'max', data: [] }],
+  }}
+/>
+
+### Descendre dans le détail
+
+Cliquez sur une colonne pour voir de quoi elle est faite. [Sa page](../options/features/drilldown/).
+
+<LiveChart
+  height={320}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Fruits cueillis (inventés) : cliquez sur une colonne' },
+    xAxis: { scale: 'category', categories: ['Pommes', 'Poires'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruits cueillis',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: {
+        apples: [{ type: 'column', id: 'apples', name: 'Variétés', data: [['Gala', 30], ['Reinette', 22]] }],
+        pears: [{ type: 'column', id: 'pears', name: 'Variétés', data: [['Conference', 19], ['Williams', 12]] }],
+      } },
+    }],
+  }}
+/>
+
+### À travers le temps
+
+Les années, puis les mois d’une année, puis les jours d’un mois. [Sa page](../options/chart/drilldown/).
+
+<LiveChart
+  height={340}
+  features={['timeAxis', 'drilldown']}
+  data={{ recipe: 'walk', count: 600000 }}
+  options={{
+    title: { text: 'Un capteur inventé, moyenne par année' },
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'sensor', name: 'Mesure', aggregate: 'mean', data: [] }],
+  }}
+/>
+
+### Le menu
+
+Changer le type, l’échelle, exporter, imprimer, depuis le graphique lui-même. [Sa page](../options/features/menu/).
+
+<LiveChart
+  height={320}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Pots vendus (inventés) : ouvrez le menu en haut au bout' },
+    menu: true,
+    series: [
+      { type: 'column', id: 'honey', name: 'Miel', data: [14, 22, 19, 27, 31, 26] },
+      { type: 'line', id: 'jam', name: 'Confiture', data: [9, 12, 16, 15, 18, 21] },
+    ],
+  }}
+/>
+
+## De droite à gauche
+
+L’élément du graphique en arabe : les barres partent de la droite, l’axe des valeurs s’y tient, les nombres dans les
+chiffres de la langue. [Le guide](../guides/theming-rtl/).
+
+<LiveChart
+  height={360}
+  language="ar"
+  options={{
+    title: { text: 'Pots vendus (inventés)' },
+    xAxis: { scale: 'category', categories: ['يناير', 'فبراير', 'مارس', 'أبريل'] },
+    series: [
+      { type: 'bar', id: 'plum', name: 'Prune', data: [1240, 1810, 2260, 1930] },
+      { type: 'bar', id: 'quince', name: 'Coing', data: [860, 1120, 1540, 2010] },
+    ],
+  }}
+/>

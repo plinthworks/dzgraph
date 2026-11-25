@@ -1,0 +1,248 @@
+---
+title: "@dzgraph/angular"
+description: "Angular component for DzGraph: <dz-chart [options]> with signals, an output per event."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+Chaque nom public de `@dzgraph/angular`, entrée par entrée, avec sa déclaration telle que les types publiés la donnent. Fait depuis [`api/dzgraph-angular.api.txt`](https://github.com/plinthworks/dzgraph/blob/main/api/dzgraph-angular.api.txt), la surface qu’un test empêche de rétrécir d’une version à l’autre ; les [guides](../../guides/data/) et les [pages d’options](../../options/) disent ce que fait chaque nom. Les déclarations sont du code : elles restent en anglais.
+
+## `@dzgraph/angular`
+
+### DzChart
+
+```ts
+declare class DzChart {
+    readonly options: _angular_core.InputSignal<ChartOptions>;
+    readonly types: _angular_core.InputSignal<readonly SeriesType<_dzgraph_core.SeriesBase<string, unknown>, keyof _dzgraph_core_internal.FramesBySystem>[] | undefined>;
+    readonly features: _angular_core.InputSignal<readonly Feature[] | undefined>;
+    readonly messages: _angular_core.InputSignal<{
+        readonly seriesName?: ((place: number) => string) | undefined;
+        readonly noData?: string | undefined;
+        readonly ellipsis?: string | undefined;
+        readonly seriesHidden?: ((name: string) => string) | undefined;
+        readonly seriesShown?: ((name: string) => string) | undefined;
+        readonly chart?: string | undefined;
+        readonly summary?: ((s: _dzgraph_core_internal.Summary) => string) | undefined;
+        readonly seriesList?: ((name: string, count: string) => string) | undefined;
+        readonly point?: ((p: _dzgraph_dom.PointWords) => string) | undefined;
+        readonly total?: string | undefined;
+        readonly stackTotal?: ((stack: string | null) => string) | undefined;
+        readonly seriesOnAxis?: ((name: string, axis: string) => string) | undefined;
+        readonly pointName?: ((place: number) => string) | undefined;
+        readonly others?: string | undefined;
+        readonly share?: string | undefined;
+        readonly moreSlices?: ((count: string) => string) | undefined;
+        readonly sliceLabel?: ((name: string, share: string) => string) | undefined;
+        readonly gaugeNote?: ((min: string, max: string, threshold: string | undefined) => string) | undefined;
+        readonly meter?: {
+            readonly min?: string | undefined;
+            readonly max?: string | undefined;
+            readonly threshold?: string | undefined;
+        } | undefined;
+        readonly since?: ((baseline: string) => string) | undefined;
+        readonly compared?: ((name: string) => string) | undefined;
+        readonly menu?: {
+            readonly button?: string | undefined;
+            readonly type?: string | undefined;
+            readonly aggregation?: string | undefined;
+            readonly scale?: string | undefined;
+            readonly compare?: string | undefined;
+            readonly types?: {
+                readonly [x: string]: string | undefined;
+            } | undefined;
+            readonly none?: string | undefined;
+            readonly periods?: {
+                readonly hour?: string | undefined;
+                readonly day?: string | undefined;
+                readonly week?: string | undefined;
+                readonly month?: string | undefined;
+                readonly quarter?: string | undefined;
+                readonly year?: string | undefined;
+            } | undefined;
+            readonly linear?: string | undefined;
+            readonly log?: string | undefined;
+            readonly compares?: {
+                readonly value?: string | undefined;
+                readonly percent?: string | undefined;
+                readonly index?: string | undefined;
+            } | undefined;
+        } | undefined;
+        readonly exporting?: {
+            readonly download?: string | undefined;
+            readonly print?: string | undefined;
+            readonly png?: string | undefined;
+            readonly svg?: string | undefined;
+            readonly csv?: string | undefined;
+            readonly filename?: string | undefined;
+        } | undefined;
+        readonly drill?: {
+            readonly breadcrumb?: string | undefined;
+            readonly root?: string | undefined;
+            readonly loading?: string | undefined;
+            readonly failed?: string | undefined;
+            readonly retry?: string | undefined;
+        } | undefined;
+        readonly pointsIn?: ((count: string) => string) | undefined;
+        readonly shapes?: {
+            readonly rectangle?: string | undefined;
+            readonly range?: string | undefined;
+            readonly lasso?: string | undefined;
+        } | undefined;
+        readonly selectedCount?: ((count: string) => string) | undefined;
+        readonly selectedColumn?: string | undefined;
+        readonly modeBar?: string | undefined;
+        readonly modes?: {
+            readonly zoom?: string | undefined;
+            readonly selection?: string | undefined;
+            readonly measure?: string | undefined;
+        } | undefined;
+        readonly measureTag?: ((r: _dzgraph_core_internal.MeasureReading) => string) | undefined;
+        readonly measured?: ((r: _dzgraph_core_internal.MeasureReading) => string) | undefined;
+        readonly tableCaption?: string | undefined;
+        readonly rowsOmitted?: ((count: string) => string) | undefined;
+        readonly category?: string | undefined;
+        readonly xValue?: string | undefined;
+        readonly resetZoom?: string | undefined;
+        readonly rangeShown?: ((from: string, to: string) => string) | undefined;
+        readonly rangeWhole?: string | undefined;
+        readonly rangeStart?: string | undefined;
+        readonly rangeEnd?: string | undefined;
+        readonly range1m?: string | undefined;
+        readonly range3m?: string | undefined;
+        readonly rangeYtd?: string | undefined;
+        readonly range1y?: string | undefined;
+        readonly rangeAll?: string | undefined;
+        readonly tableRange?: ((from: string, to: string) => string) | undefined;
+        readonly tableAll?: string | undefined;
+        readonly tableVisible?: string | undefined;
+    } | undefined>;
+    readonly animate: _angular_core.InputSignal<((animation: _dzgraph_dom.AnimateHook) => void) | undefined>;
+    readonly problems: _angular_core.OutputEmitterRef<readonly Problem[]>;
+    readonly pointHover: _angular_core.OutputEmitterRef<PointRef | null>;
+    readonly pointClick: _angular_core.OutputEmitterRef<PointRef>;
+    readonly pointFocus: _angular_core.OutputEmitterRef<PointRef>;
+    readonly legendToggle: _angular_core.OutputEmitterRef<{
+        readonly seriesId: string;
+        readonly index?: number;
+        readonly shown: boolean;
+    }>;
+    readonly rangeChange: _angular_core.OutputEmitterRef<{
+        readonly min: number;
+        readonly max: number;
+    } | null>;
+    readonly viewChange: _angular_core.OutputEmitterRef<{
+        readonly view: _dzgraph_core.ChartView;
+        readonly changed: readonly _dzgraph_dom.ViewPart[];
+        readonly source: "user" | "app";
+    }>;
+    readonly modeChange: _angular_core.OutputEmitterRef<_dzgraph_dom.Mode>;
+    readonly measure: _angular_core.OutputEmitterRef<{
+        readonly from: PointRef;
+        readonly to: PointRef;
+    } | null>;
+    readonly selectionChange: _angular_core.OutputEmitterRef<{
+        readonly count: number;
+        readonly series: readonly {
+            readonly id: string;
+            readonly indices: Int32Array;
+            readonly keys: readonly (string | null)[] | null;
+            readonly xs: Float64Array;
+        }[];
+    }>;
+    readonly drill: _angular_core.OutputEmitterRef<{
+        readonly path: readonly string[];
+    }>;
+    private instance;
+    get chart(): Chart | null;
+    private given;
+    constructor();
+    static ɵfac: _angular_core.ɵɵFactoryDeclaration<DzChart, never>;
+    static ɵcmp: _angular_core.ɵɵComponentDeclaration<DzChart, "dz-chart", never, {
+        "options": {
+            "alias": "options";
+            "required": true;
+            "isSignal": true;
+        };
+        "types": {
+            "alias": "types";
+            "required": false;
+            "isSignal": true;
+        };
+        "features": {
+            "alias": "features";
+            "required": false;
+            "isSignal": true;
+        };
+        "messages": {
+            "alias": "messages";
+            "required": false;
+            "isSignal": true;
+        };
+        "animate": {
+            "alias": "animate";
+            "required": false;
+            "isSignal": true;
+        };
+    }, {
+        "problems": "problems";
+        "pointHover": "pointHover";
+        "pointClick": "pointClick";
+        "pointFocus": "pointFocus";
+        "legendToggle": "legendToggle";
+        "rangeChange": "rangeChange";
+        "viewChange": "viewChange";
+        "modeChange": "modeChange";
+        "measure": "measure";
+        "selectionChange": "selectionChange";
+        "drill": "drill";
+    }, never, never, true, never>;
+}
+```
+
+### DzSparkline
+
+```ts
+declare class DzSparkline {
+    readonly values: _angular_core.InputSignal<ArrayLike<number | null | undefined>>;
+    readonly options: _angular_core.InputSignal<SparklineSetup>;
+    private instance;
+    get sparkline(): SparklineHandle | null;
+    constructor();
+    static ɵfac: _angular_core.ɵɵFactoryDeclaration<DzSparkline, never>;
+    static ɵcmp: _angular_core.ɵɵComponentDeclaration<DzSparkline, "dz-sparkline", never, {
+        "values": {
+            "alias": "values";
+            "required": true;
+            "isSignal": true;
+        };
+        "options": {
+            "alias": "options";
+            "required": false;
+            "isSignal": true;
+        };
+    }, {}, never, never, true, never>;
+}
+```
+
+### provideDzGraph
+
+```ts
+declare function provideDzGraph(config: DzGraphConfig): Provider[];
+```
+
+### DZGRAPH_CONFIG
+
+```ts
+declare const DZGRAPH_CONFIG: InjectionToken<DzGraphConfig>;
+```
+
+### DzGraphConfig
+
+```ts
+interface DzGraphConfig {
+    readonly types?: readonly SeriesType[];
+    readonly features?: readonly Feature[];
+    readonly messages?: ChartSetup['messages'];
+}
+```

@@ -20,3 +20,5 @@ A point's key is its row's id. `gridTable(grid, options)` gives what `chartFromG
 
 See the [repository's README](https://github.com/plinthworks/dzgraph#readme) and the sheets
 `docs/behaviors/dzgrid-link.md`, `docs/behaviors/chart-from-grid.md`. Licence: MIT.
+
+Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/guides/dzgrid/).

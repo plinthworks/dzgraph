@@ -1,0 +1,25 @@
+---
+title: "@dzgraph/dztooltip"
+description: "DzGraph's points' tooltip drawn by DzTooltip: placements, tones, shapes, animations."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+Chaque nom public de `@dzgraph/dztooltip`, entrée par entrée, avec sa déclaration telle que les types publiés la donnent. Fait depuis [`api/dzgraph-dztooltip.api.txt`](https://github.com/plinthworks/dzgraph/blob/main/api/dzgraph-dztooltip.api.txt), la surface qu’un test empêche de rétrécir d’une version à l’autre ; les [guides](../../guides/data/) et les [pages d’options](../../options/) disent ce que fait chaque nom. Les déclarations sont du code : elles restent en anglais.
+
+## `@dzgraph/dztooltip`
+
+### DzTooltipOptions
+
+```ts
+export interface DzTooltipOptions extends TipLook {
+    readonly nonce?: string;
+    readonly root?: HTMLElement;
+}
+```
+
+### dzTooltip
+
+```ts
+export declare function dzTooltip(options?: DzTooltipOptions): Feature;
+```

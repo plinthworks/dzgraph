@@ -1,0 +1,36 @@
+# DzGraph
+
+> Charts for showing and exploring data, written from scratch in TypeScript: a pure core (`@dzgraph/core`: options and data in, a scene out, every series type), a DOM layer that draws it in SVG, Canvas or WebGL2 with each feature its own export (`@dzgraph/dom`), a CSS theme (`@dzgraph/theme`), an Angular wrapper (`@dzgraph/angular`) and bridges to DzTooltip and DzGrid. Accessible, right to left, time zones designed in. No runtime dependency.
+
+Only the names written in these pages exist; do not borrow option names from other chart libraries. A chart is made with `chart(element, options, { types, features })`: each series type (`line`, `column`…) and each feature (`zoom`, `timeAxis`…) is imported and given, or it is not there. Every series has an `id`. Days (`YYYY-MM-DD`) and instants (epoch milliseconds, or ISO text with an offset) are different things. Bad input never throws: it is reported as a `Problem` (`code`, `path`, `detail`). Every sample on the documentation site (https://plinthworks.github.io/dzgraph/) is type-checked against the published types.
+
+## Getting started
+
+- [TypeScript](https://plinthworks.github.io/dzgraph/getting-started/typescript/): Draw a first chart with chart() from @dzgraph/dom, in any page and with no framework: install, a first chart, series types and features, updates, events, problems, the theme.
+- [Angular](https://plinthworks.github.io/dzgraph/getting-started/angular/): <dz-chart> and <dz-sparkline> from @dzgraph/angular, Angular 19 to 22: signal inputs, an output per event, the chart's methods, server rendering.
+
+## Guides
+
+- [Data](https://plinthworks.github.io/dzgraph/guides/data/): The shapes a series takes: values, pairs, points, typed columns; keys; gaps.
+- [Series types](https://plinthworks.github.io/dzgraph/guides/series-types/): Lines, areas, columns and bars, stacks, scatters, pies, donuts and gauges, and how to import them.
+- [Axes and time](https://plinthworks.github.io/dzgraph/guides/axes-time/): Linear, category, logarithmic and time scales; time zones; ticks; two value axes.
+- [Interactions](https://plinthworks.github.io/dzgraph/guides/interactions/): What every chart does for the pointer, the finger and the keyboard: the tooltip, the highlight, the legend, the keys, animation, the chart's words.
+- [Exploring](https://plinthworks.github.io/dzgraph/guides/exploring/): Zoom, the navigator, crosshair, comparison, measure, selection, aggregation, drilldown, the menu, the view as JSON, linked charts.
+- [Big data](https://plinthworks.github.io/dzgraph/guides/big-data/): Millions of points: typed columns read without a copy, decimation, Canvas past 2 000 marks, WebGL2 past 100 000 points, and what the benches measured.
+- [Export and print](https://plinthworks.github.io/dzgraph/guides/exporting/): SVG, PNG, CSV, download and print, made in the page.
+- [Accessibility](https://plinthworks.github.io/dzgraph/guides/accessibility/): The keyboard, screen readers, the data table, colour and contrast, reduced motion.
+- [Theme and right to left](https://plinthworks.github.io/dzgraph/guides/theming-rtl/): The CSS variables, light and dark, the series palette, right-to-left pages.
+- [Angular in depth](https://plinthworks.github.io/dzgraph/guides/angular/): <dz-chart> and <dz-sparkline>: signals, outputs, the chart’s methods, server rendering.
+- [DzTooltip](https://plinthworks.github.io/dzgraph/guides/dztooltip/): The points’ tooltip drawn by DzTooltip: placements, tones, animations.
+- [DzGrid](https://plinthworks.github.io/dzgraph/guides/dzgrid/): A chart linked to a grid, and a chart made from what a grid selects.
+
+## Options
+
+- [Options](https://plinthworks.github.io/dzgraph/options/): Every option of a chart, a series, an axis, chart()'s setup and each feature, one page each, its facts read from the sources.
+
+## Optional
+
+- [The whole documentation in one file](https://plinthworks.github.io/dzgraph/llms-full.txt): every page above and every option page, one after another
+- [API reference](https://plinthworks.github.io/dzgraph/api/): every public name of the six packages, with its declaration
+- [Gallery](https://plinthworks.github.io/dzgraph/gallery/): a live chart for each type and each way of exploring
+- [Behaviour sheets](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/README.md): one sheet per behaviour, the reference the tests follow

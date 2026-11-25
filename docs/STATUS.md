@@ -229,7 +229,13 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
 - **Three choices left to Claude (owner 2026-11-25, « fais au mieux », ARCHITECTURE D.27).** `<dz-chart>` imports no
   type or feature: `provideDzGraph()` or the tag (angular.md 9); the time drill starts at the axis's own year or month
   (drilldown.md 6); `messages` merged word by word (words.md, new sheet). API changes accepted in `api/`. Site pages
-  and the three Angular examples that leaned on the old defaults fixed. Committed.
+  and the three Angular examples that leaned on the old defaults fixed. Committed (247ff97).
+- **Batch 4 built (2026-11-25): API reference, gallery, `llms.txt`.** `scripts/gen-api.mjs` makes one page per package
+  from `api/*.api.txt` (both languages, the declarations as accepted); the gallery: 20 live charts (every series type,
+  the bar gauge, every way of exploring, one right to left), each linked to its page; `scripts/llms.mjs` makes
+  `llms.txt` and `llms-full.txt` (getting started, guides, every option page, the facts as a line) at the root, the
+  site serves both. Both taken from DzGrid's. The README and each package's README link to the site. Site tests 35
+  (api, llms new), Chrome en light / fr dark: 20 demos drawn, no console message. Gate green (1 289). Committed.
 
 ## Working rules
 

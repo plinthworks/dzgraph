@@ -14,3 +14,5 @@ chart(el, options, { types, features: [dzTooltip({ tone: 'info', placement: 'top
 As every DzTooltip tooltip, a scroll of the page hides it.
 
 See the [repository's README](https://github.com/plinthworks/dzgraph#readme). Licence: MIT.
+
+Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/guides/dztooltip/).

@@ -20,3 +20,5 @@ import { line, column, allTypes, type ChartOptions } from '@dzgraph/core';
 `@dzgraph/core/internal` is for DzGraph's own packages: no semver promise.
 
 See the [repository's README](https://github.com/plinthworks/dzgraph#readme). Licence: MIT.
+
+Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/api/core/).

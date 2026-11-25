@@ -91,3 +91,17 @@ mesure + 5 % (14 340 o).
 Puis l'atelier (le propriétaire, 2026-11-25) : chaque partie de la jauge réglée avec des boutons, les noms tapés, les
 options écrites en direct ; sur la page `gauge` du site et dans le playground, un seul module pour les deux. Avec lui,
 `thickness` (pixels, les deux formes, gauge.md 25), et l'arc qui omet un nombre qui en chevaucherait un autre (règle 14).
+
+## Lot 4 — référence de l'API, galerie, `llms.txt` (fait le 2026-11-25)
+
+Repris de DzGrid. `scripts/gen-api.mjs` : une page par paquet (`api/<paquet>.mdx`, les deux langues) faite depuis
+`api/*.api.txt`, chaque nom public sous son entrée avec sa déclaration ; les feuilles du thème listées ; une page
+d'ensemble écrite à la main. La galerie : 20 graphiques vivants (chaque type de série, la jauge en barre, chaque façon
+d'explorer, un de droite à gauche), chacun relié à sa page, les réglages repris des démos déjà vérifiées des pages
+d'options. `scripts/llms.mjs` : `llms.txt` (prise en main, guides, la page d'ensemble des options) et `llms-full.txt`
+(les mêmes et les 69 pages d'options, leurs faits écrits en une ligne), à la racine du dépôt et servis par le site
+(`src/pages/`). Tests d'abord (`api.test.ts`, `llms.test.ts`), attendus écrits à la main. Le README et ceux des
+paquets pointent vers le site. Chrome : galerie en (clair) et fr (sombre), 20 démos dessinées, aucun message.
+
+Laissé : `llms.txt` n'est pas livré dans un paquet npm (DzGrid le met dans `@dzgrid/dom`) ; à décider à la clôture.
+

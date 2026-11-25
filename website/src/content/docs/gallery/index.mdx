@@ -1,8 +1,366 @@
 ---
 title: "Gallery"
-description: "A live chart for each type and each way of exploring."
+description: "A live chart for each series type and each way of exploring, each linked to its page."
 ---
 
-:::note[Being written]
-This page is being written. Until then, read [the behaviour sheets](https://github.com/plinthworks/dzgraph/blob/main/docs/behaviors/README.md).
-:::
+import LiveChart from '../../../components/LiveChart.astro';
+
+Every chart below is drawn live in this page from DzGraph's sources, with made-up data. Hover them, use the keyboard,
+switch the site to dark: each follows. Each one links to the page that tells its options, with the code to write it.
+
+## Series types
+
+### Lines
+
+Points joined in x order; a gap where a value is missing. [Its page](../options/series-types/line/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    xAxis: { scale: 'category', categories: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] },
+    series: [
+      { type: 'line', id: 'hiveA', name: 'Hive A', data: [12, 30, null, 61, 44, 23] },
+      { type: 'line', id: 'hiveB', name: 'Hive B', marker: false, data: [8, 21, 39, 47, 35, 15] },
+    ],
+  }}
+/>
+
+### Stacked areas
+
+A line with its surface filled, here one on another. [Its page](../options/series-types/area/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Visitors, stacked (made up)' },
+    xAxis: { scale: 'category', categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] },
+    series: [
+      { type: 'area', id: 'greenhouse', name: 'Greenhouse', stack: true, data: [42, 46, 61, 58, 70] },
+      { type: 'area', id: 'orchard', name: 'Orchard', stack: true, data: [12, 15, 30, 26, 41] },
+    ],
+  }}
+/>
+
+### Columns
+
+Side by side in each category, below zero too. [Its page](../options/series-types/column/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Fruit picked (made up)' },
+    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar', 'Apr'] },
+    series: [
+      { type: 'column', id: 'apples', name: 'Apples', data: [5, 8, 6, -2] },
+      { type: 'column', id: 'pears', name: 'Pears', data: [1, 2, 3, 4] },
+    ],
+  }}
+/>
+
+### Bars
+
+Columns turned across, for long names. [Its page](../options/series-types/bar/).
+
+<LiveChart
+  height={260}
+  options={{
+    title: { text: 'Jars sold (made up)' },
+    xAxis: { scale: 'category', categories: ['Plum', 'Quince', 'Cherry'] },
+    series: [{ type: 'bar', id: 'jars', name: 'Jars sold', data: [1250, 860, 2240] }],
+  }}
+/>
+
+### Scatter
+
+One marker per point, placed by two values; 3 000 points, drawn on a canvas. [Its page](../options/series-types/scatter/).
+
+<LiveChart
+  height={340}
+  features={['canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Leaf length and width (made up)' },
+    xAxis: { title: 'Length (cm)' },
+    yAxis: { title: 'Width (cm)' },
+    series: [{ type: 'scatter', id: 'leaves', name: 'Leaves', data: [] }],
+  }}
+/>
+
+### Pie
+
+Shares of one whole. [Its page](../options/series-types/pie/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Seeds sown (made up)' },
+    series: [
+      {
+        type: 'pie',
+        id: 'seeds',
+        name: 'Seeds',
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  }}
+/>
+
+### Donut
+
+A pie with a hole, and a total in it. [Its page](../options/series-types/donut/).
+
+<LiveChart
+  height={300}
+  options={{
+    title: { text: 'Seeds sown (made up)' },
+    series: [
+      {
+        type: 'donut',
+        id: 'seeds',
+        name: 'Seeds',
+        hole: 0.5,
+        center: { label: 'Packets', value: '1 400' },
+        data: [['Carrots', 420], ['Beetroot', 260], ['Lettuce', 380], ['Radishes', 190], ['Spinach', 150]],
+      },
+    ],
+  }}
+/>
+
+### Gauge
+
+One value against its scale, with ticks and named zones. [Its page](../options/series-types/gauge/), where every part
+can be set with buttons.
+
+<LiveChart
+  height={340}
+  options={{
+    title: { text: 'Tank balance (made up)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'balance',
+        name: 'Tank balance',
+        data: -1700,
+        min: -2000,
+        max: 2000,
+        origin: 0,
+        ticks: { step: 100, labels: 500 },
+        thresholdsOn: 'track',
+        thresholds: [
+          { from: -2000, to: -1500, label: 'Cold', color: 'cold' },
+          { from: -500, to: 500, label: 'Normal', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+### Gauge as a bar
+
+The same gauge, straight. [Its page](../options/series-types/gauge/#as-a-bar).
+
+<LiveChart
+  height={200}
+  options={{
+    title: { text: 'Water tank (made up)' },
+    series: [
+      {
+        type: 'gauge',
+        id: 'tank',
+        name: 'Water tank (%)',
+        data: 64,
+        shape: 'bar',
+        ticks: { step: 10, labels: 20 },
+        thresholds: [
+          { from: 0, to: 20, label: 'Low', color: 'cold' },
+          { from: 20, to: 80, label: 'Fine', color: 'calm' },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Exploring
+
+### Zoom
+
+Drag across the plot, pinch, or use the keys; 20 000 points. [Its page](../options/features/zoom/).
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'zoom']}
+  data={{ recipe: 'walk', count: 20000 }}
+  options={{
+    title: { text: 'A made-up sensor: drag across the plot to zoom' },
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+### Navigator and ranges
+
+The whole series under the chart, a window to move along it, and buttons for the usual ranges; 100 000 points.
+[Its page](../options/features/navigator-strip/).
+
+<LiveChart
+  height={420}
+  features={['timeAxis', 'navigatorStrip', 'crosshair']}
+  data={{ recipe: 'walk', count: 100000 }}
+  options={{
+    title: { text: 'A made-up sensor, 100 000 readings' },
+    navigator: true,
+    rangeButtons: true,
+    crosshair: true,
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'line', id: 'sensor', name: 'Reading', data: [] }],
+  }}
+/>
+
+### Crosshair
+
+Lines that follow the pointer, their values on the axes. [Its page](../options/features/crosshair/).
+
+<LiveChart
+  height={300}
+  features={['crosshair']}
+  options={{
+    title: { text: 'Bees seen per hour (made up)' },
+    crosshair: { horizontal: true },
+    series: [{ type: 'column', id: 'bees', name: 'Bees', data: [12, 30, 52, 61, 58, 44, 23] }],
+  }}
+/>
+
+### Compare
+
+Series in percent of their first point in view; zoom and the base follows. [Its page](../options/features/compare/).
+
+<LiveChart
+  height={320}
+  features={['compare', 'zoom']}
+  options={{
+    title: { text: 'Two made-up shops, in percent of the first point in view' },
+    yAxis: { compare: 'percent' },
+    series: [
+      { type: 'line', id: 'north', name: 'North shop', data: [120, 132, 128, 150, 161, 158, 170] },
+      { type: 'line', id: 'south', name: 'South shop', data: [80, 78, 90, 99, 97, 104, 112] },
+    ],
+  }}
+/>
+
+### Measure
+
+The change between two points. [Its page](../options/features/measure/).
+
+<LiveChart
+  height={320}
+  features={['zoom', 'measure']}
+  options={{
+    title: { text: 'A made-up bean plant: choose Measure, then drag' },
+    series: [{ type: 'line', id: 'plant', name: 'Height (cm)', data: [3, 5, 8, 12, 17, 21, 24, 26, 27] }],
+  }}
+/>
+
+### Selection
+
+A rectangle or a lasso picks points. [Its page](../options/features/selection/).
+
+<LiveChart
+  height={380}
+  features={['selection', 'zoom', 'canvas']}
+  data={{ recipe: 'cloud', count: 3000 }}
+  options={{
+    title: { text: 'Two made-up clouds: choose Select, then drag' },
+    selection: { shapes: ['rectangle', 'lasso'] },
+    series: [{ type: 'scatter', id: 'cloud', name: 'Points', data: [] }],
+  }}
+/>
+
+### Aggregation
+
+200 000 readings, one column per month: the highest. [Its page](../options/features/aggregation/).
+
+<LiveChart
+  height={320}
+  features={['timeAxis', 'aggregation']}
+  data={{ recipe: 'walk', count: 200000 }}
+  options={{
+    title: { text: 'A made-up sensor, its highest reading each month' },
+    xAxis: { scale: 'time', zone: 'UTC', aggregate: 'month' },
+    series: [{ type: 'column', id: 'sensor', name: 'Highest reading', aggregate: 'max', data: [] }],
+  }}
+/>
+
+### Drilldown
+
+Click a column to see what it is made of. [Its page](../options/features/drilldown/).
+
+<LiveChart
+  height={320}
+  features={['drilldown']}
+  options={{
+    title: { text: 'Fruit picked (made up): click a column' },
+    xAxis: { scale: 'category', categories: ['Apples', 'Pears'] },
+    series: [{
+      type: 'column',
+      id: 'fruit',
+      name: 'Fruit picked',
+      data: { y: [52, 31], key: ['apples', 'pears'] },
+      drilldown: { details: {
+        apples: [{ type: 'column', id: 'apples', name: 'Varieties', data: [['Gala', 30], ['Reinette', 22]] }],
+        pears: [{ type: 'column', id: 'pears', name: 'Varieties', data: [['Conference', 19], ['Williams', 12]] }],
+      } },
+    }],
+  }}
+/>
+
+### Through time
+
+Years, then a year's months, then a month's days. [Its page](../options/chart/drilldown/).
+
+<LiveChart
+  height={340}
+  features={['timeAxis', 'drilldown']}
+  data={{ recipe: 'walk', count: 600000 }}
+  options={{
+    title: { text: 'A made-up sensor, mean by year' },
+    drilldown: 'time',
+    xAxis: { scale: 'time', zone: 'UTC' },
+    series: [{ type: 'column', id: 'sensor', name: 'Reading', aggregate: 'mean', data: [] }],
+  }}
+/>
+
+### The menu
+
+Change the type, the scale, export, print, from the chart itself. [Its page](../options/features/menu/).
+
+<LiveChart
+  height={320}
+  features={['menu', 'exporting']}
+  options={{
+    title: { text: 'Jars sold (made up): open the menu at the top end' },
+    menu: true,
+    series: [
+      { type: 'column', id: 'honey', name: 'Honey', data: [14, 22, 19, 27, 31, 26] },
+      { type: 'line', id: 'jam', name: 'Jam', data: [9, 12, 16, 15, 18, 21] },
+    ],
+  }}
+/>
+
+## Right to left
+
+The chart's element in Arabic: bars grow from the right, the value axis stands there, numbers in the locale's digits.
+[The guide](../guides/theming-rtl/).
+
+<LiveChart
+  height={360}
+  language="ar"
+  options={{
+    title: { text: 'Jars sold (made up)' },
+    xAxis: { scale: 'category', categories: ['يناير', 'فبراير', 'مارس', 'أبريل'] },
+    series: [
+      { type: 'bar', id: 'plum', name: 'Plum', data: [1240, 1810, 2260, 1930] },
+      { type: 'bar', id: 'quince', name: 'Quince', data: [860, 1120, 1540, 2010] },
+    ],
+  }}
+/>

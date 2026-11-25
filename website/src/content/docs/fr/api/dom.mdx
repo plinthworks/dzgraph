@@ -1,0 +1,495 @@
+---
+title: "@dzgraph/dom"
+description: "Charts for showing and exploring data: chart(el, options), SVG, Canvas and WebGL2 painters, interactions. No dependency besides @dzgraph/core."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+Chaque nom public de `@dzgraph/dom`, entrée par entrée, avec sa déclaration telle que les types publiés la donnent. Fait depuis [`api/dzgraph-dom.api.txt`](https://github.com/plinthworks/dzgraph/blob/main/api/dzgraph-dom.api.txt), la surface qu’un test empêche de rétrécir d’une version à l’autre ; les [guides](../../guides/data/) et les [pages d’options](../../options/) disent ce que fait chaque nom. Les déclarations sont du code : elles restent en anglais.
+
+## `@dzgraph/dom`
+
+### AnimateHook
+
+```ts
+export interface AnimateHook {
+    readonly from: Scene;
+    readonly to: Scene;
+    readonly duration: number;
+    draw(t: number): void;
+    done(): void;
+}
+```
+
+### Chart
+
+```ts
+export interface Chart {
+    update(changes: ChartUpdate): void;
+    setData(seriesId: string, data: SeriesOptions['data']): void;
+    setSeriesVisible(seriesId: string, visible: boolean): void;
+    setRange(range: {
+        readonly min: number | string;
+        readonly max: number | string;
+    } | null): void;
+    getView(): ChartView;
+    setView(view: ChartView): void;
+    showX(x: number | null): void;
+    selectBy(by: 'key' | 'x', values: readonly (string | number)[]): void;
+    setMode(mode: Mode): void;
+    exportSvg(options?: ExportOptions): string | null;
+    exportPng(options?: PngOptions): Promise<Blob | null>;
+    exportCsv(options?: {
+        readonly locale?: boolean;
+    }): string | null;
+    download(format: ExportFormat, options?: PngOptions): Promise<void>;
+    print(options?: {
+        readonly table?: boolean;
+    }): void;
+    readonly mode: Mode;
+    readonly problems: readonly Problem[];
+    on<E extends keyof ChartEvents>(event: E, handler: (detail: ChartEvents[E]) => void): () => void;
+    destroy(): void;
+}
+```
+
+### ChartEvents
+
+```ts
+export interface ChartEvents {
+    readonly problems: {
+        readonly problems: readonly Problem[];
+    };
+    readonly pointHover: {
+        readonly point: PointRef | null;
+        readonly x?: number;
+    };
+    readonly pointClick: {
+        readonly point: PointRef;
+    };
+    readonly pointFocus: {
+        readonly point: PointRef;
+    };
+    readonly legendToggle: {
+        readonly seriesId: string;
+        readonly index?: number;
+        readonly shown: boolean;
+    };
+    readonly rangeChange: {
+        readonly range: {
+            readonly min: number;
+            readonly max: number;
+        } | null;
+    };
+    readonly viewChange: {
+        readonly view: ChartView;
+        readonly changed: readonly ViewPart[];
+        readonly source: 'user' | 'app';
+    };
+    readonly modeChange: {
+        readonly mode: Mode;
+    };
+    readonly selectionChange: {
+        readonly count: number;
+        readonly series: readonly {
+            readonly id: string;
+            readonly indices: Int32Array;
+            readonly keys: readonly (string | null)[] | null;
+            readonly xs: Float64Array;
+        }[];
+    };
+    readonly measure: {
+        readonly from: PointRef;
+        readonly to: PointRef;
+    } | null;
+    readonly drill: {
+        readonly path: readonly string[];
+    };
+}
+```
+
+### ChartSetup
+
+```ts
+export interface ChartSetup {
+    readonly types: readonly SeriesType[];
+    readonly features?: readonly Feature[];
+    readonly messages?: MessageOverrides;
+    readonly animate?: (animation: AnimateHook) => void;
+}
+```
+
+### CreateChart
+
+```ts
+export type CreateChart = (element: HTMLElement, options: ChartOptions, setup: ChartSetup) => Chart;
+```
+
+### ExportFormat
+
+```ts
+export type ExportFormat = 'png' | 'svg' | 'csv';
+```
+
+### ExportOptions
+
+```ts
+export interface ExportOptions {
+    readonly width?: number | undefined;
+    readonly height?: number | undefined;
+    readonly theme?: 'light' | 'dark' | undefined;
+}
+```
+
+### Feature
+
+```ts
+export interface Feature {
+    readonly name: 'timeAxis' | 'zoom' | 'navigatorStrip' | 'canvas' | 'webgl' | 'crosshair' | 'compare' | 'measure' | 'selection' | 'aggregation' | 'drilldown' | 'menu' | 'exporting' | 'tooltip';
+    readonly needs?: readonly Feature[];
+    readonly time?: TimeKit;
+    readonly navigator?: {
+        readonly kit: NavigatorKit;
+        readonly controls: (svg: SVGSVGElement, group: SVGGElement, root: HTMLElement, hooks: NavigatorPartHooks) => NavigatorControlsPart;
+    };
+    readonly zoom?: (root: HTMLElement, svg: SVGSVGElement, hooks: ZoomHooks) => ZoomPart;
+    readonly canvas?: (root: HTMLElement) => Painter & {
+        destroy(): void;
+    };
+    readonly webgl?: (root: HTMLElement, changed: () => void) => WebglPart;
+    readonly compare?: CompareKit;
+    readonly aggregation?: AggregationKit;
+    readonly drill?: (hooks: DrillHooks) => DrillPart;
+    readonly menu?: (root: HTMLElement, hooks: MenuHooks) => MenuPart;
+    readonly exporting?: ExportingKit;
+    readonly tooltip?: (root: HTMLElement) => TooltipDrawer;
+    readonly measure?: (svg: SVGSVGElement, hooks: MeasureHooks) => MeasurePart;
+    readonly selection?: {
+        readonly kit: SelectionKit;
+        readonly part: (svg: SVGSVGElement, hooks: SelectionHooks) => SelectionPart;
+    };
+    readonly modeBar?: (root: HTMLElement, hooks: ModeBarHooks) => ModeBar;
+    readonly crosshair?: {
+        readonly kit: CrosshairKit;
+        readonly part: (svg: SVGSVGElement, hooks: CrosshairHooks) => CrosshairPart;
+    };
+}
+```
+
+### LinkOptions
+
+```ts
+export interface LinkOptions {
+    readonly crosshair?: boolean;
+    readonly zoom?: 'x';
+    readonly selection?: 'key' | 'x';
+    readonly drill?: boolean;
+}
+```
+
+### Messages
+
+```ts
+export interface Messages {
+    readonly seriesName: (place: number) => string;
+    readonly noData: string;
+    readonly ellipsis: string;
+    readonly seriesHidden: (name: string) => string;
+    readonly seriesShown: (name: string) => string;
+    readonly chart: string;
+    readonly summary: (s: Summary) => string;
+    readonly seriesList: (name: string, count: string) => string;
+    readonly point: (p: PointWords) => string;
+    readonly total: string;
+    readonly stackTotal: (stack: string | null) => string;
+    readonly seriesOnAxis: (name: string, axis: string) => string;
+    readonly pointName: (place: number) => string;
+    readonly others: string;
+    readonly share: string;
+    readonly moreSlices: (count: string) => string;
+    readonly sliceLabel: (name: string, share: string) => string;
+    readonly gaugeNote: (min: string, max: string, threshold: string | undefined) => string;
+    readonly meter: {
+        readonly min: string;
+        readonly max: string;
+        readonly threshold: string;
+    };
+    readonly since: (baseline: string) => string;
+    readonly compared: (name: string) => string;
+    readonly menu: {
+        readonly button: string;
+        readonly type: string;
+        readonly aggregation: string;
+        readonly scale: string;
+        readonly compare: string;
+        readonly types: Readonly<Record<string, string>>;
+        readonly none: string;
+        readonly periods: {
+            readonly hour: string;
+            readonly day: string;
+            readonly week: string;
+            readonly month: string;
+            readonly quarter: string;
+            readonly year: string;
+        };
+        readonly linear: string;
+        readonly log: string;
+        readonly compares: {
+            readonly value: string;
+            readonly percent: string;
+            readonly index: string;
+        };
+    };
+    readonly exporting: {
+        readonly download: string;
+        readonly print: string;
+        readonly png: string;
+        readonly svg: string;
+        readonly csv: string;
+        readonly filename: string;
+    };
+    readonly drill: {
+        readonly breadcrumb: string;
+        readonly root: string;
+        readonly loading: string;
+        readonly failed: string;
+        readonly retry: string;
+    };
+    readonly pointsIn: (count: string) => string;
+    readonly shapes: {
+        readonly rectangle: string;
+        readonly range: string;
+        readonly lasso: string;
+    };
+    readonly selectedCount: (count: string) => string;
+    readonly selectedColumn: string;
+    readonly modeBar: string;
+    readonly modes: {
+        readonly zoom: string;
+        readonly selection: string;
+        readonly measure: string;
+    };
+    readonly measureTag: (r: MeasureReading) => string;
+    readonly measured: (r: MeasureReading) => string;
+    readonly tableCaption: string;
+    readonly rowsOmitted: (count: string) => string;
+    readonly category: string;
+    readonly xValue: string;
+    readonly resetZoom: string;
+    readonly rangeShown: (from: string, to: string) => string;
+    readonly rangeWhole: string;
+    readonly rangeStart: string;
+    readonly rangeEnd: string;
+    readonly range1m: string;
+    readonly range3m: string;
+    readonly rangeYtd: string;
+    readonly range1y: string;
+    readonly rangeAll: string;
+    readonly tableRange: (from: string, to: string) => string;
+    readonly tableAll: string;
+    readonly tableVisible: string;
+}
+```
+
+### Mode
+
+```ts
+export type Mode = 'zoom' | 'selection' | 'measure';
+```
+
+### PngOptions
+
+```ts
+export interface PngOptions extends ExportOptions {
+    readonly scale?: number | undefined;
+}
+```
+
+### PointWords
+
+```ts
+export interface PointWords {
+    readonly series: string;
+    readonly x: string;
+    readonly y: string;
+    readonly share?: string;
+    readonly total?: string;
+    readonly meter?: {
+        readonly min: string;
+        readonly max: string;
+        readonly threshold?: string;
+    };
+    readonly raw?: string;
+    readonly selected?: true;
+    readonly detail?: true;
+    readonly position: string;
+    readonly count: string;
+}
+```
+
+### TooltipDrawer
+
+```ts
+export interface TooltipDrawer {
+    show(content: HTMLElement, at: () => {
+        readonly x: number;
+        readonly y: number;
+    }, dir: 'ltr' | 'rtl'): void;
+    hide(): void;
+    readonly shown?: boolean;
+    destroy(): void;
+}
+```
+
+### ViewPart
+
+```ts
+export type ViewPart = 'hidden' | 'range' | 'compare' | 'selection' | 'aggregation' | 'drill' | 'types' | 'scale';
+```
+
+### aggregation
+
+```ts
+export declare const aggregation: Feature;
+```
+
+### allFeatures
+
+```ts
+export declare const allFeatures: readonly Feature[];
+```
+
+### canvas
+
+```ts
+export declare const canvas: Feature;
+```
+
+### chart
+
+```ts
+export declare const chart: CreateChart;
+```
+
+### compare
+
+```ts
+export declare const compare: Feature;
+```
+
+### crosshair
+
+```ts
+export declare const crosshair: Feature;
+```
+
+### drilldown
+
+```ts
+export declare const drilldown: Feature;
+```
+
+### exporting
+
+```ts
+export declare const exporting: Feature;
+```
+
+### linkCharts
+
+```ts
+export declare function linkCharts(charts: readonly Chart[], options: LinkOptions): () => void;
+```
+
+### measure
+
+```ts
+export declare const measure: Feature;
+```
+
+### menu
+
+```ts
+export declare const menu: Feature;
+```
+
+### navigatorStrip
+
+```ts
+export declare const navigatorStrip: Feature;
+```
+
+### selection
+
+```ts
+export declare const selection: Feature;
+```
+
+### timeAxis
+
+```ts
+export declare const timeAxis: Feature;
+```
+
+### webgl
+
+```ts
+export declare const webgl: Feature;
+```
+
+### zoom
+
+```ts
+export declare const zoom: Feature;
+```
+
+### MessageOverrides
+
+```ts
+export type MessageOverrides = Overrides<Messages>;
+```
+
+## `@dzgraph/dom/sparkline`
+
+### SparklineHandle
+
+```ts
+export interface SparklineHandle {
+    update(values: ArrayLike<number | null | undefined>, options?: SparklineSetup | null): void;
+    readonly problems: readonly Problem[];
+    destroy(): void;
+}
+```
+
+### SparklineOptions
+
+```ts
+= @dzgraph/core/sparkline#SparklineOptions
+```
+
+### SparklineSetup
+
+```ts
+export interface SparklineSetup extends SparklineOptions {
+    readonly label?: string | undefined;
+    readonly locale?: string | undefined;
+    readonly messages?: SparklineWords | undefined;
+}
+```
+
+### SparklineWords
+
+```ts
+export interface SparklineWords {
+    readonly summary: (count: string, min: string, max: string, last: string) => string;
+    readonly one: (value: string) => string;
+    readonly noData: string;
+    readonly labelled: (label: string, summary: string) => string;
+}
+```
+
+### sparkline
+
+```ts
+export declare function sparkline(element: HTMLElement, values: ArrayLike<number | null | undefined>, options?: SparklineSetup | null): SparklineHandle;
+```

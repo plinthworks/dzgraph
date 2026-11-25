@@ -20,3 +20,5 @@ const c = chart(el, { series: [{ type: 'line', id: 'a', name: 'Apples', data: [3
 - Words: English and French built in, by `locale`; any other language through `setup.messages`.
 
 See the [repository's README](https://github.com/plinthworks/dzgraph#readme). Licence: MIT.
+
+Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/getting-started/typescript/).

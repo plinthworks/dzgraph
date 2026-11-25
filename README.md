@@ -5,6 +5,11 @@ points, pies, donuts and gauges, time series in any zone, zoom and a navigator, 
 point selection with a lasso, drilldown, linked charts, exports and printing — accessible from the keyboard and to
 screen readers, right to left designed in. Written from scratch in TypeScript; no runtime dependency.
 
+**Documentation: [plinthworks.github.io/dzgraph](https://plinthworks.github.io/dzgraph/)** (in English and in French):
+getting started, guides, a page per option, the [gallery](https://plinthworks.github.io/dzgraph/gallery/) and the
+[API reference](https://plinthworks.github.io/dzgraph/api/). For a language model:
+[`llms.txt`](https://plinthworks.github.io/dzgraph/llms.txt).
+
 | Package | What |
 | --- | --- |
 | [`@dzgraph/core`](packages/core) | the pure core: options and data in, a scene out; the series types (`line`, `column`…) — no DOM |
@@ -112,6 +117,7 @@ const stop = chartFromGrid(otherChart, grid, { range: blocks, pivot: p }); // th
 
 ## More
 
+- Everything above, and the rest, on [the documentation site](https://plinthworks.github.io/dzgraph/).
 - What each behaviour does, rule by rule: [`docs/behaviors/`](docs/behaviors/README.md).
 - The design and the decisions: [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/adr/`](docs/adr), the words:
   [`GLOSSARY.md`](GLOSSARY.md).

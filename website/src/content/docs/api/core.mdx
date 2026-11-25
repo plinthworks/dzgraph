@@ -1,0 +1,877 @@
+---
+title: "@dzgraph/core"
+description: "Charts for showing and exploring data: the pure core (options and data in, a scene out). No DOM, no dependency."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+Every public name of `@dzgraph/core`, entry by entry, with its declaration as the published types give it. Made from [`api/dzgraph-core.api.txt`](https://github.com/plinthworks/dzgraph/blob/main/api/dzgraph-core.api.txt), the surface a test keeps from shrinking between versions; the [guides](../../guides/data/) and the [option pages](../../options/) say what each name does.
+
+## `@dzgraph/core`
+
+### Affine
+
+```ts
+export interface Affine {
+    readonly d0: number;
+    readonly r0: number;
+    readonly k: number;
+    readonly log: boolean;
+}
+```
+
+### ArcPrimitive
+
+```ts
+export interface ArcPrimitive extends PrimitiveBase {
+    readonly kind: 'arc';
+    readonly cx: number;
+    readonly cy: number;
+    readonly innerRadius: number;
+    readonly outerRadius: number;
+    readonly startAngle: number;
+    readonly endAngle: number;
+    readonly grows?: 'start' | 'end';
+}
+```
+
+### AreaSeriesOptions
+
+```ts
+export interface AreaSeriesOptions extends SeriesBase<'area'> {
+    readonly marker?: boolean | undefined;
+    readonly stack?: boolean | string | undefined;
+}
+```
+
+### AxisOptions
+
+```ts
+export type AxisOptions = LinearAxisOptions | LogAxisOptions | CategoryAxisOptions | TimeAxisOptions;
+```
+
+### BarSeriesOptions
+
+```ts
+export interface BarSeriesOptions extends SeriesBase<'bar'> {
+    readonly stack?: boolean | string | undefined;
+}
+```
+
+### CategoryAxisOptions
+
+```ts
+export interface CategoryAxisOptions extends AxisBase {
+    readonly scale: 'category';
+    readonly categories?: readonly string[] | undefined;
+    readonly ticks?: TicksOptions<string> | undefined;
+}
+```
+
+### ChartOptions
+
+```ts
+export interface ChartOptions {
+    readonly title?: string | TitleOptions | undefined;
+    readonly series: readonly SeriesOptions[];
+    readonly xAxis?: AxisOptions | readonly AxisOptions[] | undefined;
+    readonly yAxis?: AxisOptions | readonly AxisOptions[] | undefined;
+    readonly legend?: LegendOptions | boolean | undefined;
+    readonly locale?: string | undefined;
+    readonly dir?: 'ltr' | 'rtl' | undefined;
+    readonly mirror?: boolean | undefined;
+    readonly aspectRatio?: number | undefined;
+    readonly description?: string | undefined;
+    readonly highlight?: boolean | undefined;
+    readonly animation?: boolean | undefined;
+    readonly dataTable?: boolean | {
+        readonly show?: boolean | undefined;
+        readonly rows?: 'visible' | 'all' | undefined;
+    } | undefined;
+    readonly navigator?: boolean | undefined;
+    readonly rangeButtons?: boolean | undefined;
+    readonly crosshair?: boolean | {
+        readonly horizontal?: boolean | undefined;
+    } | undefined;
+    readonly menu?: boolean | {
+        readonly items: readonly ('type' | 'aggregation' | 'scale' | 'compare' | 'export' | 'print')[];
+    } | undefined;
+    readonly exporting?: {
+        readonly filename?: string | undefined;
+        readonly theme?: 'light' | 'dark' | undefined;
+        readonly csv?: {
+            readonly locale?: boolean | undefined;
+        } | undefined;
+    } | undefined;
+    readonly drilldown?: 'time' | undefined;
+    readonly selection?: boolean | {
+        readonly shapes?: readonly ('rectangle' | 'range' | 'lasso')[] | undefined;
+    } | undefined;
+}
+```
+
+### ChartUpdate
+
+```ts
+export type ChartUpdate = {
+    readonly [K in keyof ChartOptions]?: ChartOptions[K] | undefined;
+};
+```
+
+### ChartView
+
+```ts
+export interface ChartView {
+    readonly hidden?: readonly string[];
+    readonly hiddenPoints?: Readonly<Record<string, readonly (string | number)[]>>;
+    readonly range?: {
+        readonly min: number;
+        readonly max: number;
+    } | null;
+    readonly compare?: {
+        readonly mode: CompareMode;
+        readonly to: number | null;
+    } | null;
+    readonly selection?: Readonly<Record<string, readonly (string | number)[]>>;
+    readonly aggregation?: AggregateSpec | null;
+    readonly drill?: readonly string[];
+    readonly types?: Readonly<Record<string, string>>;
+    readonly scale?: 'linear' | 'log';
+}
+```
+
+### ColorRef
+
+```ts
+export type ColorRef = ColorToken | {
+    readonly mix: readonly [
+        ColorToken,
+        ColorToken,
+        number
+    ];
+};
+```
+
+### ColorToken
+
+```ts
+export type ColorToken = `series-${number}` | `color-${string}` | 'background' | 'plot-background' | 'text' | 'text-muted' | 'axis-line' | 'grid-line' | 'tick' | 'focus' | 'others' | 'track';
+```
+
+### ColumnSeriesOptions
+
+```ts
+export interface ColumnSeriesOptions extends SeriesBase<'column'> {
+    readonly stack?: boolean | string | undefined;
+}
+```
+
+### ColumnsInput
+
+```ts
+export interface ColumnsInput {
+    readonly x?: Float64Array | readonly XValue[] | undefined;
+    readonly y: Float64Array | readonly YValue[];
+    readonly key?: readonly string[] | undefined;
+}
+```
+
+### DataInput
+
+```ts
+export type DataInput = readonly YValue[] | readonly (readonly [
+    XValue,
+    YValue
+])[] | readonly PointInput[] | ColumnsInput;
+```
+
+### Day
+
+```ts
+export type Day = string & {
+    readonly [dayBrand]: true;
+};
+```
+
+### DonutSeriesOptions
+
+```ts
+export interface DonutSeriesOptions extends SeriesBase<'donut', PieData>, PieBase {
+    readonly hole?: number | undefined;
+    readonly center?: false | {
+        readonly label?: string | undefined;
+        readonly value?: string | undefined;
+    } | undefined;
+}
+```
+
+### FontRole
+
+```ts
+export type FontRole = 'title' | 'subtitle' | 'axis-title' | 'tick-label' | 'legend' | 'data-label';
+```
+
+### FormatContext
+
+```ts
+export interface FormatContext {
+    readonly locale: string;
+    readonly step: number;
+}
+```
+
+### Formatter
+
+```ts
+export type Formatter<V> = (value: V, context: FormatContext) => string;
+```
+
+### GaugeSeriesOptions
+
+```ts
+export interface GaugeSeriesOptions extends SeriesBase<'gauge', number | null | readonly (number | null)[]> {
+    readonly min?: number | undefined;
+    readonly max?: number | undefined;
+    readonly thresholds?: readonly GaugeThreshold[] | undefined;
+}
+```
+
+### GaugeThreshold
+
+```ts
+export interface GaugeThreshold {
+    readonly from: number;
+    readonly to: number;
+    readonly label?: string | undefined;
+    readonly color?: string | undefined;
+}
+```
+
+### Group
+
+```ts
+export interface Group {
+    readonly sceneId: string;
+    readonly painter: PainterKind;
+    readonly opacity?: number;
+    readonly clip?: Rect;
+    readonly items: readonly Primitive[];
+}
+```
+
+### InstantMs
+
+```ts
+export type InstantMs = number & {
+    readonly [instantBrand]: true;
+};
+```
+
+### Layer
+
+```ts
+export interface Layer {
+    readonly id: LayerId;
+    readonly groups: readonly Group[];
+}
+```
+
+### LayerId
+
+```ts
+export type LayerId = 'background' | 'grid' | 'series' | 'axes' | 'labels' | 'legend' | 'navigator' | 'overlay';
+```
+
+### LegendOptions
+
+```ts
+export interface LegendOptions {
+    readonly position?: 'top' | 'bottom' | 'start' | 'end' | undefined;
+    readonly align?: 'start' | 'center' | 'end' | undefined;
+}
+```
+
+### LinePrimitive
+
+```ts
+export interface LinePrimitive extends PrimitiveBase {
+    readonly kind: 'line';
+    readonly x1: number;
+    readonly y1: number;
+    readonly x2: number;
+    readonly y2: number;
+}
+```
+
+### LineSeriesOptions
+
+```ts
+export interface LineSeriesOptions extends SeriesBase<'line'> {
+    readonly marker?: boolean | undefined;
+}
+```
+
+### LinearAxisOptions
+
+```ts
+export interface LinearAxisOptions extends AxisBase {
+    readonly scale?: 'linear' | undefined;
+    readonly min?: number | undefined;
+    readonly max?: number | undefined;
+    readonly ticks?: TicksOptions<number> | undefined;
+    readonly stacking?: 'percent' | undefined;
+    readonly compare?: 'value' | 'percent' | 'index' | undefined;
+    readonly compareTo?: number | string | undefined;
+    readonly aggregate?: {
+        readonly step: number;
+    } | undefined;
+}
+```
+
+### LogAxisOptions
+
+```ts
+export interface LogAxisOptions extends AxisBase {
+    readonly scale: 'log';
+    readonly min?: number | undefined;
+    readonly max?: number | undefined;
+    readonly ticks?: TicksOptions<number> | undefined;
+    readonly stacking?: undefined;
+}
+```
+
+### MarkerPrimitive
+
+```ts
+export interface MarkerPrimitive extends PrimitiveBase {
+    readonly kind: 'marker';
+    readonly x: number;
+    readonly y: number;
+    readonly size: number;
+    readonly symbol: MarkerSymbol;
+}
+```
+
+### MarkerSymbol
+
+```ts
+export type MarkerSymbol = 'circle' | 'square' | 'diamond' | 'triangle' | 'triangle-down';
+```
+
+### Paint
+
+```ts
+export interface Paint {
+    readonly fill?: ColorRef;
+    readonly stroke?: ColorRef;
+    readonly strokeWidth?: number;
+    readonly dash?: readonly number[];
+    readonly opacity?: number;
+}
+```
+
+### PainterKind
+
+```ts
+export type PainterKind = 'svg' | 'canvas' | 'webgl2';
+```
+
+### PathCommand
+
+```ts
+export declare const PathCommand: {
+    readonly MoveTo: 0;
+    readonly LineTo: 1;
+    readonly Close: 2;
+};
+export type PathCommand = (typeof PathCommand)[keyof typeof PathCommand];
+```
+
+### PathData
+
+```ts
+export interface PathData {
+    readonly commands: Uint8Array;
+    readonly coords: Float64Array;
+}
+```
+
+### PathPrimitive
+
+```ts
+export interface PathPrimitive extends PrimitiveBase {
+    readonly kind: 'path';
+    readonly path: PathData;
+}
+```
+
+### PieData
+
+```ts
+export type PieData = readonly (readonly [
+    string,
+    number | null
+])[] | readonly {
+    readonly name?: string | undefined;
+    readonly y: number | null;
+    readonly key?: string | undefined;
+}[] | readonly (number | null)[];
+```
+
+### PieSeriesOptions
+
+```ts
+export interface PieSeriesOptions extends SeriesBase<'pie', PieData>, PieBase {
+}
+```
+
+### PointInput
+
+```ts
+export interface PointInput {
+    readonly x?: XValue | undefined;
+    readonly y: YValue;
+    readonly key?: string | undefined;
+    readonly name?: string | undefined;
+}
+```
+
+### PointRef
+
+```ts
+export interface PointRef {
+    readonly seriesId: string;
+    readonly index: number;
+    readonly key?: string;
+}
+```
+
+### PointsPrimitive
+
+```ts
+export interface PointsPrimitive extends PrimitiveBase {
+    readonly kind: 'points';
+    readonly seriesId: string;
+    readonly x: Float64Array;
+    readonly y: Float64Array;
+    readonly mapX: Affine;
+    readonly mapY: Affine;
+    readonly swapped: boolean;
+    readonly size: number;
+    readonly symbol: MarkerSymbol;
+    readonly only?: Int32Array;
+}
+```
+
+### Primitive
+
+```ts
+export type Primitive = PathPrimitive | RectPrimitive | LinePrimitive | ArcPrimitive | MarkerPrimitive | PointsPrimitive | TextPrimitive;
+```
+
+### Problem
+
+```ts
+export interface Problem {
+    readonly code: ProblemCode;
+    readonly path: string;
+    readonly seriesId?: string;
+    readonly detail?: string;
+}
+```
+
+### ProblemCode
+
+```ts
+export type ProblemCode = keyof ProblemCodes;
+```
+
+### ProblemCodes
+
+```ts
+export interface ProblemCodes {
+    'unknown-option': true;
+    'invalid-option': true;
+    'unknown-series-type': true;
+    'duplicate-id': true;
+    'unknown-axis': true;
+    'mixed-orientation': true;
+    'invalid-data': true;
+    'non-finite-value': true;
+    'duplicate-key': true;
+    'unsorted-x': true;
+    'ambiguous-instant': true;
+    'non-positive-log-value': true;
+    'callback-failed': true;
+    'not-available': true;
+    'missing-module': true;
+    'invalid-view': true;
+    'no-baseline': true;
+}
+```
+
+### Rect
+
+```ts
+export interface Rect {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+}
+```
+
+### RectPrimitive
+
+```ts
+export interface RectPrimitive extends PrimitiveBase {
+    readonly kind: 'rect';
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+    readonly radius?: number;
+    readonly roundEnd?: 'x-min' | 'x-max' | 'y-min' | 'y-max';
+}
+```
+
+### ScaleKind
+
+```ts
+export type ScaleKind = 'linear' | 'log' | 'category' | 'time';
+```
+
+### ScatterSeriesOptions
+
+```ts
+export interface ScatterSeriesOptions extends SeriesBase<'scatter'> {
+}
+```
+
+### Scene
+
+```ts
+export interface Scene {
+    readonly width: number;
+    readonly height: number;
+    readonly dir: 'ltr' | 'rtl';
+    readonly areas: {
+        readonly plot: Rect;
+    } & {
+        readonly [name: string]: Rect;
+    };
+    readonly layers: readonly Layer[];
+}
+```
+
+### SeriesBase
+
+```ts
+export interface SeriesBase<T extends string, D = DataInput> {
+    readonly type: T;
+    readonly id?: string | undefined;
+    readonly name?: string | undefined;
+    readonly data: D;
+    readonly xAxis?: string | undefined;
+    readonly yAxis?: string | undefined;
+    readonly color?: SeriesColor | undefined;
+    readonly initiallyHidden?: boolean | undefined;
+    readonly drilldown?: {
+        readonly details: Readonly<Record<string, readonly SeriesOptions[]>>;
+    } | {
+        readonly load: (point: PointRef) => Promise<readonly SeriesOptions[]>;
+    } | undefined;
+    readonly aggregate?: 'sum' | 'mean' | 'min' | 'max' | 'count' | undefined;
+}
+```
+
+### SeriesColor
+
+```ts
+export type SeriesColor = number | {
+    readonly token: string;
+};
+```
+
+### SeriesOptions
+
+```ts
+export type SeriesOptions = SeriesUnionOf<SeriesOptionsByType>;
+```
+
+### SeriesOptionsByType
+
+```ts
+export interface SeriesOptionsByType {
+}
+interface SeriesOptionsByType {
+    line: LineSeriesOptions;
+}
+interface SeriesOptionsByType {
+    area: AreaSeriesOptions;
+}
+interface SeriesOptionsByType {
+    column: ColumnSeriesOptions;
+    bar: BarSeriesOptions;
+}
+interface SeriesOptionsByType {
+    scatter: ScatterSeriesOptions;
+}
+interface SeriesOptionsByType {
+    pie: PieSeriesOptions;
+    donut: DonutSeriesOptions;
+}
+interface SeriesOptionsByType {
+    gauge: GaugeSeriesOptions;
+}
+```
+
+### SeriesUnionOf
+
+```ts
+export type SeriesUnionOf<R> = [
+    keyof R
+] extends [
+    never
+] ? SeriesBase<string> : {
+    [K in keyof R]: R[K] & SeriesBase<K & string, unknown>;
+}[keyof R];
+```
+
+### SvgDocument
+
+```ts
+export interface SvgDocument {
+    readonly prefix?: string;
+    readonly title?: string;
+    readonly desc?: string;
+    readonly lang?: string;
+}
+```
+
+### SvgOptions
+
+```ts
+export interface SvgOptions {
+    readonly resolve?: ResolveColor;
+    readonly color?: (css: string) => string;
+    readonly font?: (role: FontRole) => string;
+}
+```
+
+### TextMeasurer
+
+```ts
+export type TextMeasurer = (text: string, font: FontRole) => TextSize;
+```
+
+### TextPrimitive
+
+```ts
+export interface TextPrimitive extends PrimitiveBase {
+    readonly kind: 'text';
+    readonly x: number;
+    readonly y: number;
+    readonly text: string;
+    readonly font: FontRole;
+    readonly anchor: 'start' | 'middle' | 'end';
+    readonly baseline: 'top' | 'middle' | 'alphabetic' | 'bottom';
+    readonly rotate?: number;
+    readonly dir?: 'ltr' | 'rtl';
+}
+```
+
+### TextSize
+
+```ts
+export interface TextSize {
+    readonly width: number;
+    readonly ascent: number;
+    readonly descent: number;
+}
+```
+
+### TicksOptions
+
+```ts
+export interface TicksOptions<V> {
+    readonly target?: number | undefined;
+    readonly format?: Formatter<V> | undefined;
+    readonly grid?: boolean | undefined;
+}
+```
+
+### TimeAxisOptions
+
+```ts
+export interface TimeAxisOptions extends AxisBase {
+    readonly scale: 'time';
+    readonly zone?: ZoneName | undefined;
+    readonly min?: number | string | undefined;
+    readonly max?: number | string | undefined;
+    readonly ticks?: TicksOptions<InstantMs> | undefined;
+    readonly aggregate?: 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year' | {
+        readonly step: number;
+    } | undefined;
+}
+```
+
+### TitleOptions
+
+```ts
+export interface TitleOptions {
+    readonly text: string;
+    readonly subtitle?: string | undefined;
+    readonly align?: 'start' | 'center' | 'end' | undefined;
+}
+```
+
+### XValue
+
+```ts
+export type XValue = number | string;
+```
+
+### YValue
+
+```ts
+export type YValue = number | null;
+```
+
+### ZoneName
+
+```ts
+export type ZoneName = string;
+```
+
+### allTypes
+
+```ts
+export declare const allTypes: readonly [
+    import("./series-type.js").SeriesType<import("./index.js").LineSeriesOptions, "cartesian">,
+    import("./series-type.js").SeriesType<import("./index.js").AreaSeriesOptions, "cartesian">,
+    import("./series-type.js").SeriesType<import("./index.js").ColumnSeriesOptions, "cartesian">,
+    import("./series-type.js").SeriesType<import("./index.js").BarSeriesOptions, "cartesian">,
+    import("./series-type.js").SeriesType<import("./index.js").ScatterSeriesOptions, "cartesian">,
+    import("./series-type.js").SeriesType<import("./index.js").PieSeriesOptions, "polar">,
+    import("./series-type.js").SeriesType<import("./index.js").DonutSeriesOptions, "polar">,
+    import("./series-type.js").SeriesType<import("./index.js").GaugeSeriesOptions, "polar">
+];
+```
+
+### area
+
+```ts
+export declare const area: SeriesType<AreaSeriesOptions, 'cartesian'>;
+```
+
+### bar
+
+```ts
+export declare const bar: SeriesType<BarSeriesOptions, 'cartesian'>;
+```
+
+### column
+
+```ts
+export declare const column: SeriesType<ColumnSeriesOptions, 'cartesian'>;
+```
+
+### donut
+
+```ts
+export declare const donut: SeriesType<DonutSeriesOptions, 'polar'>;
+```
+
+### gauge
+
+```ts
+export declare const gauge: SeriesType<GaugeSeriesOptions, 'polar'>;
+```
+
+### line
+
+```ts
+export declare const line: SeriesType<LineSeriesOptions, 'cartesian'>;
+```
+
+### pie
+
+```ts
+export declare const pie: SeriesType<PieSeriesOptions, 'polar'>;
+```
+
+### scatter
+
+```ts
+export declare const scatter: SeriesType<ScatterSeriesOptions, 'cartesian'>;
+```
+
+### sceneToSvg
+
+```ts
+export declare function sceneToSvg(scene: Scene, opts?: SvgOptions & SvgDocument): string;
+```
+
+## `@dzgraph/core/sparkline`
+
+### SPARK_BOX
+
+```ts
+export declare const SPARK_BOX = 100;
+```
+
+### SparkColumn
+
+```ts
+export interface SparkColumn {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+    readonly negative: boolean;
+    readonly marked: boolean;
+}
+```
+
+### Sparkline
+
+```ts
+export interface Sparkline {
+    readonly line: string | null;
+    readonly area: string | null;
+    readonly columns: readonly SparkColumn[];
+    readonly markers: readonly {
+        readonly x: number;
+        readonly y: number;
+    }[];
+    readonly dots: readonly {
+        readonly x: number;
+        readonly y: number;
+    }[];
+    readonly summary: {
+        readonly count: number;
+        readonly min: number;
+        readonly max: number;
+        readonly last: number;
+    } | null;
+    readonly problems: readonly Problem[];
+}
+```
+
+### SparklineOptions
+
+```ts
+export interface SparklineOptions {
+    readonly type?: 'line' | 'area' | 'column' | 'winloss' | undefined;
+    readonly min?: number | undefined;
+    readonly max?: number | undefined;
+    readonly markers?: 'last' | 'minmax' | 'none' | undefined;
+}
+```
+
+### sparklineOf
+
+```ts
+export declare function sparklineOf(values: ArrayLike<number | null | undefined>, given?: SparklineOptions | null): Sparkline;
+```

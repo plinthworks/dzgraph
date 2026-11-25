@@ -1,8 +1,18 @@
 ---
 title: "Référence de l’API"
-description: "Chaque export public des six paquets."
+description: "Chaque nom public des six paquets, fait depuis la surface de types acceptée."
+sidebar:
+  order: 0
 ---
 
-:::note[En cours de rédaction]
-Cette page est en cours de rédaction. En attendant, lisez [la surface publique acceptée](https://github.com/plinthworks/dzgraph/tree/main/api) (en anglais).
-:::
+Chaque nom public de DzGraph, avec sa déclaration, une page par paquet. Les pages sont faites depuis la surface de types
+acceptée (`api/*.api.txt`), qu’un test empêche de rétrécir d’une version à l’autre : un nom présent ici reste.
+
+- [`@dzgraph/core`](./core/) : le cœur pur — options et données en entrée, une scène en sortie — et chaque type de série. Pas de DOM.
+- [`@dzgraph/dom`](./dom/) : `chart()` dans le navigateur, ses peintres, et chaque fonction dans son propre export.
+- [`@dzgraph/theme`](./theme/) : les feuilles de style.
+- [`@dzgraph/angular`](./angular/) : les composants `<dz-chart>` et `<dz-sparkline>`, et `provideDzGraph()`.
+- [`@dzgraph/dztooltip`](./dztooltip/) : l’infobulle des points dessinée par DzTooltip.
+- [`@dzgraph/dzgrid`](./dzgrid/) : un graphique lié à une grille DzGrid.
+
+Ce que fait chaque nom est dit dans les [guides](../guides/data/) et les [pages d’options](../options/).
