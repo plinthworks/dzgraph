@@ -31,6 +31,15 @@ describe('the app\'s words (words.md)', () => {
     expect(Object.getPrototypeOf(m)).toBe(Object.prototype);
   });
 
+  it('a word of the wrong kind is ignored, the built-in one kept (words.md 3, review 2026-11-26)', () => {
+    const en = messagesFor('en');
+    // A text where a group belongs, a group where a sentence belongs, a text where a sentence belongs, a number for a text.
+    const odd = JSON.parse('{ "drill": "Retry", "summary": { "x": 1 }, "since": "then", "chart": 3 }');
+    const m = messagesFor('en', odd);
+    expect(m.drill).toEqual(en.drill);
+    expect([m.summary, m.since, m.chart]).toEqual([en.summary, en.since, en.chart]);
+  });
+
   it('the built-in words are never changed by an app\'s', () => {
     messagesFor('en', { drill: { retry: 'Changed' } });
     expect(messagesFor('en').drill.retry).not.toBe('Changed');

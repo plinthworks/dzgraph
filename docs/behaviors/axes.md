@@ -20,7 +20,7 @@ values that cross zero.
    of the data (`min` above every value) is reported (`invalid-option`) and left out.
 5. One value only, or all values equal: the axis is centred on the value with a round step around it (5 → 4–6).
    With rule 1, a column of 5 gets 0–5 (owner 2026-11-21: the column's top on the last gridline). Value 0 alone:
-   0–1.
+   0–1 on a value axis; on an x axis, centred, −1–1 (review 2026-11-26: a lone column at x = 0 sat half outside).
 6. No data at all: the axes are drawn without labels, and the plot area says so (« Aucune donnée », translated).
 
 ### Ticks

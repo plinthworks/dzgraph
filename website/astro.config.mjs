@@ -63,6 +63,9 @@ export default defineConfig({
       },
       // The charts' theme on every page: its palette (--tz-*) is the site's accent too.
       customCss: ['@dzgraph/theme/dzgraph.css', './src/styles/custom.css', './src/components/demo/gauge-workshop.css'],
+      // Long code lines wrap, indent kept: no sideways scrolling on a phone, and no unnamed scrolling regions, which
+      // Expressive Code adds to a wide block and axe finds twice on one page (batch 5).
+      expressiveCode: { defaultProps: { wrap: true, preserveIndent: true } },
       sidebar: [
         { label: 'Getting started', translations: { fr: 'Prise en main' }, items: ['typescript', 'angular'].map((page) => ({ slug: `getting-started/${page}` })) },
         { label: 'Gallery', translations: { fr: 'Galerie' }, items: [{ autogenerate: { directory: 'gallery' } }] },

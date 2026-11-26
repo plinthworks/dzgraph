@@ -165,8 +165,16 @@ function ticksOf(o: Readonly<Record<string, unknown>>, min: number, max: number)
   if (typeof t !== 'object' || t === null || Array.isArray(t)) return null;
   const r = t as Record<string, unknown>;
   const step = r['step'];
-  if (typeof step !== 'number' || !Number.isFinite(step) || step <= 0 || (max - min) / step > MOST_TICKS) return null;
+  if (typeof step !== 'number' || !Number.isFinite(step) || step <= 0 || tickCount(min, max, step) > MOST_TICKS) return null;
   return { step, labels: isMultiple(r['labels'], step) ? (r['labels'] as number) : null };
+}
+
+/** Two values of the scale the same, within a hair of the step (0.1 × 3 is 0.3). */
+const same = (a: number, b: number, step: number) => Math.abs(a - b) < step * 1e-6;
+
+/** How many multiples of `step` the scale holds, its ends included (0–200 by 1: 201). */
+function tickCount(min: number, max: number, step: number): number {
+  return Math.floor(max / step + 1e-9) - Math.ceil(min / step - 1e-9) + 1;
 }
 
 /** A positive multiple of the step, a hair of tolerance for the division (0.3 / 0.1). */
@@ -203,8 +211,8 @@ interface Reading {
   /** The tick values from min to max (gauge.md 14), each with whether it carries its number. */
   readonly tickValues: readonly { readonly v: number; readonly labelled: boolean }[];
   readonly zoneLabels: readonly GaugeThreshold[];
-  /** The scale's ends written, unless the ticks' numbers write them (gauge.md 14). */
-  readonly ends: boolean;
+  /** The thresholds drawn: those that reach into the scale (gauge.md 15); all of them still name the value. */
+  readonly shown: readonly GaugeThreshold[];
   readonly valueText: string;
   readonly lineH: number;
   readonly bigH: number;
@@ -216,6 +224,7 @@ function read(input: PlaceInput): Reading {
   const { min, max } = scaleOf(o);
   const ticks = ticksOf(o, min, max);
   const thresholds = thresholdsOf(o);
+  const shown = thresholds.filter((t) => t.from < max && t.to > min);
   const onTrack = o['thresholdsOn'] === 'track';
   const value = s.columns.y[0]!;
   const has = !Number.isNaN(value);
@@ -243,8 +252,8 @@ function read(input: PlaceInput): Reading {
     within: thresholds.find((t) => has && value >= t.from && value <= t.to),
     at: (v) => Math.min(1, Math.max(0, (v - min) / (max - min))),
     tickValues,
-    zoneLabels: onTrack ? thresholds.filter((t) => t.label) : [],
-    ends: !ticks?.labels,
+    zoneLabels: onTrack ? shown.filter((t) => t.label) : [],
+    shown,
     valueText: has ? formatValue(value, locale) : '—',
     lineH: tick.ascent + tick.descent,
     bigH: big.ascent + big.descent,
@@ -274,7 +283,8 @@ type Placed = Pick<GaugePlacement, 'shape' | 'ticks' | 'texts' | 'anchor'>;
 
 function placeArc(input: PlaceInput, r: Reading): Placed {
   const { box, measureText, locale } = input;
-  const { min, max, origin, thresholds, onTrack, value, has, within, at, lineH, zoneLabels } = r;
+  // The thresholds drawn are those reaching into the scale (gauge.md 15).
+  const { min, max, origin, shown: thresholds, onTrack, value, has, within, at, lineH, zoneLabels } = r;
   const ring = thresholds.length && !onTrack ? RING_GAP + RING : 0;
   // Zone labels around the arc (gauge.md 15): a line above it, the widest on either side.
   const around = zoneLabels.length ? TEXT_GAP + lineH : 0;
@@ -304,17 +314,13 @@ function placeArc(input: PlaceInput, r: Reading): Placed {
   const valueBox = boxOf(cx, valueY, measureText(r.valueText, 'title').width, r.bigH);
   const under = cy + TEXT_GAP + lineH / 2;
   const mid = (radius + inner) / 2;
-  if (r.ends) {
-    const [first, last] = ltr ? [min, max] : [max, min];
-    texts.push({ text: formatValue(first, locale), font: 'tick-label', x: cx - mid, y: under, muted: true });
-    texts.push({ text: formatValue(last, locale), font: 'tick-label', x: cx + mid, y: under, muted: true });
-  }
   if (within?.label) texts.push({ text: within.label, font: 'tick-label', x: cx, y: under + lineH + 2, muted: false });
   // Ticks inwards from the inner edge, numbers inside them; a number over the value, or over one placed, is left out
-  // (gauge.md 14).
+  // (gauge.md 14). No room inside the arc for a long tick: none (gauge.md 25).
   const lines: Placed['ticks'][number][] = [];
   const numbers: Box[] = [valueBox];
-  for (const { v, labelled } of r.tickValues) {
+  const written: number[] = [];
+  for (const { v, labelled } of inner >= TICK_LONG ? r.tickValues : []) {
     const a = angle(v);
     const from = toward(a, inner);
     const to = toward(a, inner - (labelled ? TICK_LONG : TICK));
@@ -322,10 +328,20 @@ function placeArc(input: PlaceInput, r: Reading): Placed {
     if (!labelled) continue;
     const label = formatValue(v, locale);
     const w = measureText(label, 'tick-label').width;
-    const c = toward(a, inner - TICK_LONG - 3 - (w / 2) * Math.abs(Math.sin(a)) - (lineH / 2) * Math.abs(Math.cos(a)));
+    // Its half-extent towards the centre: a number that would reach past the centre is left out (gauge.md 25).
+    const half = (w / 2) * Math.abs(Math.sin(a)) + (lineH / 2) * Math.abs(Math.cos(a));
+    const d = inner - TICK_LONG - 3 - half;
+    if (d < half) continue;
+    const c = toward(a, d);
     if (!place(numbers, boxOf(c.x, c.y, w, lineH))) continue;
     texts.push({ text: label, font: 'tick-label', x: c.x, y: c.y, muted: true });
+    written.push(v);
   }
+  // The scale's ends under the arc's ends, unless a number writes them (gauge.md 4, 14).
+  const [first, last] = ltr ? [min, max] : [max, min];
+  const wrote = (end: number) => written.some((v) => same(v, end, r.ticks!.step));
+  if (!(r.ticks && wrote(first))) texts.push({ text: formatValue(first, locale), font: 'tick-label', x: cx - mid, y: under, muted: true });
+  if (!(r.ticks && wrote(last))) texts.push({ text: formatValue(last, locale), font: 'tick-label', x: cx + mid, y: under, muted: true });
   // Zone labels outside the arc, at each zone's middle; one that would overlap one placed is left out (gauge.md 15).
   const placed: Box[] = [];
   for (const z of zoneLabels) {
@@ -350,11 +366,14 @@ function placeArc(input: PlaceInput, r: Reading): Placed {
  */
 function placeBar(input: PlaceInput, r: Reading, upright: boolean): Placed {
   const { box, measureText, locale } = input;
-  const { min, max, origin, thresholds, onTrack, value, has, within, at, lineH, bigH, zoneLabels } = r;
+  const { min, max, origin, shown: thresholds, onTrack, value, has, within, at, lineH, bigH, zoneLabels } = r;
   const ltr = input.dir === 'ltr';
   const width = (t: string) => measureText(t, 'tick-label').width;
-  const numbers = r.tickValues.filter((t) => t.labelled).map((t) => ({ v: t.v, text: formatValue(t.v, locale) }));
-  const ends = r.ends ? [formatValue(min, locale), formatValue(max, locale)] : [];
+  // The scale's ends are always written and placed first; the numbers between them (gauge.md 22, 23).
+  const numbered = r.tickValues.some((t) => t.labelled);
+  const isEnd = (v: number) => same(v, min, r.ticks?.step ?? 1) || same(v, max, r.ticks?.step ?? 1);
+  const numbers = r.tickValues.filter((t) => t.labelled && !isEnd(t.v)).map((t) => ({ v: t.v, text: formatValue(t.v, locale) }));
+  const ends = [formatValue(min, locale), formatValue(max, locale)];
   const ring = thresholds.length && !onTrack ? RING_GAP + RING : 0;
   const tickLen = r.ticks ? TICK_LONG : 0;
   const head = bigH + (within?.label ? 2 + lineH : 0);
@@ -365,7 +384,7 @@ function placeBar(input: PlaceInput, r: Reading, upright: boolean): Placed {
   let pos: (v: number) => number;
   if (!upright) {
     // Room under the bar: the ticks, then the numbers or the scale's ends; at the sides, half the widest end number.
-    const below = tickLen + (numbers.length || ends.length ? TEXT_GAP + lineH : 0);
+    const below = tickLen + TEXT_GAP + lineH;
     const zoneRow = zoneLabels.length ? lineH + TEXT_GAP : 0;
     const thick = Math.max(0, Math.min(r.thickness ?? BAR, box.height - head - HEAD_GAP - zoneRow - ring - below - 4));
     const side = Math.max(0, ...[...numbers.map((n) => n.text), ...ends].map((t) => width(t) / 2)) + 2;
@@ -379,11 +398,15 @@ function placeBar(input: PlaceInput, r: Reading, upright: boolean): Placed {
     const base = t.y + t.height;
     const numberY = base + tickLen + TEXT_GAP + lineH / 2;
     for (const { v, labelled } of r.tickValues) lines.push({ x1: pos(v), y1: base, x2: pos(v), y2: base + (labelled ? TICK_LONG : TICK) });
+    ends.forEach((e, k) => {
+      const x = pos(k ? max : min);
+      place(placed, boxOf(x, numberY, width(e), lineH));
+      texts.push({ text: e, font: 'tick-label', x, y: numberY, muted: true });
+    });
     for (const n of numbers) {
       const x = pos(n.v);
       if (place(placed, boxOf(x, numberY, width(n.text), lineH))) texts.push({ text: n.text, font: 'tick-label', x, y: numberY, muted: true });
     }
-    ends.forEach((e, k) => texts.push({ text: e, font: 'tick-label', x: pos(k ? max : min), y: numberY, muted: true }));
     // Zone labels over each zone's middle, kept inside the box.
     const zoneY = t.y - ring - TEXT_GAP - lineH / 2;
     const zonesPlaced: Box[] = [];
@@ -394,9 +417,10 @@ function placeBar(input: PlaceInput, r: Reading, upright: boolean): Placed {
     }
   } else {
     // Room above and under the bar: the scale's ends, or half a number at each end.
-    const pad = ends.length ? TEXT_GAP + lineH : numbers.length ? lineH / 2 : 0;
+    // With numbers, the ends are written beside the bar as they are; without, above and under it.
+    const pad = numbered ? lineH / 2 : TEXT_GAP + lineH;
     const zoneW = zoneLabels.length ? TEXT_GAP + Math.max(...zoneLabels.map((z) => width(z.label!))) : 0;
-    const numberW = numbers.length ? 3 + Math.max(...numbers.map((n) => width(n.text))) : 0;
+    const numberW = numbered ? 3 + Math.max(...[...numbers.map((n) => n.text), ...ends].map(width)) : 0;
     const thick = Math.max(0, Math.min(r.thickness ?? BAR, box.width - zoneW - ring - tickLen - numberW - 4));
     const startW = zoneW + ring;
     const group = startW + thick + tickLen + numberW;
@@ -413,12 +437,13 @@ function placeBar(input: PlaceInput, r: Reading, upright: boolean): Placed {
     const edge = ltr ? t.x + t.width : t.x;
     const out = ltr ? 1 : -1;
     for (const { v, labelled } of r.tickValues) lines.push({ x1: edge, y1: pos(v), x2: edge + out * (labelled ? TICK_LONG : TICK), y2: pos(v) });
-    for (const n of numbers) {
+    const beside = numbered ? [{ v: min, text: ends[0]! }, { v: max, text: ends[1]! }, ...numbers] : [];
+    for (const n of beside) {
       const w = width(n.text);
       const nx = edge + out * (tickLen + 3 + w / 2);
       if (place(placed, boxOf(nx, pos(n.v), w, lineH))) texts.push({ text: n.text, font: 'tick-label', x: nx, y: pos(n.v), muted: true });
     }
-    if (ends.length) {
+    if (!numbered) {
       texts.push({ text: ends[1]!, font: 'tick-label', x: cx, y: t.y - TEXT_GAP - lineH / 2, muted: true });
       texts.push({ text: ends[0]!, font: 'tick-label', x: cx, y: t.y + t.height + TEXT_GAP + lineH / 2, muted: true });
     }
@@ -538,7 +563,7 @@ export const gauge: SeriesType<GaugeSeriesOptions, 'polar'> = {
       else {
         const r = ticks as Record<string, unknown>;
         const step = r['step'];
-        const fine = typeof step === 'number' && Number.isFinite(step) && step > 0 && (scale.max - scale.min) / step <= MOST_TICKS;
+        const fine = typeof step === 'number' && Number.isFinite(step) && step > 0 && tickCount(scale.min, scale.max, step) <= MOST_TICKS;
         if (!fine) out.push({ code: 'invalid-option', path: `${path}.ticks.step` });
         else if (r['labels'] !== undefined && !isMultiple(r['labels'], step)) out.push({ code: 'invalid-option', path: `${path}.ticks.labels` });
       }

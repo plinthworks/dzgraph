@@ -23,7 +23,7 @@
     },
     "every type and feature (app)": {
       "file": "scripts/size/everything.ts",
-      "maxGzip": 80480
+      "maxGzip": 84590
     },
     "sparkline (app)": {
       "file": "scripts/size/sparkline.ts",

@@ -119,6 +119,15 @@ describe('one value only (axes.md 5, found by the site\'s aggregation demo)', ()
     expect([...x.ticks.map((t) => t.label?.text), ...x.second.map((s) => s.text)].join(' ')).toContain('2026');
   });
 
+  it('a lone column at x = 0 on a linear axis: centred, −1 to 1 (review 2026-11-26)', () => {
+    const { model } = normalize({ series: [{ type: 'column', id: 'c', data: [5] }] }, types);
+    const values = xOf(model).ticks.map((t) => t.value);
+    expect([Math.min(...values), Math.max(...values)]).toEqual([-1, 1]);
+    // Any other lone value was already centred: 5 → 4–6.
+    const five = xOf(normalize({ series: [{ type: 'column', id: 'c', data: [[5, 3]] }] }, types).model).ticks.map((t) => t.value);
+    expect([Math.min(...five), Math.max(...five)]).toEqual([4, 6]);
+  });
+
   it('one instant: a day on each side, ticks on the hour at least', () => {
     const { model } = normalize({ xAxis: { scale: 'time', zone: 'UTC' }, series: [{ type: 'line', id: 'l', data: [[utc(2026, 3, 5, 13) + 1234, 4]] }] }, types);
     const values = xOf(model).ticks.map((t) => t.value);

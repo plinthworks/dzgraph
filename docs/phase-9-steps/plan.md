@@ -105,3 +105,27 @@ paquets pointent vers le site. Chrome : galerie en (clair) et fr (sombre), 20 d�
 
 Laissé : `llms.txt` n'est pas livré dans un paquet npm (DzGrid le met dans `@dzgrid/dom`) ; à décider à la clôture.
 
+
+## Lot 5 — clôture (fait le 2026-11-26)
+
+Revue du code seule d'abord, puis un navigateur à la fois (après le blocage de l'ordinateur du 2026-11-25).
+
+Revue : jauge épaisse (graduations et nombres de l'autre côté du centre : sans place, pas de graduation, un nombre qui
+passerait le centre omis, gauge.md 25) ; les bouts de l'échelle toujours écrits (gauge.md 14, 22, 23) ; un seuil hors
+de l'échelle non dessiné mais toujours nommé (gauge.md 15) ; 200 graduations au plus, plus 201 ; un mot de mauvaise
+sorte ignoré (words.md 3) ; une colonne seule à x = 0 : axe −1 à 1 (axes.md 5) ; une démo du site dessinée deux fois
+si elle quitte puis retrouve la page pendant son chargement. Chaque règle écrite dans sa fiche, puis un test qui
+échoue d'abord. Images de référence des jauges : inchangées.
+
+`scripts/browser-site.mjs` : chaque page construite (186), en clair et fr sombre ; aucun message dans la console,
+chaque démo (220) dessinée, rien de plus large que l'écran à 360 px pour une page de chaque sorte ; axe (Chrome) sur
+ces pages, clair et sombre. Chrome, Firefox, WebKit : propres. axe a trouvé le lien de la page courante illisible
+(`--tz-accent-fg` n'existe pas dans notre palette : `--tz-bg` à la place, 5,2:1 et 7:1) et des blocs de code
+défilants sans nom (les longues lignes passent à la ligne, retrait gardé). Laissés, avec leur raison dans le script :
+le raccourci affiché du bouton de recherche de Starlight (axe, 2.5.3) et un conseil de préchargement de WebKit sur
+les fichiers d'Astro. Droite à gauche : le graphique de la galerie dans les trois moteurs, les images de référence
+dans Chrome. Les aperçus orphelins venaient d'Astro, qui se met de lui-même en arrière-plan quand un agent le lance :
+`--ignore-lock`, et le script attend que le port soit libre.
+
+Décidé (propriétaire, 2026-11-26) : `llms.txt` n'est pas livré dans un paquet npm ; le site et le dépôt le servent.
+Budget « every type and feature » relevé à sa mesure + 5 % (84 590 o). Portail vert (1 308).

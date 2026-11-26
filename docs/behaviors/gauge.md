@@ -45,13 +45,15 @@ every 100, a number every 500, a blue zone from −2000 to −1500 and a green o
     `labels`, with its number, in the chart's locale and muted, just inside it. `labels` absent: no numbers but the
     scale's ends (rule 4). A `step` that is not a positive number, or that would draw more than 200 ticks, is reported
     (`series[i].ticks.step`) and no tick is drawn; a `labels` that is not a positive multiple of `step`
-    (`series[i].ticks.labels`) gives no numbers. With numbers on the ticks, the ends are not written twice under
-    the arc. A number that would cover the value in the middle, or a number already placed, is left out.
+    (`series[i].ticks.labels`) gives no numbers. A number that would cover the value in the middle, or a number
+    already placed, is left out. The scale's ends are always written (rule 4): under the arc's ends, unless a number on
+    the ticks already writes that value (review 2026-11-26: `min: 5, max: 95` with a number every 10 wrote neither).
 15. `thresholdsOn: 'ring' | 'track'` (default `'ring'`, rule 6). `'track'`: each threshold paints its part of the arc
     itself, the whole thickness, instead of the neutral track; the value is then a narrower arc, half the thickness,
     centred on the track and edged with the background, so the zones stay visible on both of its sides. Each zone's
     label is written outside the arc at its middle; a label that would overlap one already placed is left out (the
-    value's own zone is still named under the value, rule 6).
+    value's own zone is still named under the value, rule 6). A threshold wholly outside the scale is not drawn, as a
+    ring, a zone or a label (it still names a value past the scale, rule 6).
 16. Thresholds that overlap are drawn in their order, the later over the earlier; the value's threshold is the first
     one holding it, as it always was (rule 6).
 17. Screen readers, the data table and the tooltip say what they said (rules 7, 9, 10): ticks and zone labels are
@@ -76,10 +78,13 @@ every option above holds for both shapes.
     itself and the value is half its thickness, centred, edged with the background (rule 15).
 22. Horizontal: the value large on top, its threshold's label under it; then the zone labels (with `'track'`), each
     over its zone's middle and kept inside the box; the bar; the ticks under it, pointing down, and their numbers
-    under them. Without numbers, `min` and `max` are written under the bar's ends. Vertical: the value and its
+    under them. `min` and `max` are always written under the bar's ends, placed first, the numbers between them.
+    Vertical: the value and its
     threshold's label on top, the bar under them down to the box's base; the ticks and their numbers on its inline-end
     side, the zone labels on its inline-start side; without numbers, `max` above the bar and `min` under it.
-23. Numbers, or zone labels, that would overlap one already placed are left out (the later one).
+23. Numbers, or zone labels, that would overlap one already placed are left out (the later one). The scale's ends
+    are placed before the numbers, so they always stay: across, under the bar's ends; upright with numbers, beside
+    the bar's ends as the numbers are (review 2026-11-26).
 24. Appearing and updating: the value grows from the origin (rule 13); the track, the zones and the ticks are there at
     once. Hover, keyboard, screen readers, tooltip and data table: as for the arc (rules 7–10, 17).
 
@@ -88,7 +93,9 @@ every option above holds for both shapes.
 25. `thickness` (pixels): the arc's or the bar's thickness, instead of a quarter of the radius (rule 2) or 24 px
     (rule 21). When the box is too small for it, the arc keeps it up to its radius and the bar takes what room is
     left. Not a positive number: reported (`invalid-option`, `series[i].thickness`), the default drawn. Ticks, numbers,
-    zones and the value on the track (half the thickness, rule 15) follow it.
+    zones and the value on the track (half the thickness, rule 15) follow it. An arc so thick that its inner edge
+    leaves no room for a long tick draws no ticks; a number that would not fit between the centre and its tick is
+    left out, never drawn across the centre (review 2026-11-26); the scale's ends are then written (rule 14).
 
 ## Where DzGraph differs on purpose
 - No needle (owner): a needle is read against the arc's edge, a filled arc is read at a glance.

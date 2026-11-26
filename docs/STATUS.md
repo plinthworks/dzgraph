@@ -236,6 +236,14 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   `llms.txt` and `llms-full.txt` (getting started, guides, every option page, the facts as a line) at the root, the
   site serves both. Both taken from DzGrid's. The README and each package's README link to the site. Site tests 35
   (api, llms new), Chrome en light / fr dark: 20 demos drawn, no console message. Gate green (1 289). Committed.
+- **Batch 5 built (2026-11-26): the close.** Review alone, then one browser at a time. Fixed, each rule in its sheet
+  and a failing test first: the thick gauge's ticks and numbers past the centre (gauge.md 25), the scale's ends always
+  written (14, 22, 23), a threshold outside the scale not drawn (15), 201 ticks let through, a word of the wrong kind
+  (words.md 3), a lone column at x = 0 (axes.md 5: −1 to 1), a site demo drawn twice. `scripts/browser-site.mjs`: 186
+  pages, 220 demos, console, 360 px, axe in Chrome; Chrome, Firefox, WebKit clean. axe found the sidebar's current page
+  unreadable (`--tz-accent-fg` is DzGrid's, not ours: `--tz-bg`) and unnamed scrolling code blocks (code now wraps).
+  Orphaned previews: Astro backgrounds itself under an agent; `--ignore-lock`. `llms.txt` not shipped in a package
+  (owner). Budget "every type and feature" raised to 84 590 B. Gate green (1 308).
 
 ## Working rules
 

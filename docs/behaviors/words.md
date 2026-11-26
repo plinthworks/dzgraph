@@ -13,5 +13,7 @@ word changed.
    changes only « Réessayer »; the group's other words stay. A word that is a function (a sentence built from
    values) is replaced whole.
 3. A key the chart has no word for is ignored, at any depth.
+   A word of the wrong kind — a text where a group belongs, a group or a text where a sentence belongs — is ignored
+   too, the built-in word kept: bad words never break the chart (review 2026-11-26).
 4. The words follow the chart's language: the built-in words are the language's (English for one not built in), the
    app's on top.

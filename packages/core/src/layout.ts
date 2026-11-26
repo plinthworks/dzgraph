@@ -696,8 +696,10 @@ function layoutAxes(input: LayoutInput, plans: readonly AxisPlan[], plot: Rect, 
         problems.push({ code: 'invalid-option', path: `${where}.max` });
         max = null;
       }
-      const lo = min ?? p.data?.min ?? 0;
-      const hi = max ?? p.data?.max ?? 1;
+      let lo = min ?? p.data?.min ?? 0;
+      let hi = max ?? p.data?.max ?? 1;
+      // Zero alone on an x axis (axes.md 5): centred, −1 to 1; 0–1 is a value axis's, whose columns start at zero.
+      if (p.dimension === 'x' && min === null && max === null && lo === 0 && hi === 0) [lo, hi] = [-1, 1];
       const both = min !== null && max !== null;
       let target = a.ticks.target ?? tickTarget(length, p.across ? 'across' : 'upright');
       let t: Ticks;

@@ -145,8 +145,10 @@ function over(base: Readonly<Record<string, unknown>>, given: Readonly<Record<st
     if (!Object.hasOwn(base, k)) continue;
     const b = base[k];
     const v = given[k];
-    if (v === undefined) continue;
-    out[k] = isGroup(b) && isGroup(v) ? over(b, v) : v;
+    // A group merged; a word or a sentence replaced by one of its kind; anything else ignored (words.md 3).
+    if (isGroup(b)) {
+      if (isGroup(v)) out[k] = over(b, v);
+    } else if (typeof v === typeof b) out[k] = v;
   }
   return out;
 }

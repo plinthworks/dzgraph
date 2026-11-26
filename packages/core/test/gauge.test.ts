@@ -424,3 +424,83 @@ describe('thickness (gauge.md 25)', () => {
     }
   });
 });
+
+// The closing review of Phase 9 (2026-11-26): what it found, each written by hand from the sheet.
+const textsOf = (scene: ReturnType<typeof build>['scene']) => scene.layers.flatMap((l) => l.groups.flatMap((g) => g.items)).filter((p): p is Extract<Primitive, { kind: 'text' }> => p.kind === 'text');
+
+describe('the scale\'s ends, always written (gauge.md 14, 22, 23)', () => {
+  const OFF = { min: 5, max: 95, data: 50, ticks: { step: 5, labels: 10 } };
+  it('the arc: an end no number writes is written under the arc', () => {
+    // Numbers at 10, 20 … 90: neither 5 nor 95 is one of them.
+    const { texts } = build(OFF);
+    expect(texts.filter((t) => t === '5')).toHaveLength(1);
+    expect(texts.filter((t) => t === '95')).toHaveLength(1);
+  });
+
+  it('the bar, across and upright: the same', () => {
+    for (const orientation of ['horizontal', 'vertical']) {
+      const { texts } = bar({ ...OFF, orientation });
+      expect(texts.filter((t) => t === '5'), orientation).toHaveLength(1);
+      expect(texts.filter((t) => t === '95'), orientation).toHaveLength(1);
+    }
+  });
+
+  it('across, crowded numbers: both ends stay, the numbers next to them give way', () => {
+    const { texts } = bar({ ...WIDE, data: 0, ticks: { step: 100, labels: 100 } });
+    expect(texts.filter((t) => t === '-2,000')).toHaveLength(1);
+    expect(texts.filter((t) => t === '2,000')).toHaveLength(1);
+  });
+});
+
+describe('a thick arc (gauge.md 25)', () => {
+  const T = { ...WIDE, data: 0, ticks: { step: 100, labels: 500 } };
+  it('no room inside for a long tick: no ticks, no numbers, the ends written', () => {
+    const { scene, texts } = build({ ...T, thickness: 5000 });
+    expect(lines(scene)).toHaveLength(0);
+    expect(texts.filter((t) => t === '-2,000')).toHaveLength(1);
+    expect(texts.filter((t) => t === '2,000')).toHaveLength(1);
+    expect(texts).not.toContain('-1,000');
+  });
+
+  it('little room inside: no number drawn across the centre', () => {
+    const plain = build(T).arcs.find((a) => a.paint.fill === 'track')!;
+    // 30 px inside the arc: a long tick fits, the numbers mostly do not.
+    const { scene } = build({ ...T, thickness: plain.outerRadius - 30 });
+    const cx = plain.cx;
+    for (const n of textsOf(scene).filter((t) => t.font === 'tick-label' && /^-?[\d,]+$/.test(t.text))) {
+      const v = Number(n.text.replace(/,/g, ''));
+      // In left to right, a negative value is left of the centre, a positive one right of it.
+      if (v < 0) expect(n.x, n.text).toBeLessThan(cx);
+      if (v > 0) expect(n.x, n.text).toBeGreaterThan(cx);
+    }
+  });
+});
+
+describe('thresholds outside the scale (gauge.md 15)', () => {
+  const OUT = { thresholdsOn: 'track', thresholds: [{ from: 0, to: 50, color: 'calm', label: 'Low' }, { from: 150, to: 200, color: 'hot', label: 'Critical' }] };
+  it('the arc: not drawn, not named; a value past the scale still named by it', () => {
+    const { arcs, texts } = build({ ...OUT, data: 30 });
+    expect(arcs.filter((a) => !a.point && a.paint.fill !== 'track').map((a) => a.paint.fill)).toEqual(['color-calm']);
+    expect(texts).not.toContain('Critical');
+    expect(build({ ...OUT, data: 170 }).texts.filter((t) => t === 'Critical')).toHaveLength(1);
+    const ring = build({ ...OUT, thresholdsOn: 'ring', data: 30 }).arcs.filter((a) => !a.point && a.paint.fill !== 'track');
+    expect(ring.map((a) => a.paint.fill)).toEqual(['color-calm']);
+  });
+
+  it('the bar: the same', () => {
+    const { rects, texts } = bar({ ...OUT, data: 30 });
+    expect(rects.filter((r) => !r.point && r.paint.fill !== 'track').map((r) => r.paint.fill)).toEqual(['color-calm']);
+    expect(texts).not.toContain('Critical');
+  });
+});
+
+describe('at most 200 ticks (gauge.md 14)', () => {
+  it('200 are drawn; 201 are reported and none drawn', () => {
+    const ok = build({ min: 0, max: 199, data: 0, ticks: { step: 1 } });
+    expect(ok.problems).toEqual([]);
+    expect(lines(ok.scene)).toHaveLength(200);
+    const many = build({ min: 0, max: 200, data: 0, ticks: { step: 1 } });
+    expect(many.problems).toEqual([{ code: 'invalid-option', path: 'series[0].ticks.step' }]);
+    expect(lines(many.scene)).toHaveLength(0);
+  });
+});

@@ -7,8 +7,9 @@
 :root {
   --sl-color-accent: var(--tz-accent);
   --sl-color-text-accent: var(--tz-accent);
-  /* Text on the accent (the current page in the sidebar, the hero's button): the palette's own pair. */
-  --sl-color-text-invert: var(--tz-accent-fg);
+  /* Text on the accent (the current page in the sidebar, the hero's button): the page's background, 5.2:1 light and
+     7:1 dark. DzGraph's palette has no --tz-accent-fg (DzGrid's has): naming it left the text grey (axe, batch 5). */
+  --sl-color-text-invert: var(--tz-bg);
   --sl-color-accent-low: color-mix(in srgb, var(--tz-accent) 18%, var(--tz-bg));
   --sl-color-accent-high: color-mix(in srgb, var(--tz-accent) 60%, var(--tz-fg));
 }
