@@ -6,7 +6,7 @@
  *   PAGES=gallery,api/core node scripts/browser-site.mjs            (limits the run, both languages)
  *
  * Each page, English in light and French in dark: no console error or warning (a demo's problems are warnings), every
- * live chart and the gauge workshop drawn once scrolled into view. A page of each kind at 360 px wide: nothing wider
+ * live chart, the gauge workshop and the DzGrid demos (grid and chart) drawn once scrolled into view. A page of each kind at 360 px wide: nothing wider
  * than the screen. Chrome only, the same pages in light and in dark: axe finds nothing. One browser, closed in
  * `finally`; the preview server stopped with it. Exit 1 on any failure.
  */
@@ -22,8 +22,8 @@ const at = process.argv.indexOf('--engine');
 const ENGINE = at > 0 ? process.argv[at + 1] : 'chrome';
 const PORT = 4761;
 const BASE = `http://localhost:${PORT}/dzgraph/`;
-/** A page of each kind: home, getting started, gallery, a guide, an option page with the workshop, the API. */
-const KINDS = ['', 'getting-started/typescript/', 'gallery/', 'guides/exploring/', 'options/series-types/gauge/', 'api/core/'];
+/** A page of each kind: home, getting started, gallery, a guide, the DzGrid guide (a real grid), an option page with the workshop, the API. */
+const KINDS = ['', 'getting-started/typescript/', 'gallery/', 'guides/exploring/', 'guides/dzgrid/', 'options/series-types/gauge/', 'api/core/'];
 
 const walk = (dir) =>
   readdirSync(dir).flatMap((f) => {
@@ -63,7 +63,7 @@ async function open(b, path, theme, width = 1280) {
 
 /** Every demo scrolled into view and drawn: the index of each one that is not. */
 async function undrawn(page) {
-  const demos = page.locator('dzgraph-live-chart, dzgraph-gauge-workshop');
+  const demos = page.locator('dzgraph-live-chart, dzgraph-gauge-workshop, dzgraph-grid-demo');
   const n = await demos.count();
   const missing = [];
   for (let i = 0; i < n; i++) {
@@ -75,7 +75,9 @@ async function undrawn(page) {
           new Promise((done) => {
             const t0 = performance.now();
             const look = () => {
-              if (el.querySelector('svg, canvas')) return done(true);
+              // A grid demo is drawn once both are there: the chart and DzGrid's grid.
+              const grid = el.localName !== 'dzgraph-grid-demo' || el.querySelector('[role="grid"], [role="treegrid"]');
+              if (grid && el.querySelector('svg, canvas')) return done(true);
               if (performance.now() - t0 > 8000) return done(false);
               setTimeout(look, 100);
             };

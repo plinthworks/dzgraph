@@ -112,6 +112,7 @@ export function plain(body, slug, data = null, words = { tokens: {} }) {
       p = p.replace(/^import .*\n/gm, '');
       p = p.replace(/<LiveChart\b[\s\S]*?\/>\n?/g, '');
       p = p.replace(/<GaugeWorkshop\s*\/>\n?/g, '');
+      p = p.replace(/<GridDemo\b[\s\S]*?\/>\n?/g, '');
       p = p.replace(/<OptionFacts [^>]*\/>/g, (tag) => (data ? facts(tag, data, words) : ''));
       p = p.replace(/<Aside[^>]*>\n?([\s\S]*?)<\/Aside>/g, (_, inner) => `> ${inner.trim().replace(/\n/g, '\n> ')}`);
       return absolute(p, slug);

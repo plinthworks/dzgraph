@@ -50,6 +50,11 @@ describe('llms.txt and the site’s text', () => {
       '',
       '<GaugeWorkshop />',
       '',
+      '<GridDemo',
+      '  kind="link"',
+      "  rows={[{ id: 'h1', hive: 'Hive A', honey: 14 }]}",
+      '/>',
+      '',
       'End.',
     ].join('\n');
     expect(plain(mdx, 'guides/data')).toBe(
@@ -101,7 +106,7 @@ describe('llms.txt and the site’s text', () => {
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     // No MDX left in the prose (the code keeps its own imports).
     const prose = out['llms-full.txt']!.replace(/^```[\s\S]*?^```$/gm, '');
-    expect(prose).not.toMatch(/<(LiveChart|CodeTabs|Fragment|OptionFacts|GaugeWorkshop|Aside)\b|^import /m);
+    expect(prose).not.toMatch(/<(LiveChart|CodeTabs|Fragment|OptionFacts|GaugeWorkshop|GridDemo|Aside)\b|^import /m);
     expect(out['llms-full.txt']).toContain('# aspectRatio\n\nWidth ÷ height, for an element without a height of its own.\n\nType: `number`.');
   });
 });

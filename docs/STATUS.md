@@ -244,6 +244,12 @@ Read this first after a lost session. Then `ARCHITECTURE.md` (decisions D.1–D.
   unreadable (`--tz-accent-fg` is DzGrid's, not ours: `--tz-bg`) and unnamed scrolling code blocks (code now wraps).
   Orphaned previews: Astro backgrounds itself under an agent; `--ignore-lock`. `llms.txt` not shipped in a package
   (owner). Budget "every type and feature" raised to 84 590 B. Gate green (1 308).
+- **A real DzGrid example (owner 2026-11-27, « un vrai exemple pour utiliser dzgrid »).** The DzGrid guide's two demos
+  were the chart side alone; now `<GridDemo>` (`website/src/components/demo/grid-demo.ts`) runs the page's code: a real
+  DzGrid grid (its own theme, `@dzgrid/theme` 1.15 as a dev dependency) beside a real chart, `linkGrid()` (ticking a
+  row selects its column, clicking a column ticks its row) and `chartFromGrid()` (the whole table the first block, the
+  chart following the block the reader drags). English and French. Checked in Chrome (axe, 360 px), Firefox, WebKit;
+  the link driven both ways. The page examples show `checkbox: true`.
 
 ## Working rules
 

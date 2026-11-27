@@ -4,7 +4,7 @@ description: "A chart linked to a grid, and a chart made from what a grid select
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import LiveChart from '../../../components/LiveChart.astro';
+import GridDemo from '../../../components/GridDemo.astro';
 
 `@dzgraph/dzgrid` puts a chart beside a [DzGrid](https://github.com/plinthworks/dzgrid) grid, in two ways:
 
@@ -61,21 +61,17 @@ const grid = createGrid<Hive>(document.getElementById('hives')!, {
   getRowId: (h) => h.id,
   messages: EN,
   columns: [{ id: 'hive', header: 'Hive' }, { id: 'honey', header: 'Honey (kg)', type: 'number' }],
-  selection: { mode: 'multi' },
+  selection: { mode: 'multi', checkbox: true },
 });
 const unlink = linkGrid(c, grid);
 ```
 
-<LiveChart
-  height={320}
-  features={['selection']}
-  caption="The chart side only: DzGrid is not loaded on this page. Drag over the columns to select them; Shift + drag adds."
-  options={{
-    title: { text: 'Honey by hive (made up)' },
-    selection: true,
-    xAxis: { scale: 'category', categories: ['Hive A', 'Hive B', 'Hive C', 'Hive D'] },
-    series: [{ type: 'column', id: 'honey', name: 'Honey (kg)', data: [{ x: 'Hive A', y: 14, key: 'h1' }, { x: 'Hive B', y: 22, key: 'h2' }, { x: 'Hive C', y: 9, key: 'h3' }, { x: 'Hive D', y: 17, key: 'h4' }] }],
-  }}
+<GridDemo
+  kind="link"
+  caption="The code above, running: a real DzGrid grid and a real chart. Tick rows in the grid, their columns are selected; click or drag over the columns, their rows are ticked."
+  title="Honey by hive (made up)"
+  columns={[{ id: 'hive', header: 'Hive' }, { id: 'honey', header: 'Honey (kg)', type: 'number' }]}
+  rows={[{ id: 'h1', hive: 'Hive A', honey: 14 }, { id: 'h2', hive: 'Hive B', honey: 22 }, { id: 'h3', hive: 'Hive C', honey: 9 }, { id: 'h4', hive: 'Hive D', honey: 17 }]}
 />
 
 `selection: false` turns the selection off. A grid's « every row but these » selection (select all, over server
@@ -132,26 +128,21 @@ const grid = createGrid<Month>(document.getElementById('fruit')!, {
     { id: 'apples', header: 'Apples', type: 'number' },
     { id: 'pears', header: 'Pears', type: 'number' },
   ],
-  selection: { mode: 'multi' },
+  selection: { mode: 'multi', checkbox: true },
   features: [blocks],
 });
 const c = chart(document.getElementById('fruit-chart')!, { title: { text: 'Fruit picked (made up)' }, series: [] }, { types: [column, line] });
 const stop = chartFromGrid(c, grid, { range: blocks });
 ```
 
-The user selects the block from Jan to Mar, Month to Pears. The chart shows this:
+Here it is, with a real grid: select a block of cells, and the chart shows it.
 
-<LiveChart
-  height={320}
-  caption="What chartFromGrid draws from that block (made up). DzGrid is not loaded on this page."
-  options={{
-    title: { text: 'Fruit picked (made up)' },
-    xAxis: { scale: 'category', categories: ['Jan', 'Feb', 'Mar'] },
-    series: [
-      { type: 'column', id: 'grid:apples', name: 'Apples', data: [{ x: 'Jan', y: 5, key: 'jan' }, { x: 'Feb', y: 8, key: 'feb' }, { x: 'Mar', y: 6, key: 'mar' }] },
-      { type: 'column', id: 'grid:pears', name: 'Pears', data: [{ x: 'Jan', y: 1, key: 'jan' }, { x: 'Feb', y: 2, key: 'feb' }, { x: 'Mar', y: 3, key: 'mar' }] },
-    ],
-  }}
+<GridDemo
+  kind="from-grid"
+  caption="The code above, running. The whole table is the first block; drag over other cells, or Shift + arrows, and the chart follows. With no block, the rows ticked are charted."
+  title="Fruit picked (made up)"
+  columns={[{ id: 'month', header: 'Month' }, { id: 'apples', header: 'Apples', type: 'number' }, { id: 'pears', header: 'Pears', type: 'number' }]}
+  rows={[{ id: 'jan', month: 'Jan', apples: 5, pears: 1 }, { id: 'feb', month: 'Feb', apples: 8, pears: 2 }, { id: 'mar', month: 'Mar', apples: 6, pears: 3 }]}
 />
 
 ## How columns become series

@@ -1654,7 +1654,7 @@ const grid = createGrid<Hive>(document.getElementById('hives')!, {
   getRowId: (h) => h.id,
   messages: EN,
   columns: [{ id: 'hive', header: 'Hive' }, { id: 'honey', header: 'Honey (kg)', type: 'number' }],
-  selection: { mode: 'multi' },
+  selection: { mode: 'multi', checkbox: true },
 });
 const unlink = linkGrid(c, grid);
 ```
@@ -1713,14 +1713,14 @@ const grid = createGrid<Month>(document.getElementById('fruit')!, {
     { id: 'apples', header: 'Apples', type: 'number' },
     { id: 'pears', header: 'Pears', type: 'number' },
   ],
-  selection: { mode: 'multi' },
+  selection: { mode: 'multi', checkbox: true },
   features: [blocks],
 });
 const c = chart(document.getElementById('fruit-chart')!, { title: { text: 'Fruit picked (made up)' }, series: [] }, { types: [column, line] });
 const stop = chartFromGrid(c, grid, { range: blocks });
 ```
 
-The user selects the block from Jan to Mar, Month to Pears. The chart shows this:
+Here it is, with a real grid: select a block of cells, and the chart shows it.
 
 ## How columns become series
 

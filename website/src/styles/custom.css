@@ -53,3 +53,23 @@ dzgraph-live-chart .dzgraph-demo-caption {
   font-weight: 600;
   padding-block: 0.5rem;
 }
+/* The DzGrid guide's demos (<GridDemo>): the grid and its chart side by side, one under the other on a narrow screen. */
+dzgraph-grid-demo {
+  display: block;
+  margin-block: 1.5rem;
+}
+dzgraph-grid-demo .dzgraph-grid-demo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+dzgraph-grid-demo .dzgraph-grid-demo-grid,
+dzgraph-grid-demo .dzgraph-grid-demo-chart {
+  block-size: 300px;
+  min-inline-size: 0;
+}
+dzgraph-grid-demo .dzgraph-demo-caption {
+  margin-block-start: 0.5rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}

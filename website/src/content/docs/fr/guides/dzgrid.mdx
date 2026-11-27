@@ -4,7 +4,7 @@ description: "Un graphique lié à une grille, et un graphique tiré de ce qu’
 ---
 
 import { Aside } from '@astrojs/starlight/components';
-import LiveChart from '../../../../components/LiveChart.astro';
+import GridDemo from '../../../../components/GridDemo.astro';
 
 `@dzgraph/dzgrid` met un graphique à côté d'une grille [DzGrid](https://github.com/plinthworks/dzgrid), de deux façons :
 
@@ -64,21 +64,17 @@ const grid = createGrid<Hive>(document.getElementById('hives')!, {
   getRowId: (h) => h.id,
   messages: EN,
   columns: [{ id: 'hive', header: 'Ruche' }, { id: 'honey', header: 'Miel (kg)', type: 'number' }],
-  selection: { mode: 'multi' },
+  selection: { mode: 'multi', checkbox: true },
 });
 const unlink = linkGrid(c, grid);
 ```
 
-<LiveChart
-  height={320}
-  features={['selection']}
-  caption="Le côté graphique seulement : DzGrid n'est pas chargé sur cette page. Glissez sur les colonnes pour les sélectionner ; Maj + glisser ajoute."
-  options={{
-    title: { text: 'Miel par ruche (inventé)' },
-    selection: true,
-    xAxis: { scale: 'category', categories: ['Ruche A', 'Ruche B', 'Ruche C', 'Ruche D'] },
-    series: [{ type: 'column', id: 'honey', name: 'Miel (kg)', data: [{ x: 'Ruche A', y: 14, key: 'h1' }, { x: 'Ruche B', y: 22, key: 'h2' }, { x: 'Ruche C', y: 9, key: 'h3' }, { x: 'Ruche D', y: 17, key: 'h4' }] }],
-  }}
+<GridDemo
+  kind="link"
+  caption="Le code ci-dessus, en marche : une vraie grille DzGrid et un vrai graphique. Cochez des lignes dans la grille, leurs colonnes sont sélectionnées ; cliquez ou glissez sur les colonnes, leurs lignes sont cochées."
+  title="Miel par ruche (inventé)"
+  columns={[{ id: 'hive', header: 'Ruche' }, { id: 'honey', header: 'Miel (kg)', type: 'number' }]}
+  rows={[{ id: 'h1', hive: 'Ruche A', honey: 14 }, { id: 'h2', hive: 'Ruche B', honey: 22 }, { id: 'h3', hive: 'Ruche C', honey: 9 }, { id: 'h4', hive: 'Ruche D', honey: 17 }]}
 />
 
 `selection: false` coupe la sélection. Une sélection « toutes les lignes sauf celles-ci » de la grille (tout
@@ -138,26 +134,21 @@ const grid = createGrid<Month>(document.getElementById('fruit')!, {
     { id: 'apples', header: 'Pommes', type: 'number' },
     { id: 'pears', header: 'Poires', type: 'number' },
   ],
-  selection: { mode: 'multi' },
+  selection: { mode: 'multi', checkbox: true },
   features: [blocks],
 });
 const c = chart(document.getElementById('fruit-chart')!, { title: { text: 'Fruits cueillis (inventés)' }, series: [] }, { types: [column, line] });
 const stop = chartFromGrid(c, grid, { range: blocks });
 ```
 
-L'utilisateur sélectionne le bloc de janv. à mars, de Mois à Poires. Le graphique montre ceci :
+Le voici avec une vraie grille : sélectionnez un bloc de cellules, et le graphique le montre.
 
-<LiveChart
-  height={320}
-  caption="Ce que chartFromGrid dessine de ce bloc (inventé). DzGrid n'est pas chargé sur cette page."
-  options={{
-    title: { text: 'Fruits cueillis (inventés)' },
-    xAxis: { scale: 'category', categories: ['janv.', 'févr.', 'mars'] },
-    series: [
-      { type: 'column', id: 'grid:apples', name: 'Pommes', data: [{ x: 'janv.', y: 5, key: 'jan' }, { x: 'févr.', y: 8, key: 'feb' }, { x: 'mars', y: 6, key: 'mar' }] },
-      { type: 'column', id: 'grid:pears', name: 'Poires', data: [{ x: 'janv.', y: 1, key: 'jan' }, { x: 'févr.', y: 2, key: 'feb' }, { x: 'mars', y: 3, key: 'mar' }] },
-    ],
-  }}
+<GridDemo
+  kind="from-grid"
+  caption="Le code ci-dessus, en marche. Tout le tableau est le premier bloc ; glissez sur d'autres cellules, ou Maj + flèches, et le graphique suit. Sans bloc, ce sont les lignes cochées qui sont dessinées."
+  title="Fruits cueillis (inventés)"
+  columns={[{ id: 'month', header: 'Mois' }, { id: 'apples', header: 'Pommes', type: 'number' }, { id: 'pears', header: 'Poires', type: 'number' }]}
+  rows={[{ id: 'jan', month: 'janv.', apples: 5, pears: 1 }, { id: 'feb', month: 'févr.', apples: 8, pears: 2 }, { id: 'mar', month: 'mars', apples: 6, pears: 3 }]}
 />
 
 ## Des colonnes aux séries

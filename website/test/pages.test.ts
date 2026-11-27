@@ -95,6 +95,7 @@ function shape(text: string) {
     tabs: (b.match(/<CodeTabs>/g) ?? []).length,
     flavours: [...b.matchAll(/<Fragment slot="(\w+)">/g)].map((m) => m[1]),
     demos: (b.match(/<LiveChart\b/g) ?? []).length,
+    grids: [...b.matchAll(/<GridDemo\b[^>]*?kind="([\w-]+)"/g)].map((m) => m[1]),
     asides: (b.match(/<Aside\b/g) ?? []).length,
     cards: (b.match(/<(Card|LinkCard)\b/g) ?? []).length,
     tables: (b.match(/^\|---/gm) ?? []).length,
@@ -104,7 +105,7 @@ function shape(text: string) {
     // made-up data are the page's language (owner A, 2026-11-10: French titles and French data on French pages).
     // A `text` block is a picture in words: translated whole, compared by its place only.
     code: [...b.matchAll(/^```([^\n]*)\n([\s\S]*?)^```$/gm)].map((m) => (m[1]!.startsWith('text') ? m[1] : `${m[1]}\n${skeleton(m[2]!)}`)),
-    demoData: [...b.matchAll(/<LiveChart\b[\s\S]*?\/>/g)].map((m) => skeleton(m[0].replace(/\n\s*caption="[^"]*"/, ''))),
+    demoData: [...b.matchAll(/<(LiveChart|GridDemo)\b[\s\S]*?\/>/g)].map((m) => skeleton(m[0].replace(/\n\s*caption="[^"]*"/, ''))),
     data: [...b.matchAll(/^export const [\s\S]*?;$/gm)].map((m) => skeleton(m[0])),
   };
 }
@@ -171,6 +172,11 @@ describe('the site’s pages', () => {
 
   it('a written page has the same shape in English and French, with the same examples and demo data', () => {
     for (const slug of WRITTEN) expect({ slug, ...shape(read('fr', slug)) }).toEqual({ slug, ...shape(read('en', slug)) });
+  });
+
+  it('the DzGrid guide runs a real grid: one linked to a chart, one a chart is made from, in both languages', () => {
+    // Owner 2026-11-27: « un vrai exemple pour utiliser dzgrid » — a DzGrid grid on the page, not the chart side alone.
+    for (const lang of ['en', 'fr'] as const) expect(shape(read(lang, 'guides/dzgrid')).grids, lang).toEqual(['link', 'from-grid']);
   });
 
   it('a written page’s French is written in French', () => {

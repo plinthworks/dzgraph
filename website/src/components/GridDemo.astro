@@ -1,0 +1,82 @@
+---
+/**
+ * A real DzGrid grid beside a real chart, joined by `@dzgraph/dzgrid` (owner 2026-11-27): demo/grid-demo.ts makes both
+ * when the demo comes near the screen. The grid's look is DzGrid's own theme, loaded on the pages that show one; it
+ * reads the same `--tz-*` palette as the charts, so both follow light and dark together.
+ *
+ *   <GridDemo kind="link" title="…" columns={[{ id: 'hive', header: 'Hive' }, …]} rows={[{ id: 'h1', hive: 'Hive A', … }]} />
+ */
+import '@dzgrid/theme/dzgrid.css';
+import '@dzgrid/theme/range.css';
+
+interface Props {
+  /** `link`: `linkGrid()`, the selection both ways. `from-grid`: `chartFromGrid()`, the chart made from a block. */
+  kind: 'link' | 'from-grid';
+  /** The chart's title. */
+  title: string;
+  /** The grid's columns: the text ones name the points, the `number` ones are the values. */
+  columns: readonly { id: string; header: string; type?: 'number' }[];
+  rows: readonly Record<string, string | number>[];
+  /** A line under the demo. */
+  caption?: string;
+}
+const { kind, title, columns, rows, caption } = Astro.props;
+const lang = Astro.currentLocale === 'fr' ? 'fr' : 'en';
+const json = JSON.stringify({ kind, title, columns, rows });
+---
+
+<dzgraph-grid-demo class="not-content" data-demo={json} data-lang={lang}>
+  <div class="dzgraph-grid-demo" lang={lang}>
+    <div class="dzgraph-grid-demo-grid"></div>
+    <div class="dzgraph-grid-demo-chart"></div>
+  </div>
+  {caption && <p class="dzgraph-demo-caption">{caption}</p>}
+</dzgraph-grid-demo>
+
+<script>
+  import type { GridDemoSpec } from './demo/grid-demo';
+
+  class DzgraphGridDemo extends HTMLElement {
+    #seen: IntersectionObserver | null = null;
+    #destroy: (() => void) | null = null;
+    /** Counts the builds begun: one that resumes after the element left (and came back) is stale and stops. */
+    #run = 0;
+
+    connectedCallback() {
+      if (this.#seen || this.#destroy) return;
+      this.#seen = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        this.#seen?.disconnect();
+        this.#seen = null;
+        void this.#build();
+      }, { rootMargin: '400px 0px' });
+      this.#seen.observe(this);
+    }
+
+    async #build() {
+      const run = ++this.#run;
+      const grid = this.querySelector<HTMLElement>('.dzgraph-grid-demo-grid');
+      const box = this.querySelector<HTMLElement>('.dzgraph-grid-demo-chart');
+      if (!grid || !box) return;
+      try {
+        const { mountGridDemo } = await import('./demo/grid-demo');
+        if (!this.isConnected || run !== this.#run) return;
+        this.#destroy = mountGridDemo(grid, box, JSON.parse(this.dataset.demo ?? '{}') as GridDemoSpec, this.dataset.lang ?? 'en');
+      } catch (error) {
+        // A demo that failed: said on the page, not a blank box.
+        box.textContent = String(error);
+        console.error(error);
+      }
+    }
+
+    disconnectedCallback() {
+      this.#seen?.disconnect();
+      this.#seen = null;
+      this.#destroy?.();
+      this.#destroy = null;
+      this.#run++;
+    }
+  }
+
+  if (!customElements.get('dzgraph-grid-demo')) customElements.define('dzgraph-grid-demo', DzgraphGridDemo);
+</script>
